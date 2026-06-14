@@ -191,7 +191,7 @@ function initials(name){return (name||'?').trim().split(/\s+/).map(w=>w[0]).slic
 function medal(lvl,big){
   const STAR="M12 2.4l2.95 5.98 6.6.96-4.78 4.66 1.13 6.58L12 17.45l-5.9 3.1 1.13-6.58L2.45 9.34l6.6-.96z";
   const c=big?'medal big':'medal';
-  if(lvl==='platine')return `<svg class="${c}" viewBox="0 0 24 24"><path fill="#60a5fa" stroke="#dff0ff" stroke-width=".5" stroke-linejoin="round" d="M6 4H18L22 9.5 12 21.5 2 9.5Z"/></svg>`;
+  if(lvl==='platine')return `<svg class="${c}" viewBox="0 0 24 24"><defs><linearGradient id="diaGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfeaff"/><stop offset=".5" stop-color="#60a5fa"/><stop offset="1" stop-color="#2f6fd0"/></linearGradient></defs><path fill="url(#diaGrad)" stroke="#dff0ff" stroke-width=".5" stroke-linejoin="round" d="M6 4H18L22 9.5 12 21.5 2 9.5Z"/><path fill="none" stroke="#eaf6ff" stroke-width=".7" stroke-linejoin="round" d="M2 9.5H22M6 4 8.5 9.5 12 21.5 15.5 9.5 18 4M8.5 9.5H15.5"/></svg>`;
   if(lvl==='bronze')return `<svg class="${c}" viewBox="0 0 24 24"><path fill="none" stroke="#c08a57" stroke-width="1.7" stroke-linejoin="round" d="${STAR}"/></svg>`;
   if(!lvl)return '';
   return `<svg class="${c} m-${lvl}" viewBox="0 0 24 24" fill="currentColor"><path d="${STAR}"/></svg>`;

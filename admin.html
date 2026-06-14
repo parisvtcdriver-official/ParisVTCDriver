@@ -81,6 +81,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 .m-bronze{color:#c08a57}.m-argent{color:#aab2bf}.m-or{color:#e7c878}
 .pbadge{width:18px;height:18px;border-radius:5px;object-fit:cover;vertical-align:-4px;margin-right:7px;border:1px solid var(--line);flex:none}
 .lvl-tag{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(201,162,74,.12);color:var(--gold-2)}
+.promo-code{font-family:'Space Grotesk';color:var(--gold-bright);font-weight:600;letter-spacing:.04em}
 .tagrole{font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px}
 .tagrole.admin{background:rgba(231,176,74,.16);color:var(--gold-2)}
 .tagrole.client{background:rgba(96,165,250,.12);color:var(--blue)}
@@ -156,8 +157,13 @@ select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:
 
     <!-- CODES PROMO -->
     <section class="view" id="promo">
-      <div class="top"><div><h1>Codes promo</h1><div class="sub">Avoirs et codes de réduction</div></div></div>
-      <div class="card"><div class="empty">La gestion des codes promo sera activée lors d'une prochaine étape (table dédiée + usage unique contrôlé côté serveur).</div></div>
+      <div class="top"><div><h1>Codes promo</h1><div class="sub">Codes de réduction à usage unique</div></div>
+        <button class="btn btn-gold" style="margin-left:auto" onclick="generatePromo()">+ Générer des codes</button></div>
+      <div class="card"><div class="scroll"><table>
+        <thead><tr><th>Code</th><th>Montant</th><th>Créé le</th><th>Utilisé par</th><th>Statut</th><th></th></tr></thead>
+        <tbody id="allPromo"></tbody>
+      </table></div></div>
+      <div class="card infobox"><b style="color:var(--gold-2)">Astuce :</b> chaque code est unique et utilisable une seule fois. Donnez-en à un client : il l'appliquera lors de sa réservation (déduction sur le total).</div>
     </section>
 
     <!-- CLIENTS -->
@@ -240,14 +246,14 @@ function initials(name){return (name||'?').trim().split(/\s+/).map(w=>w[0]).slic
 function setBadge(id,n){const e=document.getElementById(id);if(n>0){e.textContent=n;e.classList.add('show');}else e.classList.remove('show');}
 function medal(lvl){
   const STAR="M12 2.4l2.95 5.98 6.6.96-4.78 4.66 1.13 6.58L12 17.45l-5.9 3.1 1.13-6.58L2.45 9.34l6.6-.96z";
-  if(lvl==='platine')return `<svg class="medal" viewBox="0 0 24 24"><defs><linearGradient id="dia${Math.random().toString(36).slice(2,7)}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfeaff"/><stop offset=".5" stop-color="#60a5fa"/><stop offset="1" stop-color="#2f6fd0"/></linearGradient></defs><path fill="#60a5fa" stroke="#dff0ff" stroke-width=".5" stroke-linejoin="round" d="M6 4H18L22 9.5 12 21.5 2 9.5Z"/></svg>`;
+  if(lvl==='platine')return `<svg class="medal" viewBox="0 0 24 24"><defs><linearGradient id="diaGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfeaff"/><stop offset=".5" stop-color="#60a5fa"/><stop offset="1" stop-color="#2f6fd0"/></linearGradient></defs><path fill="url(#diaGrad)" stroke="#dff0ff" stroke-width=".5" stroke-linejoin="round" d="M6 4H18L22 9.5 12 21.5 2 9.5Z"/><path fill="none" stroke="#eaf6ff" stroke-width=".7" stroke-linejoin="round" d="M2 9.5H22M6 4 8.5 9.5 12 21.5 15.5 9.5 18 4M8.5 9.5H15.5"/></svg>`;
   if(lvl==='bronze')return `<svg class="medal" viewBox="0 0 24 24"><path fill="none" stroke="#b3743f" stroke-width="1.7" stroke-linejoin="round" d="${STAR}"/></svg>`;
   if(!lvl)return '';
   return `<svg class="medal m-${lvl}" viewBox="0 0 24 24" fill="currentColor"><path d="${STAR}"/></svg>`;
 }
 function medalFor(levelName){return ({Diamant:'platine',Or:'or',Argent:'argent',Bronze:'bronze'})[levelName]||'';}
 
-let ME=null, PROFILES={}, BOOKINGS=[], PARTS=[], RESA_FILTER='all', PART_FILTER='all';
+let ME=null, PROFILES={}, BOOKINGS=[], PARTS=[], PROMOS=[], RESA_FILTER='all', PART_FILTER='all';
 
 async function load(){
   ME = await requireAdmin();
@@ -263,13 +269,14 @@ async function load(){
 }
 
 async function refresh(){
-  const [{data:profs},{data:bk},{data:parts}] = await Promise.all([
+  const [{data:profs},{data:bk},{data:parts},{data:promos}] = await Promise.all([
     sb.from('profiles').select('*').order('created_at',{ascending:false}),
     sb.from('bookings').select('*').order('date_time',{ascending:false,nullsFirst:false}),
-    sb.from('partner_requests').select('*').order('created_at',{ascending:false})
+    sb.from('partner_requests').select('*').order('created_at',{ascending:false}),
+    sb.from('promo_codes').select('*').order('created_at',{ascending:false})
   ]);
   PROFILES={}; (profs||[]).forEach(p=>PROFILES[p.id]=p);
-  BOOKINGS=bk||[]; PARTS=parts||[];
+  BOOKINGS=bk||[]; PARTS=parts||[]; PROMOS=promos||[];
   const allProfs=profs||[];
 
   const now=new Date(), yr=now.getFullYear(), mo=now.getMonth();
@@ -302,6 +309,9 @@ async function refresh(){
 
   // documents
   renderDocs();
+
+  // codes promo
+  renderPromo();
 
   // clients
   renderClients(allProfs);
@@ -440,6 +450,37 @@ function renderVehSplit(resaList){
   if(!entries.length){el.innerHTML='<div class="empty">Pas encore de données.</div>';return;}
   el.innerHTML=entries.map((e,i)=>`<div class="list-i"><span class="dot" style="background:${colors[i%colors.length]}"></span><div class="li-main"><b>${escapeHtml(e[0])}</b></div><span class="li-amt">${Math.round(e[1]/total*100)} %</span></div>`).join('');
 }
+
+function renderPromo(){
+  const el=document.getElementById('allPromo');
+  if(!PROMOS.length){el.innerHTML='<tr><td colspan="6" class="empty">Aucun code. Cliquez sur « + Générer des codes ».</td></tr>';return;}
+  const lbl={available:['conf','Disponible'],used:['term','Utilisé'],disabled:['ann','Désactivé']};
+  el.innerHTML=PROMOS.map(p=>{
+    const s=lbl[p.status]||['att',p.status];
+    const act=p.status==='available'?`<button class="btn-mini" onclick="disablePromo('${p.id}')">Désactiver</button>`:'';
+    return `<tr><td class="promo-code">${escapeHtml(p.code)}</td><td class="amt">−${eur(p.amount)}</td>
+      <td>${p.created_at?new Date(p.created_at).toLocaleDateString('fr-FR'):'—'}</td>
+      <td>${p.used_by?escapeHtml(clientName(p.used_by)):'—'}</td>
+      <td><span class="st ${s[0]}">${s[1]}</span></td><td>${act}</td></tr>`;
+  }).join('');
+}
+function randCode(amount){return 'R'+amount+'-'+Math.floor(10000+Math.random()*89999);}
+async function generatePromo(){
+  const a=prompt('Montant de la remise (en €) :','10'); if(a===null)return;
+  const amount=parseFloat(String(a).replace(',','.')); if(isNaN(amount)||amount<=0){toast('Montant invalide');return;}
+  const q=prompt('Combien de codes générer ?','1'); if(q===null)return;
+  const qty=parseInt(q,10); if(isNaN(qty)||qty<1||qty>100){toast('Quantité invalide (1 à 100)');return;}
+  const rows=[]; for(let i=0;i<qty;i++) rows.push({code:randCode(amount),amount});
+  const {error}=await sb.from('promo_codes').insert(rows);
+  if(error){
+    if(/relation .*promo_codes.* does not exist|could not find the table/i.test(error.message))
+      toast("Table manquante : exécute d'abord supabase-promo.sql");
+    else toast('Erreur : '+error.message);
+    return;
+  }
+  toast(qty+' code(s) généré(s) ✓'); refresh();
+}
+async function disablePromo(id){if(!confirm('Désactiver ce code ?'))return;const{error}=await sb.from('promo_codes').update({status:'disabled'}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Code désactivé ✓');refresh();}
 
 async function setStatus(id,status){const{error}=await sb.from('bookings').update({status}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Statut mis à jour ✓');refresh();}
 async function setPartnerStatus(id,status){const{error}=await sb.from('partner_requests').update({status}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Demande mise à jour ✓');refresh();}
