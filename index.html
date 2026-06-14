@@ -71,6 +71,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-init.js"></script>
 <style>
 :root{
   --bg:#070a12;
@@ -928,7 +930,8 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
     <div class="modal-body" id="modalBody"></div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closePreview()" data-i18n="pv_close">Close</button>
-      <button class="btn btn-gold" onclick="downloadPDF('quote')" data-i18n="btn_pdfq">Download PDF Quote</button>
+      <button class="btn btn-ghost" onclick="downloadPDF('quote')" data-i18n="btn_pdfq">Download PDF Quote</button>
+      <button class="btn btn-gold" onclick="sendQuoteRequest(this)" data-i18n="btn_sendq">Send my request</button>
     </div>
   </div>
 </div>
@@ -1038,7 +1041,7 @@ const I18N={
   bk_p_title:"Services Pack",pack_type:"Type de pack",btn_add_pack:"+ Ajouter un pack",pack_word:"Pack",
   sum_title:"Récapitulatif",sum_sub:"Estimation en direct, prix final fixe.",sum_services:"Services",sum_subtotal:"Sous-total",sum_discount:"Code / remise (€)",sum_disc:"Remise",sum_ht:"Total HT",ht_lbl:"HT",sum_tax:"TVA incluse",sum_total:"Total TTC",
   sum_code:"Code de réduction",btn_apply:"Appliquer",code_ok:"Code appliqué : −{v}",code_invalid:"Code invalide",code_used:"Code déjà utilisé",
-  btn_preview:"Aperçu du devis",btn_pdfq:"Télécharger le devis PDF",btn_pdfi:"Télécharger la facture PDF",btn_confirm:"Confirmer la réservation",sum_secure:"🔒 Paiement sécurisé · Aucun débit avant confirmation",
+  btn_preview:"Aperçu du devis",btn_sendq:"Envoyer ma demande",btn_pdfq:"Télécharger le devis PDF",btn_pdfi:"Télécharger la facture PDF",btn_confirm:"Confirmer la réservation",sum_secure:"🔒 Paiement sécurisé · Aucun débit avant confirmation",
   fl_eyebrow:"La Flotte",fl_title:"Un Véhicule pour Chaque Occasion",fl_lead:"Des véhicules récents, méticuleusement entretenus et nettoyés avant chaque trajet.",
   tr_eyebrow:"Pourquoi ParisVTCDriver",tr_title:"Un Service Pensé Pour Vous",tr_lead:"Chaque détail anticipé pour que votre seule mission soit d'arriver, détendu et à l'heure.",
   pr_eyebrow:"Tarifs Estimés",pr_title:"Des Estimations Transparentes à Prix Fixe",pr_lead:"Tarifs indicatifs tout compris pour nos trajets les plus demandés. Prix définitif confirmé à la réservation — sans majoration ni frais cachés.",
@@ -1067,7 +1070,7 @@ const I18N={
   bk_p_title:"Pack Services",pack_type:"Pack type",btn_add_pack:"+ Add pack",pack_word:"Pack",
   sum_title:"Booking Summary",sum_sub:"Live estimate, fixed final price.",sum_services:"Services",sum_subtotal:"Subtotal",sum_discount:"Discount code / amount (€)",sum_disc:"Discount",sum_ht:"Total excl. VAT",ht_lbl:"excl. VAT",sum_tax:"VAT included",sum_total:"Total incl. VAT",
   sum_code:"Discount code",btn_apply:"Apply",code_ok:"Code applied: −{v}",code_invalid:"Invalid code",code_used:"Code already used",
-  btn_preview:"Preview Quote",btn_pdfq:"Download PDF Quote",btn_pdfi:"Download PDF Invoice",btn_confirm:"Confirm Reservation",sum_secure:"🔒 Secure payment · No charge until confirmation",
+  btn_preview:"Preview Quote",btn_sendq:"Send my request",btn_pdfq:"Download PDF Quote",btn_pdfi:"Download PDF Invoice",btn_confirm:"Confirm Reservation",sum_secure:"🔒 Secure payment · No charge until confirmation",
   fl_eyebrow:"The Fleet",fl_title:"A Vehicle for Every Occasion",fl_lead:"Meticulously maintained, recent-model vehicles — each detailed before every journey.",
   tr_eyebrow:"Why ParisVTCDriver",tr_title:"Service Engineered Around You",tr_lead:"Every detail considered so your only job is to arrive, relaxed and on time.",
   pr_eyebrow:"Estimated Fares",pr_title:"Transparent, Fixed-Price Estimates",pr_lead:"Indicative all-inclusive fares for our most requested journeys. Final price confirmed at booking — no surge, no hidden fees.",
@@ -1092,7 +1095,7 @@ const I18N={
   bk_c_title:"Müşteri Bilgileri",f_name:"Ad soyad",f_company:"Şirket (isteğe bağlı)",f_email:"E-posta",f_phone:"Telefon",f_addr:"Sokak / Yer",f_num:"Kapı no.",f_city:"Şehir",f_zip:"Posta kodu",f_country:"Ülke",
   bk_s_title:"Ulaşım Hizmetleri",btn_add:"+ Hizmet Ekle",bk_n_title:"Notlar & Özel İstekler",f_flight:"Uçuş / tren numarası",f_lug:"Bagaj / yolcu notu",f_special:"Ek gereksinimler",
   sum_title:"Rezervasyon Özeti",sum_sub:"Canlı tahmin, sabit nihai fiyat.",sum_services:"Hizmetler",sum_subtotal:"Ara toplam",sum_discount:"İndirim kodu / tutarı (€)",sum_disc:"İndirim",sum_ht:"Toplam (KDV hariç)",ht_lbl:"KDV hariç",sum_tax:"KDV dahil",sum_total:"Toplam (KDV dahil)",
-  btn_preview:"Teklifi Önizle",btn_pdfq:"PDF Teklifi İndir",btn_pdfi:"PDF Faturayı İndir",btn_confirm:"Rezervasyonu Onayla",sum_secure:"🔒 Güvenli ödeme · Onaya kadar ücret alınmaz",
+  btn_preview:"Teklifi Önizle",btn_sendq:"Talebimi gönder",btn_pdfq:"PDF Teklifi İndir",btn_pdfi:"PDF Faturayı İndir",btn_confirm:"Rezervasyonu Onayla",sum_secure:"🔒 Güvenli ödeme · Onaya kadar ücret alınmaz",
   fl_eyebrow:"Filo",fl_title:"Her Durum İçin Bir Araç",fl_lead:"Her yolculuktan önce özenle bakımı yapılan ve temizlenen yeni model araçlar.",
   tr_eyebrow:"Neden ParisVTCDriver",tr_title:"Size Göre Tasarlanmış Hizmet",tr_lead:"Tek göreviniz rahat ve zamanında varmak olsun diye her ayrıntı düşünüldü.",
   pr_eyebrow:"Tahmini Fiyatlar",pr_title:"Şeffaf, Sabit Fiyatlı Tahminler",pr_lead:"En çok talep edilen güzergâhlarımız için her şey dahil gösterge fiyatlar. Nihai fiyat rezervasyonda onaylanır — sürpriz veya gizli ücret yok.",
@@ -1116,7 +1119,7 @@ const I18N={
   bk_c_title:"Datos del Cliente",f_name:"Nombre completo",f_company:"Empresa (opcional)",f_email:"Correo electrónico",f_phone:"Teléfono",f_addr:"Calle / Lugar",f_num:"N.º",f_city:"Ciudad",f_zip:"Código postal",f_country:"País",
   bk_s_title:"Servicios de Transporte",btn_add:"+ Añadir servicio",bk_n_title:"Notas y Peticiones Especiales",f_flight:"N.º de vuelo / tren",f_lug:"Equipaje / pasajeros",f_special:"Requisitos adicionales",
   sum_title:"Resumen de la Reserva",sum_sub:"Estimación en directo, precio final fijo.",sum_services:"Servicios",sum_subtotal:"Subtotal",sum_discount:"Código / importe de descuento (€)",sum_disc:"Descuento",sum_ht:"Total sin IVA",ht_lbl:"sin IVA",sum_tax:"IVA incluido",sum_total:"Total con IVA",
-  btn_preview:"Vista previa",btn_pdfq:"Descargar presupuesto PDF",btn_pdfi:"Descargar factura PDF",btn_confirm:"Confirmar reserva",sum_secure:"🔒 Pago seguro · Sin cargo hasta la confirmación",
+  btn_preview:"Vista previa",btn_sendq:"Enviar mi solicitud",btn_pdfq:"Descargar presupuesto PDF",btn_pdfi:"Descargar factura PDF",btn_confirm:"Confirmar reserva",sum_secure:"🔒 Pago seguro · Sin cargo hasta la confirmación",
   fl_eyebrow:"La Flota",fl_title:"Un Vehículo para Cada Ocasión",fl_lead:"Vehículos recientes, meticulosamente mantenidos y limpiados antes de cada trayecto.",
   tr_eyebrow:"Por qué ParisVTCDriver",tr_title:"Un Servicio Pensado para Usted",tr_lead:"Cada detalle previsto para que su única tarea sea llegar relajado y puntual.",
   pr_eyebrow:"Tarifas Estimadas",pr_title:"Estimaciones Transparentes a Precio Fijo",pr_lead:"Tarifas indicativas todo incluido para nuestros trayectos más solicitados. Precio final confirmado en la reserva, sin recargos ni costes ocultos.",
@@ -1140,7 +1143,7 @@ const I18N={
   bk_c_title:"Dati del Cliente",f_name:"Nome completo",f_company:"Azienda (facoltativo)",f_email:"Email",f_phone:"Telefono",f_addr:"Via / Luogo",f_num:"Civico",f_city:"Città",f_zip:"CAP",f_country:"Paese",
   bk_s_title:"Servizi di Trasporto",btn_add:"+ Aggiungi servizio",bk_n_title:"Note e Richieste Speciali",f_flight:"Numero volo / treno",f_lug:"Bagagli / passeggeri",f_special:"Requisiti aggiuntivi",
   sum_title:"Riepilogo Prenotazione",sum_sub:"Stima in tempo reale, prezzo finale fisso.",sum_services:"Servizi",sum_subtotal:"Subtotale",sum_discount:"Codice / importo sconto (€)",sum_disc:"Sconto",sum_ht:"Totale IVA esclusa",ht_lbl:"IVA escl.",sum_tax:"IVA inclusa",sum_total:"Totale IVA inclusa",
-  btn_preview:"Anteprima preventivo",btn_pdfq:"Scarica preventivo PDF",btn_pdfi:"Scarica fattura PDF",btn_confirm:"Conferma prenotazione",sum_secure:"🔒 Pagamento sicuro · Nessun addebito fino alla conferma",
+  btn_preview:"Anteprima preventivo",btn_sendq:"Invia la richiesta",btn_pdfq:"Scarica preventivo PDF",btn_pdfi:"Scarica fattura PDF",btn_confirm:"Conferma prenotazione",sum_secure:"🔒 Pagamento sicuro · Nessun addebito fino alla conferma",
   fl_eyebrow:"La Flotta",fl_title:"Un Veicolo per Ogni Occasione",fl_lead:"Veicoli recenti, curati meticolosamente e puliti prima di ogni viaggio.",
   tr_eyebrow:"Perché ParisVTCDriver",tr_title:"Un Servizio Pensato per Te",tr_lead:"Ogni dettaglio è previsto perché il tuo unico compito sia arrivare, rilassato e puntuale.",
   pr_eyebrow:"Tariffe Stimate",pr_title:"Stime Trasparenti a Prezzo Fisso",pr_lead:"Tariffe indicative tutto incluso per i percorsi più richiesti. Prezzo finale confermato alla prenotazione, senza sovrapprezzi né costi nascosti.",
@@ -1164,7 +1167,7 @@ const I18N={
   bk_c_title:"Dados do Cliente",f_name:"Nome completo",f_company:"Empresa (opcional)",f_email:"E-mail",f_phone:"Telefone",f_addr:"Rua / Local",f_num:"N.º",f_city:"Cidade",f_zip:"Código postal",f_country:"País",
   bk_s_title:"Serviços de Transporte",btn_add:"+ Adicionar serviço",bk_n_title:"Notas e Pedidos Especiais",f_flight:"Nº do voo / trem",f_lug:"Bagagem / passageiros",f_special:"Requisitos adicionais",
   sum_title:"Resumo da Reserva",sum_sub:"Estimativa ao vivo, preço final fixo.",sum_services:"Serviços",sum_subtotal:"Subtotal",sum_discount:"Código / valor de desconto (€)",sum_disc:"Desconto",sum_ht:"Total sem IVA",ht_lbl:"sem IVA",sum_tax:"IVA incluído",sum_total:"Total com IVA",
-  btn_preview:"Pré-visualizar orçamento",btn_pdfq:"Baixar orçamento PDF",btn_pdfi:"Baixar fatura PDF",btn_confirm:"Confirmar reserva",sum_secure:"🔒 Pagamento seguro · Sem cobrança até a confirmação",
+  btn_preview:"Pré-visualizar orçamento",btn_sendq:"Enviar o meu pedido",btn_pdfq:"Baixar orçamento PDF",btn_pdfi:"Baixar fatura PDF",btn_confirm:"Confirmar reserva",sum_secure:"🔒 Pagamento seguro · Sem cobrança até a confirmação",
   fl_eyebrow:"A Frota",fl_title:"Um Veículo para Cada Ocasião",fl_lead:"Veículos recentes, meticulosamente mantidos e limpos antes de cada viagem.",
   tr_eyebrow:"Por que ParisVTCDriver",tr_title:"Um Serviço Pensado para Você",tr_lead:"Cada detalhe previsto para que sua única tarefa seja chegar, relaxado e no horário.",
   pr_eyebrow:"Tarifas Estimadas",pr_title:"Estimativas Transparentes a Preço Fixo",pr_lead:"Tarifas indicativas com tudo incluído para os percursos mais solicitados. Preço final confirmado na reserva — sem acréscimos nem custos ocultos.",
@@ -1188,7 +1191,7 @@ const I18N={
   bk_c_title:"客户信息",f_name:"全名",f_company:"公司（可选）",f_email:"电子邮箱",f_phone:"电话",f_addr:"街道 / 地点",f_num:"门牌号",f_city:"城市",f_zip:"邮政编码",f_country:"国家",
   bk_s_title:"出行服务",btn_add:"+ 添加服务",bk_n_title:"备注与特别要求",f_flight:"航班 / 火车号",f_lug:"行李 / 乘客备注",f_special:"额外需求",
   sum_title:"预订摘要",sum_sub:"实时估算，最终价格固定。",sum_services:"服务",sum_subtotal:"小计",sum_discount:"优惠码 / 金额 (€)",sum_disc:"优惠",sum_ht:"不含税总计",ht_lbl:"不含税",sum_tax:"含增值税",sum_total:"含税总计",
-  btn_preview:"预览报价",btn_pdfq:"下载报价 PDF",btn_pdfi:"下载发票 PDF",btn_confirm:"确认预订",sum_secure:"🔒 安全支付 · 确认前不收费",
+  btn_preview:"预览报价",btn_sendq:"提交我的申请",btn_pdfq:"下载报价 PDF",btn_pdfi:"下载发票 PDF",btn_confirm:"确认预订",sum_secure:"🔒 安全支付 · 确认前不收费",
   fl_eyebrow:"车队",fl_title:"为每种场合提供车辆",fl_lead:"近新车型，每次行程前都经过精心保养与清洁。",
   tr_eyebrow:"为何选择 ParisVTCDriver",tr_title:"为您量身打造的服务",tr_lead:"每个细节都已考虑周到，您只需轻松准时抵达。",
   pr_eyebrow:"预估价格",pr_title:"透明的固定价格预估",pr_lead:"为最热门路线提供全包指导价。最终价格在预订时确认——无溢价、无隐藏费用。",
@@ -1625,6 +1628,39 @@ function openPreview(){
   document.getElementById("modal").classList.add("open");
 }
 function closePreview(){document.getElementById("modal").classList.remove("open");}
+async function sendQuoteRequest(btn){
+  if(!services.length&&!packs.length){toast(t("noServices"));return;}
+  const cv=id=>document.getElementById(id).value.trim();
+  const email=cv("c_email");
+  if(!email){toast(LANG==="fr"?"Entrez votre e-mail pour recevoir le devis.":"Enter your email to receive the quote.");return;}
+  if(typeof sb==="undefined"){toast(LANG==="fr"?"Service indisponible, réessayez.":"Service unavailable, retry.");return;}
+  const {tax,total}=computeTotals();
+  const ref=peekRef();
+  const L=sortedLines();
+  const lines=L.map(l=>({label:l.label,detail:l.detail,custom:!!l.custom,priceLabel:l.custom?t("on_quote"):eur(l.price),route:l.route||"",dt:l.dt||"",req:l.req||""}));
+  const first=L[0]||{};
+  const rt=(first.route||"").split("→").map(s=>s.trim());
+  const payload={
+    reference:ref,
+    client_name:cv("c_name"), client_email:email,
+    client_phone:(cv("c_phone")?(cv("c_dialcode")+" "+cv("c_phone")):""), client_company:cv("c_company"),
+    service: lines.length>1?(LANG==="fr"?("Devis — "+lines.length+" prestations"):("Quote — "+lines.length+" services")):(first.label||"Devis"),
+    pickup: rt[0]||"", dropoff: rt[1]||"",
+    date_time: null, pax:1, vehicle:"",
+    amount_ht: Math.round((total-tax)*100)/100, vat: tax, amount_ttc: total,
+    total_label: eur(total), lines
+  };
+  const old=btn?btn.textContent:"";
+  if(btn){btn.disabled=true;btn.textContent="…";}
+  try{
+    const {data,error}=await sb.functions.invoke('request-quote',{body:payload});
+    if(error||(data&&data.ok===false)) throw new Error((data&&data.error)||(error&&error.message)||"err");
+    toast(LANG==="fr"?"Demande envoyée ! Un e-mail de confirmation vous a été adressé.":"Request sent! A confirmation email is on its way.");
+    closePreview();
+  }catch(e){
+    toast(LANG==="fr"?"Échec de l'envoi. Réessayez ou écrivez-nous.":"Sending failed. Please retry or contact us.");
+  }finally{ if(btn){btn.disabled=false;btn.textContent=old;} }
+}
 function toast(m){const el=document.getElementById("toast");el.textContent=m;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),3200);}
 function confirmRes(){if(!services.length&&!packs.length){toast(t("noServices"));return;}toast(t("confirmed"));}
 
