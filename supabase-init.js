@@ -43,8 +43,10 @@ async function signOut(redirect="connexion.html"){
   location.replace(redirect);
 }
 
-/* ---------- Fidélité ---------- */
-function loyalty(points){
+/* ---------- Fidélité ----------
+   On attache à window SANS redéclarer (évite tout conflit avec les
+   fonctions déjà définies dans index.html, ex. eur). */
+window.loyalty = window.loyalty || function(points){
   points = points || 0;
   const tiers = [
     { name:"Diamant", min:5000, off:20 },
@@ -58,9 +60,9 @@ function loyalty(points){
   const next = idx > 0 ? tiers[idx-1] : null;       // palier supérieur
   const progress = next ? Math.min(100, Math.round((points-cur.min)/(next.min-cur.min)*100)) : 100;
   return { name:cur.name, off:cur.off, next, progress, points };
-}
+};
 
 /* ---------- Formatage ---------- */
-function eur(n){ return new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR"}).format(n||0); }
-function dateFR(d){ if(!d) return "—"; return new Date(d).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
-function escapeHtml(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+window.eur = window.eur || function(n){ return new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR"}).format(n||0); };
+window.dateFR = window.dateFR || function(d){ if(!d) return "—"; return new Date(d).toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); };
+window.escapeHtml = window.escapeHtml || function(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); };

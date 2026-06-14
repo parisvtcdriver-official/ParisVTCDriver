@@ -72,7 +72,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-init.js"></script>
+<script>
+/* Connexion Supabase minimale et isolée pour le site (bouton devis).
+   Aucune fonction partagée n'est redéclarée ici, pour ne pas interférer
+   avec le script du site. */
+var SB_URL="https://uufumatxtpfdczqotpvi.supabase.co";
+var SB_KEY="sb_publishable_jNM0Y2Fs5uAYLLTjihSX_A_exnFesGz";
+var sb=(window.supabase&&window.supabase.createClient)?window.supabase.createClient(SB_URL,SB_KEY):null;
+</script>
 <style>
 :root{
   --bg:#070a12;
