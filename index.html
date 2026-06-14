@@ -1660,12 +1660,18 @@ async function sendQuoteRequest(btn){
   const old=btn?btn.textContent:"";
   if(btn){btn.disabled=true;btn.textContent="…";}
   try{
+    let reason="";
     const {data,error}=await sb.functions.invoke('request-quote',{body:payload});
-    if(error||(data&&data.ok===false)) throw new Error((data&&data.error)||(error&&error.message)||"err");
+    if(error){
+      reason=error.message||"appel impossible";
+      try{ if(error.context && typeof error.context.json==="function"){ const j=await error.context.json(); if(j&&j.error) reason=j.error; } }catch(_){}
+      throw new Error(reason);
+    }
+    if(data&&data.ok===false) throw new Error(data.error||"erreur serveur");
     toast(LANG==="fr"?"Demande envoyée ! Un e-mail de confirmation vous a été adressé.":"Request sent! A confirmation email is on its way.");
     closePreview();
   }catch(e){
-    toast(LANG==="fr"?"Échec de l'envoi. Réessayez ou écrivez-nous.":"Sending failed. Please retry or contact us.");
+    toast((LANG==="fr"?"Échec : ":"Failed: ")+(e&&e.message?e.message:e));
   }finally{ if(btn){btn.disabled=false;btn.textContent=old;} }
 }
 function toast(m){const el=document.getElementById("toast");el.textContent=m;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),3200);}
