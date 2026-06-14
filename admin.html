@@ -32,15 +32,24 @@ a{color:inherit;text-decoration:none}
 .top{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
 .top h1{font-size:23px;font-weight:700;letter-spacing:-.01em}
 .top .sub{color:var(--muted-2);font-size:13px;margin-top:2px}
+.btn{font-family:inherit;font-weight:600;cursor:pointer;border:none;border-radius:11px;padding:10px 18px;font-size:13.5px;display:inline-flex;align-items:center;gap:8px}
+.btn-gold{background:linear-gradient(135deg,var(--gold-bright),var(--gold) 55%,#a9842f);color:#1c1604}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
 .kpi{padding:18px 20px;border:1px solid var(--line-soft);border-radius:16px;background:linear-gradient(165deg,var(--panel-2),var(--panel))}
 .kpi .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:rgba(201,162,74,.12);border:1px solid var(--line);color:var(--gold-2);margin-bottom:14px}
 .kpi .ic svg{width:19px;height:19px;stroke:currentColor;fill:none}
 .kpi .lbl{color:var(--muted-2);font-size:12.5px;font-weight:500}
 .kpi .val{font-family:'Space Grotesk';font-size:26px;font-weight:700;color:var(--txt);margin-top:3px}
+.kpi .chg{font-size:12px;margin-top:6px;font-weight:600}
+.chg.up{color:var(--green)}.chg.down{color:var(--amber)}
+.cols{display:grid;grid-template-columns:1fr 340px;gap:20px}
 .card{border:1px solid var(--line-soft);border-radius:16px;background:linear-gradient(165deg,var(--panel-2),var(--panel));overflow:hidden;margin-bottom:20px}
 .card-h{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line-soft)}
 .card-h h2{font-size:15px;font-weight:600}
+.card-h .link{margin-left:auto;font-size:12.5px;color:var(--gold-2);cursor:pointer}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid var(--line-soft);color:var(--muted);cursor:pointer;background:none;font-family:inherit}
+.chip.on{background:linear-gradient(145deg,rgba(201,162,74,.2),rgba(201,162,74,.06));color:var(--gold-2);border-color:var(--line)}
 .scroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse;min-width:560px}
 thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-2);font-weight:600;padding:12px 20px;border-bottom:1px solid var(--line-soft)}
@@ -56,23 +65,34 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 .st.att{color:var(--amber);background:rgba(231,176,74,.14)}
 .st.term{color:var(--blue);background:rgba(96,165,250,.12)}
 .st.ann{color:var(--red);background:rgba(248,113,113,.12)}
-.lvl-tag{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(201,162,74,.12);color:var(--gold-2)}
-select.mini,input.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:var(--txt);font-family:inherit;font-size:12.5px;border-radius:8px;padding:6px 9px}
-.btn-mini{font-family:inherit;font-weight:600;cursor:pointer;border:1px solid var(--line-soft);background:rgba(255,255,255,.03);color:var(--muted);border-radius:8px;padding:6px 11px;font-size:12px}
-.btn-mini:hover{color:var(--gold-2);border-color:var(--line)}
-.btn-mini.gold{background:linear-gradient(135deg,var(--gold-bright),var(--gold));color:#1c1604;border:none}
-.empty{padding:40px 20px;text-align:center;color:var(--muted-2);font-size:13.5px}
+.list-i{display:flex;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line-soft);align-items:flex-start}
+.list-i:last-child{border-bottom:none}
+.dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex:none}
+.li-main b{color:var(--txt);font-size:13.5px;font-weight:600}
+.li-main small{display:block;color:var(--muted-2);font-size:11.5px;margin-top:2px}
+.li-amt{margin-left:auto;font-family:'Space Grotesk';color:var(--gold-2);font-size:13px;font-weight:600;white-space:nowrap}
+.chart{padding:18px 20px}
+.bars{display:flex;align-items:flex-end;gap:10px;height:150px;padding-top:10px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+.bar .b{width:100%;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,var(--gold-2),var(--gold) 60%,#8f6d28);min-height:4px}
+.bar small{font-size:10.5px;color:var(--muted-2)}
 .view{display:none}.view.show{display:block}
+.medal{width:15px;height:15px;display:inline-block;vertical-align:-3px;margin-right:6px;flex:none}
+.m-bronze{color:#c08a57}.m-argent{color:#aab2bf}.m-or{color:#e7c878}
+.pbadge{width:18px;height:18px;border-radius:5px;object-fit:cover;vertical-align:-4px;margin-right:7px;border:1px solid var(--line);flex:none}
+.lvl-tag{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(201,162,74,.12);color:var(--gold-2)}
 .tagrole{font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px}
 .tagrole.admin{background:rgba(231,176,74,.16);color:var(--gold-2)}
 .tagrole.client{background:rgba(96,165,250,.12);color:var(--blue)}
+select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:var(--txt);font-family:inherit;font-size:12.5px;border-radius:8px;padding:6px 9px}
+.btn-mini{font-family:inherit;font-weight:600;cursor:pointer;border:1px solid var(--line-soft);background:rgba(255,255,255,.03);color:var(--muted);border-radius:8px;padding:6px 11px;font-size:12px}
+.btn-mini:hover{color:var(--gold-2);border-color:var(--line)}
+.empty{padding:36px 20px;text-align:center;color:var(--muted-2);font-size:13.5px}
+.infobox{padding:16px 20px;color:var(--muted);font-size:12.5px;line-height:1.6}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--navy);border:1px solid var(--gold);color:var(--gold-2);padding:11px 20px;border-radius:12px;font-size:13px;box-shadow:0 20px 40px -18px rgba(0,0,0,.7);opacity:0;pointer-events:none;transition:.3s;z-index:60}
 .toast.show{opacity:1}
 .mtoggle{display:none}
-.pcard{padding:16px 20px;border-bottom:1px solid var(--line-soft)}
-.pcard:last-child{border-bottom:none}
-.pcard b{color:var(--txt)}
-@media(max-width:1080px){.app{grid-template-columns:1fr}.side{position:fixed;z-index:40;top:0;bottom:0;left:0;width:248px;transform:translateX(-100%);transition:.25s}.side.open{transform:none}.main{padding-top:64px}.kpis{grid-template-columns:repeat(2,1fr)}.mtoggle{display:grid;place-items:center;position:fixed;top:12px;left:12px;z-index:45;width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--navy);color:var(--txt);cursor:pointer}}
+@media(max-width:1080px){.app{grid-template-columns:1fr}.side{position:fixed;z-index:40;top:0;bottom:0;left:0;width:248px;transform:translateX(-100%);transition:.25s}.side.open{transform:none}.main{padding-top:64px}.kpis{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}.mtoggle{display:grid;place-items:center;position:fixed;top:12px;left:12px;z-index:45;width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--navy);color:var(--txt);cursor:pointer}}
 </style>
 </head>
 <body>
@@ -82,8 +102,13 @@ select.mini,input.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-s
     <div class="brand"><div class="mk"><img src="logo.png" alt="ParisVTCDriver"></div><div><b>Paris<span>VTC</span>Driver</b><small>Espace Admin</small></div></div>
     <div class="nav-i active" data-v="dash"><svg viewBox="0 0 24 24" stroke-width="1.7"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg> Tableau de bord</div>
     <div class="nav-i" data-v="resa"><svg viewBox="0 0 24 24" stroke-width="1.7"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg> Réservations <span class="badge" id="bResa"></span></div>
+    <div class="nav-i" data-v="fact"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg> Devis &amp; Factures</div>
+    <div class="nav-i" data-v="promo"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M20 12V7H4v5M2 7l2-4h16l2 4M12 22V7"/></svg> Codes promo</div>
     <div class="nav-i" data-v="cli"><svg viewBox="0 0 24 24" stroke-width="1.7"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg> Clients</div>
+    <div class="nav-i" data-v="fidel"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z"/></svg> Fidélité</div>
     <div class="nav-i" data-v="part"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M16 11a4 4 0 1 0-8 0M2 21v-1a5 5 0 0 1 5-5h2M22 21v-1a5 5 0 0 0-5-5h-2"/></svg> Partenaires <span class="badge" id="bPart"></span></div>
+    <div class="nav-i" data-v="stats"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M3 3v18h18"/><path d="M7 14l3-4 3 3 4-6"/></svg> Statistiques</div>
+    <div class="nav-i" data-v="param"><svg viewBox="0 0 24 24" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg> Paramètres</div>
     <div class="side-foot"><div class="av" id="sfAv">··</div><div><b id="sfName" style="color:var(--txt);font-size:13px">…</b><div style="font-size:11px;color:var(--muted-2)">Administrateur</div></div>
       <a onclick="signOut()" title="Déconnexion" style="margin-left:auto;width:32px;height:32px;border-radius:8px;border:1px solid var(--line-soft);display:grid;place-items:center;color:var(--muted-2);cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a></div>
   </aside>
@@ -93,37 +118,109 @@ select.mini,input.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-s
     <section class="view show" id="dash">
       <div class="top"><div><h1 id="hello">Bonjour 👋</h1><div class="sub" id="todayStr"></div></div></div>
       <div class="kpis">
-        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/></svg></div><div class="lbl">Réservations</div><div class="val" id="kResa">0</div></div>
-        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div class="lbl">En attente</div><div class="val" id="kPend">0</div></div>
-        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="lbl">CA confirmé (TTC)</div><div class="val" id="kCA">0 €</div></div>
-        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div><div class="lbl">Clients</div><div class="val" id="kCli">0</div></div>
+        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="lbl">CA du mois (TTC)</div><div class="val" id="kCAmonth">0 €</div></div>
+        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24"><path d="M5 17h14l-1.5-6.5a2 2 0 0 0-2-1.5h-7a2 2 0 0 0-2 1.5z"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="16.5" cy="17.5" r="1.6"/></svg></div><div class="lbl">Courses ce mois</div><div class="val" id="kMonthRides">0</div></div>
+        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div class="lbl">En attente</div><div class="val" id="kPend">0</div><div class="chg down" id="kPendL">à traiter</div></div>
+        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><div class="lbl">Taux de confirmation</div><div class="val" id="kRate">—</div></div>
       </div>
-      <div class="card"><div class="card-h"><h2>Dernières réservations</h2></div><div class="scroll"><table><thead><tr><th>Client</th><th>Service</th><th>Rendez-vous</th><th>Montant</th><th>Statut</th></tr></thead><tbody id="dashResa"></tbody></table></div></div>
-      <div class="card"><div class="card-h"><h2>Demandes de partenariat récentes</h2></div><div id="dashPart"></div></div>
+      <div class="cols">
+        <div class="card">
+          <div class="card-h"><h2>Réservations récentes</h2></div>
+          <div class="scroll"><table><thead><tr><th>Client</th><th>Service</th><th>Rendez-vous</th><th>Montant</th><th>Statut</th></tr></thead><tbody id="dashResa"></tbody></table></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div class="card"><div class="card-h"><h2>Prochaines courses</h2></div><div id="dashNext"></div></div>
+          <div class="card"><div class="card-h"><h2>CA par mois</h2><span class="link" id="yearLbl"></span></div><div class="chart"><div class="bars" id="dashBars"></div></div></div>
+        </div>
+      </div>
     </section>
 
     <!-- RESERVATIONS -->
     <section class="view" id="resa">
-      <div class="top"><div><h1>Réservations</h1><div class="sub">Gérez le statut de chaque course</div></div></div>
+      <div class="top"><div><h1>Réservations</h1><div class="sub">Toutes les demandes et courses planifiées</div></div></div>
+      <div class="chips" style="margin-bottom:18px" id="resaChips"></div>
       <div class="card"><div class="scroll"><table>
-        <thead><tr><th>Client</th><th>Service</th><th>Rendez-vous</th><th>Véhicule</th><th>Montant</th><th>Statut</th></tr></thead>
+        <thead><tr><th>Client</th><th>Service</th><th>Rendez-vous</th><th>Véhicule</th><th>Montant TTC</th><th>Statut</th></tr></thead>
         <tbody id="allResa"></tbody>
       </table></div></div>
     </section>
 
+    <!-- FACTURES -->
+    <section class="view" id="fact">
+      <div class="top"><div><h1>Devis &amp; Factures</h1><div class="sub">Documents émis aux clients</div></div></div>
+      <div class="card"><div class="scroll"><table>
+        <thead><tr><th>N°</th><th>Client</th><th>Date</th><th>HT</th><th>TVA</th><th>TTC</th><th>Type</th></tr></thead>
+        <tbody id="allDocs"></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- CODES PROMO -->
+    <section class="view" id="promo">
+      <div class="top"><div><h1>Codes promo</h1><div class="sub">Avoirs et codes de réduction</div></div></div>
+      <div class="card"><div class="empty">La gestion des codes promo sera activée lors d'une prochaine étape (table dédiée + usage unique contrôlé côté serveur).</div></div>
+    </section>
+
     <!-- CLIENTS -->
     <section class="view" id="cli">
-      <div class="top"><div><h1>Clients</h1><div class="sub">Comptes, fidélité et rôles</div></div></div>
+      <div class="top"><div><h1>Clients</h1><div class="sub">Fiches, historique et dépenses</div></div></div>
       <div class="card"><div class="scroll"><table>
-        <thead><tr><th>Nom</th><th>Contact</th><th>Points</th><th>Niveau</th><th>Rôle</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Client</th><th>Contact</th><th>Courses</th><th>Total dépensé</th><th>Dernière course</th></tr></thead>
         <tbody id="allCli"></tbody>
       </table></div></div>
     </section>
 
+    <!-- FIDELITE -->
+    <section class="view" id="fidel">
+      <div class="top"><div><h1>Programme de fidélité</h1><div class="sub">Points, niveaux et réductions de vos clients</div></div></div>
+      <div class="kpis">
+        <div class="kpi"><div class="lbl">Membres fidélité</div><div class="val" id="fMembers">0</div></div>
+        <div class="kpi"><div class="lbl">Points cumulés</div><div class="val" id="fPoints">0</div></div>
+        <div class="kpi"><div class="lbl">Réduction moyenne</div><div class="val" id="fAvg">0 %</div></div>
+        <div class="kpi"><div class="lbl">Clients actifs</div><div class="val" id="fActive">0</div></div>
+      </div>
+      <div class="card"><div class="card-h"><h2>Répartition par niveau</h2></div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;padding:18px 20px" id="lvlSplit"></div>
+      </div>
+      <div class="card"><div class="card-h"><h2>Clients &amp; fidélité</h2></div>
+        <div class="scroll"><table>
+          <thead><tr><th>Client</th><th>Points</th><th>Niveau</th><th>Réduction</th><th>Rôle</th><th>Actions</th></tr></thead>
+          <tbody id="allFidel"></tbody>
+        </table></div>
+      </div>
+      <div class="card infobox"><b style="color:var(--gold-2)">Automatique :</b> 1 € dépensé = 1 point sur les courses terminées. Les réductions ne s'appliquent qu'aux prestations d'au moins 60 €. Niveau conservé 2 mois après la dernière course ; sans nouvelle réservation, le client perd un niveau. L'ajustement manuel reste possible pour un geste commercial.</div>
+    </section>
+
     <!-- PARTENAIRES -->
     <section class="view" id="part">
-      <div class="top"><div><h1>Demandes de partenariat</h1><div class="sub">Sociétés souhaitant un compte pro</div></div></div>
+      <div class="top"><div><h1>Demandes de partenariat</h1><div class="sub">Reçues via le formulaire « Devenir partenaire »</div></div></div>
+      <div class="chips" style="margin-bottom:18px" id="partChips"></div>
       <div class="card" id="allPart"></div>
+      <div class="card infobox"><b style="color:var(--gold-2)">Workflow :</b> chaque demande arrive ici. Vous pouvez la passer en cours, l'accepter (et convenir d'un tarif préférentiel) ou la refuser.</div>
+    </section>
+
+    <!-- STATS -->
+    <section class="view" id="stats">
+      <div class="top"><div><h1>Statistiques</h1><div class="sub" id="statYear">Vue d'ensemble de l'activité</div></div></div>
+      <div class="card" style="padding:22px 26px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(201,162,74,.16),rgba(201,162,74,.04));border-color:var(--line)">
+        <div class="ic" style="width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:rgba(201,162,74,.16);border:1px solid var(--line);color:var(--gold-2);flex:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:24px;height:24px"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <div><div class="lbl" style="color:var(--muted-2);font-size:13px">Chiffre d'affaires confirmé (année en cours)</div><div class="val mono" id="sYearCA" style="font-size:34px;font-weight:700;color:var(--gold-bright);margin-top:2px">0 €</div></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="lbl">CA du mois</div><div class="val" id="sMonthCA">0 €</div></div>
+        <div class="kpi"><div class="lbl">Courses totales</div><div class="val" id="sTotalRides">0</div></div>
+        <div class="kpi"><div class="lbl">Panier moyen</div><div class="val" id="sAvgCart">0 €</div></div>
+        <div class="kpi"><div class="lbl">Clients actifs</div><div class="val" id="sActive">0</div></div>
+      </div>
+      <div class="cols">
+        <div class="card"><div class="card-h"><h2>Chiffre d'affaires mensuel</h2></div><div class="chart"><div class="bars" id="statBars"></div></div></div>
+        <div class="card"><div class="card-h"><h2>Répartition par véhicule</h2></div><div id="vehSplit"></div></div>
+      </div>
+    </section>
+
+    <!-- PARAM -->
+    <section class="view" id="param">
+      <div class="top"><div><h1>Paramètres</h1><div class="sub">Société, tarifs, comptes administrateurs</div></div></div>
+      <div class="card infobox" style="font-size:14px;line-height:1.7">Gestion de la société (SIRET, TVA intracom., coordonnées bancaires), des tarifs de la flotte et des packs, des comptes administrateurs et des modèles d'e-mails.<br><br>Les promotions/rétrogradations admin se font dans l'onglet <b style="color:var(--gold-2)">Fidélité</b> (colonne Rôle). <span style="color:var(--gold-2)">— Section à enrichir selon vos besoins.</span></div>
     </section>
   </main>
 </div>
@@ -132,15 +229,25 @@ select.mini,input.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-s
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-init.js"></script>
 <script>
+const MONTHS=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+const STMAP={pending:['att','En attente'],confirmed:['conf','Confirmée'],completed:['term','Terminée'],cancelled:['ann','Annulée']};
+const STATUSES=['pending','confirmed','completed','cancelled'];
+function stSelect(id,cur){return `<select class="mini" onchange="setStatus('${id}',this.value)">`+STATUSES.map(s=>`<option value="${s}"${s===cur?' selected':''}>${STMAP[s][1]}</option>`).join('')+`</select>`;}
 function show(v){document.querySelectorAll('.nav-i').forEach(x=>x.classList.toggle('active',x.dataset.v===v));document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.id===v));window.scrollTo(0,0);document.querySelector('.side').classList.remove('open');}
 document.querySelectorAll('.nav-i').forEach(n=>n.addEventListener('click',()=>show(n.dataset.v)));
 function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600);}
 function initials(name){return (name||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()||'?';}
-const STMAP={pending:['att','En attente'],confirmed:['conf','Confirmée'],completed:['term','Terminée'],cancelled:['ann','Annulée']};
-const STATUSES=['pending','confirmed','completed','cancelled'];
-function stSelect(id,cur){return `<select class="mini" onchange="setStatus('${id}',this.value)">`+STATUSES.map(s=>`<option value="${s}"${s===cur?' selected':''}>${STMAP[s][1]}</option>`).join('')+`</select>`;}
+function setBadge(id,n){const e=document.getElementById(id);if(n>0){e.textContent=n;e.classList.add('show');}else e.classList.remove('show');}
+function medal(lvl){
+  const STAR="M12 2.4l2.95 5.98 6.6.96-4.78 4.66 1.13 6.58L12 17.45l-5.9 3.1 1.13-6.58L2.45 9.34l6.6-.96z";
+  if(lvl==='platine')return `<svg class="medal" viewBox="0 0 24 24"><defs><linearGradient id="dia${Math.random().toString(36).slice(2,7)}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfeaff"/><stop offset=".5" stop-color="#60a5fa"/><stop offset="1" stop-color="#2f6fd0"/></linearGradient></defs><path fill="#60a5fa" stroke="#dff0ff" stroke-width=".5" stroke-linejoin="round" d="M6 4H18L22 9.5 12 21.5 2 9.5Z"/></svg>`;
+  if(lvl==='bronze')return `<svg class="medal" viewBox="0 0 24 24"><path fill="none" stroke="#b3743f" stroke-width="1.7" stroke-linejoin="round" d="${STAR}"/></svg>`;
+  if(!lvl)return '';
+  return `<svg class="medal m-${lvl}" viewBox="0 0 24 24" fill="currentColor"><path d="${STAR}"/></svg>`;
+}
+function medalFor(levelName){return ({Diamant:'platine',Or:'or',Argent:'argent',Bronze:'bronze'})[levelName]||'';}
 
-let ME=null, PROFILES={}, BOOKINGS=[];
+let ME=null, PROFILES={}, BOOKINGS=[], PARTS=[], RESA_FILTER='all', PART_FILTER='all';
 
 async function load(){
   ME = await requireAdmin();
@@ -148,7 +255,10 @@ async function load(){
   document.getElementById('hello').textContent='Bonjour '+((ME.full_name||'').split(' ')[0]||'')+' 👋';
   document.getElementById('sfName').textContent=ME.full_name||'Admin';
   document.getElementById('sfAv').textContent=initials(ME.full_name);
-  document.getElementById('todayStr').textContent="Activité de ParisVTCDriver — "+new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const now=new Date();
+  document.getElementById('todayStr').textContent="Activité de ParisVTCDriver — "+now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('yearLbl').textContent=now.getFullYear();
+  document.getElementById('statYear').textContent="Vue d'ensemble de l'activité "+now.getFullYear();
   await refresh();
 }
 
@@ -159,36 +269,69 @@ async function refresh(){
     sb.from('partner_requests').select('*').order('created_at',{ascending:false})
   ]);
   PROFILES={}; (profs||[]).forEach(p=>PROFILES[p.id]=p);
-  BOOKINGS=bk||[];
-  const PARTS=parts||[];
+  BOOKINGS=bk||[]; PARTS=parts||[];
+  const allProfs=profs||[];
 
-  // KPIs
+  const now=new Date(), yr=now.getFullYear(), mo=now.getMonth();
+  const dt=b=>b.date_time?new Date(b.date_time):(b.created_at?new Date(b.created_at):null);
+  const paid=BOOKINGS.filter(b=>b.status==='confirmed'||b.status==='completed');
+  const caMonth=paid.filter(b=>{const d=dt(b);return d&&d.getFullYear()===yr&&d.getMonth()===mo;}).reduce((s,b)=>s+Number(b.amount_ttc||0),0);
+  const caYear=paid.filter(b=>{const d=dt(b);return d&&d.getFullYear()===yr;}).reduce((s,b)=>s+Number(b.amount_ttc||0),0);
   const resaList=BOOKINGS.filter(b=>b.type==='reservation');
-  document.getElementById('kResa').textContent=resaList.length;
-  document.getElementById('kPend').textContent=BOOKINGS.filter(b=>b.status==='pending').length;
-  const ca=BOOKINGS.filter(b=>b.status==='confirmed'||b.status==='completed').reduce((s,b)=>s+Number(b.amount_ttc||0),0);
-  document.getElementById('kCA').textContent=eur(ca);
-  document.getElementById('kCli').textContent=(profs||[]).filter(p=>p.role==='client').length;
-
-  // badges
+  const monthRides=resaList.filter(b=>{const d=dt(b);return d&&d.getFullYear()===yr&&d.getMonth()===mo;}).length;
   const pend=BOOKINGS.filter(b=>b.status==='pending').length;
-  const newp=PARTS.filter(p=>p.status==='new').length;
-  setBadge('bResa',pend); setBadge('bPart',newp);
+  const decided=BOOKINGS.filter(b=>b.status!=='pending').length;
+  const okc=paid.length;
+  const rate=decided?Math.round(okc/decided*100):null;
 
+  // KPIs dashboard
+  document.getElementById('kCAmonth').textContent=eur(caMonth);
+  document.getElementById('kMonthRides').textContent=monthRides;
+  document.getElementById('kPend').textContent=pend;
+  document.getElementById('kRate').textContent=rate===null?'—':rate+' %';
+  setBadge('bResa',pend);
+  setBadge('bPart',PARTS.filter(p=>p.status==='new').length);
+
+  // dashboard tables
   renderResaTable('dashResa',BOOKINGS.slice(0,6),false);
-  renderResaTable('allResa',BOOKINGS,true);
-  renderClients(profs||[]);
-  renderPartners('dashPart',PARTS.slice(0,4));
-  renderPartners('allPart',PARTS);
+  renderDashNext();
+  renderBars('dashBars',yr,dt,paid);
+
+  // reservations + chips
+  renderResaChips(); renderResa();
+
+  // documents
+  renderDocs();
+
+  // clients
+  renderClients(allProfs);
+
+  // fidélité
+  renderFidelity(allProfs);
+
+  // partenaires
+  renderPartChips(); renderPartners();
+
+  // stats
+  document.getElementById('sYearCA').textContent=eur(caYear);
+  document.getElementById('sMonthCA').textContent=eur(caMonth);
+  document.getElementById('sTotalRides').textContent=resaList.length;
+  const avg=paid.length?caYear/paid.filter(b=>{const d=dt(b);return d&&d.getFullYear()===yr;}).length:0;
+  document.getElementById('sAvgCart').textContent=eur(avg||0);
+  const activeCli=allProfs.filter(p=>p.role==='client').length;
+  document.getElementById('sActive').textContent=activeCli;
+  document.getElementById('fActive').textContent=activeCli;
+  renderBars('statBars',yr,dt,paid);
+  renderVehSplit(resaList);
 }
-function setBadge(id,n){const e=document.getElementById(id);if(n>0){e.textContent=n;e.classList.add('show');}else e.classList.remove('show');}
 
 function clientName(uid){const p=PROFILES[uid];return p?(p.full_name||p.email||'Client'):'—';}
+
 function renderResaTable(elId,list,withSelect){
   const el=document.getElementById(elId);
   if(!list.length){el.innerHTML='<tr><td colspan="6" class="empty">Aucune réservation.</td></tr>';return;}
   el.innerHTML=list.map(b=>{
-    const typeTag = b.type!=='reservation'? ` <span class="sub2">(${b.type})</span>`:'';
+    const typeTag=b.type!=='reservation'?` <span class="sub2">(${b.type})</span>`:'';
     return `<tr><td class="cli">${escapeHtml(clientName(b.user_id))}</td>
       <td>${escapeHtml(b.service||'')}${typeTag}<div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
       <td>${dateFR(b.date_time)}</td>`+
@@ -197,67 +340,111 @@ function renderResaTable(elId,list,withSelect){
       <td>${withSelect?stSelect(b.id,b.status):('<span class="st '+STMAP[b.status][0]+'">'+STMAP[b.status][1]+'</span>')}</td></tr>`;
   }).join('');
 }
-
+function renderResaChips(){
+  const counts={all:BOOKINGS.length,pending:0,confirmed:0,completed:0,cancelled:0};
+  BOOKINGS.forEach(b=>counts[b.status]++);
+  const defs=[['all','Toutes'],['pending','En attente'],['confirmed','Confirmées'],['completed','Terminées'],['cancelled','Annulées']];
+  document.getElementById('resaChips').innerHTML=defs.map(d=>`<button class="chip${RESA_FILTER===d[0]?' on':''}" onclick="RESA_FILTER='${d[0]}';renderResaChips();renderResa();">${d[1]} (${counts[d[0]]||0})</button>`).join('');
+}
+function renderResa(){
+  const list=RESA_FILTER==='all'?BOOKINGS:BOOKINGS.filter(b=>b.status===RESA_FILTER);
+  renderResaTable('allResa',list,true);
+}
+function renderDashNext(){
+  const now=Date.now();
+  const up=BOOKINGS.filter(b=>b.type==='reservation'&&b.date_time&&new Date(b.date_time).getTime()>=now&&b.status!=='cancelled').sort((a,b)=>new Date(a.date_time)-new Date(b.date_time)).slice(0,4);
+  const el=document.getElementById('dashNext');
+  if(!up.length){el.innerHTML='<div class="empty">Aucune course à venir.</div>';return;}
+  const dot={pending:'var(--amber)',confirmed:'var(--green)',completed:'var(--blue)'};
+  el.innerHTML=up.map(b=>`<div class="list-i"><span class="dot" style="background:${dot[b.status]||'var(--muted-2)'}"></span><div class="li-main"><b>${escapeHtml(clientName(b.user_id))}</b><small>${dateFR(b.date_time)} · ${escapeHtml(b.service||'')}</small></div><span class="li-amt">${eur(b.amount_ttc)}</span></div>`).join('');
+}
+function renderBars(elId,yr,dt,paid){
+  const sums=new Array(12).fill(0);
+  paid.forEach(b=>{const d=dt(b);if(d&&d.getFullYear()===yr)sums[d.getMonth()]+=Number(b.amount_ttc||0);});
+  const max=Math.max(...sums,1);
+  document.getElementById(elId).innerHTML=sums.map((v,i)=>`<div class="bar"><div class="b" style="height:${Math.round(v/max*100)}%" title="${eur(v)}"></div><small>${MONTHS[i]}</small></div>`).join('');
+}
+function renderDocs(){
+  const docs=BOOKINGS.filter(b=>b.type==='devis'||b.type==='facture');
+  const el=document.getElementById('allDocs');
+  if(!docs.length){el.innerHTML='<tr><td colspan="7" class="empty">Aucun document.</td></tr>';return;}
+  el.innerHTML=docs.map(b=>`<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(clientName(b.user_id))}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td>${eur(b.amount_ht)}</td><td>${eur(b.vat)}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${b.type==='facture'?'<span class="st conf">Facture</span>':'<span class="st att">Devis</span>'}</td></tr>`).join('');
+}
+function clientStats(uid){
+  const bs=BOOKINGS.filter(b=>b.user_id===uid&&b.type==='reservation');
+  const total=bs.filter(b=>b.status==='confirmed'||b.status==='completed').reduce((s,b)=>s+Number(b.amount_ttc||0),0);
+  const last=bs.map(b=>b.date_time).filter(Boolean).sort().slice(-1)[0];
+  return {count:bs.length,total,last};
+}
 function renderClients(profs){
   const el=document.getElementById('allCli');
-  const clients=profs;
-  if(!clients.length){el.innerHTML='<tr><td colspan="6" class="empty">Aucun client.</td></tr>';return;}
-  el.innerHTML=clients.map(p=>{
-    const L=loyalty(p.loyalty_points);
-    const isMe=p.id===ME.id;
-    return `<tr><td class="cli">${escapeHtml(p.full_name||'—')}</td>
+  if(!profs.length){el.innerHTML='<tr><td colspan="5" class="empty">Aucun client.</td></tr>';return;}
+  el.innerHTML=profs.map(p=>{
+    const L=loyalty(p.loyalty_points), s=clientStats(p.id);
+    return `<tr><td class="cli">${medal(medalFor(L.name))}${escapeHtml(p.full_name||'—')}</td>
       <td>${escapeHtml(p.email||'')}<div class="sub2">${escapeHtml(p.phone||'')}</div></td>
-      <td><span class="mono">${p.loyalty_points||0}</span> <button class="btn-mini" onclick="editPoints('${p.id}',${p.loyalty_points||0})">±</button></td>
-      <td><span class="lvl-tag">★ ${L.name}${L.off?' −'+L.off+'%':''}</span></td>
-      <td><span class="tagrole ${p.role}">${p.role}</span></td>
-      <td>${isMe?'<span class="sub2">vous</span>':'<button class="btn-mini" onclick="toggleRole(\''+p.id+'\',\''+p.role+'\')">'+(p.role==='admin'?'Rétrograder':'Promouvoir admin')+'</button>'}</td></tr>`;
+      <td>${s.count}</td><td class="amt">${eur(s.total)}</td>
+      <td>${s.last?new Date(s.last).toLocaleDateString('fr-FR'):'—'}</td></tr>`;
   }).join('');
 }
-
-function renderPartners(elId,list){
-  const el=document.getElementById(elId);
+function renderFidelity(profs){
+  document.getElementById('fMembers').textContent=profs.filter(p=>(p.loyalty_points||0)>=100).length;
+  document.getElementById('fPoints').textContent=profs.reduce((s,p)=>s+(p.loyalty_points||0),0).toLocaleString('fr-FR');
+  const offs=profs.map(p=>loyalty(p.loyalty_points).off).filter(o=>o>0);
+  document.getElementById('fAvg').textContent=(offs.length?Math.round(offs.reduce((a,b)=>a+b,0)/offs.length):0)+' %';
+  // répartition
+  const counts={Diamant:0,Or:0,Argent:0,Bronze:0};
+  profs.forEach(p=>{const n=loyalty(p.loyalty_points).name;if(counts[n]!==undefined)counts[n]++;});
+  const defs=[['Diamant','platine','−20 % · dès 5000 pts'],['Or','or','−15 % · dès 1000 pts'],['Argent','argent','−10 % · dès 500 pts'],['Bronze','bronze','−5 % · dès 100 pts']];
+  document.getElementById('lvlSplit').innerHTML=defs.map(d=>`<div style="flex:1;min-width:130px;padding:14px 16px;border:1px solid var(--line-soft);border-radius:12px;background:rgba(255,255,255,.02)"><div style="font-weight:600;color:var(--txt);font-size:13.5px">${medal(d[1])}${d[0]}</div><div class="mono" style="font-size:22px;font-weight:700;color:var(--gold-bright);margin-top:4px">${counts[d[0]]}</div><div class="sub2">${d[2]}</div></div>`).join('');
+  // table
+  const el=document.getElementById('allFidel');
+  if(!profs.length){el.innerHTML='<tr><td colspan="6" class="empty">Aucun client.</td></tr>';return;}
+  el.innerHTML=profs.map(p=>{
+    const L=loyalty(p.loyalty_points), isMe=p.id===ME.id;
+    return `<tr><td class="cli">${medal(medalFor(L.name))}${escapeHtml(p.full_name||'—')}</td>
+      <td class="amt">${(p.loyalty_points||0).toLocaleString('fr-FR')}</td>
+      <td><span class="lvl-tag">★ ${L.name}</span></td>
+      <td>${L.off?'−'+L.off+' %':'—'}</td>
+      <td><span class="tagrole ${p.role}">${p.role}</span></td>
+      <td><button class="btn-mini" onclick="editPoints('${p.id}',${p.loyalty_points||0})">Ajuster pts</button> ${isMe?'<span class="sub2">vous</span>':'<button class="btn-mini" onclick="toggleRole(\''+p.id+'\',\''+p.role+'\')">'+(p.role==='admin'?'Rétrograder':'Admin')+'</button>'}</td></tr>`;
+  }).join('');
+}
+function renderPartChips(){
+  const counts={all:PARTS.length,new:0,in_review:0,accepted:0,declined:0};
+  PARTS.forEach(p=>counts[p.status]!==undefined&&counts[p.status]++);
+  const defs=[['all','Toutes'],['new','À traiter'],['in_review','En cours'],['accepted','Acceptées'],['declined','Refusées']];
+  document.getElementById('partChips').innerHTML=defs.map(d=>`<button class="chip${PART_FILTER===d[0]?' on':''}" onclick="PART_FILTER='${d[0]}';renderPartChips();renderPartners();">${d[1]} (${counts[d[0]]||0})</button>`).join('');
+}
+function renderPartners(){
+  const list=PART_FILTER==='all'?PARTS:PARTS.filter(p=>p.status===PART_FILTER);
+  const el=document.getElementById('allPart');
   if(!list.length){el.innerHTML='<div class="empty">Aucune demande.</div>';return;}
+  const stOpts=['new','in_review','accepted','declined'],stLbl={new:'Nouvelle',in_review:'En cours',accepted:'Acceptée',declined:'Refusée'};
   el.innerHTML=list.map(p=>{
-    const stOpts=['new','in_review','accepted','declined'];
-    const stLbl={new:'Nouvelle',in_review:'En cours',accepted:'Acceptée',declined:'Refusée'};
     const sel=`<select class="mini" onchange="setPartnerStatus('${p.id}',this.value)">`+stOpts.map(s=>`<option value="${s}"${s===p.status?' selected':''}>${stLbl[s]}</option>`).join('')+`</select>`;
-    return `<div class="pcard"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-      <b>${escapeHtml(p.company||'Société')}</b> <span class="sub2">${escapeHtml(p.sector||'')}</span>
-      <span style="margin-left:auto">${sel}</span></div>
+    return `<div style="padding:16px 20px;border-bottom:1px solid var(--line-soft)"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><img class="pbadge" src="partner-badge.png" alt=""><b style="color:var(--txt)">${escapeHtml(p.company||'Société')}</b> <span class="sub2">${escapeHtml(p.sector||'')}</span><span style="margin-left:auto">${sel}</span></div>
       <div class="sub2" style="margin-top:6px">${escapeHtml(p.contact_name||'')}${p.contact_role?' · '+escapeHtml(p.contact_role):''} — ${escapeHtml(p.email||'')}${p.phone?' · '+escapeHtml(p.phone):''}${p.city?' · '+escapeHtml(p.city):''}</div>
       ${p.volume?'<div class="sub2">Volume estimé : '+escapeHtml(p.volume)+'</div>':''}
       ${(p.needs&&p.needs.length)?'<div class="sub2">Besoins : '+p.needs.map(escapeHtml).join(', ')+'</div>':''}
       ${p.message?'<div style="margin-top:8px;color:var(--muted);font-size:13px">“'+escapeHtml(p.message)+'”</div>':''}
-      ${p.siret?'<div class="sub2" style="margin-top:6px">SIRET : '+escapeHtml(p.siret)+(p.website?' · '+escapeHtml(p.website):'')+'</div>':''}
-      </div>`;
+      ${p.siret?'<div class="sub2" style="margin-top:6px">SIRET : '+escapeHtml(p.siret)+(p.website?' · '+escapeHtml(p.website):'')+'</div>':''}</div>`;
   }).join('');
 }
+function renderVehSplit(resaList){
+  const counts={}; resaList.forEach(b=>{const v=b.vehicle||'Autre';counts[v]=(counts[v]||0)+1;});
+  const total=resaList.length||1;
+  const colors=['var(--green)','var(--gold)','var(--blue)','var(--amber)'];
+  const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const el=document.getElementById('vehSplit');
+  if(!entries.length){el.innerHTML='<div class="empty">Pas encore de données.</div>';return;}
+  el.innerHTML=entries.map((e,i)=>`<div class="list-i"><span class="dot" style="background:${colors[i%colors.length]}"></span><div class="li-main"><b>${escapeHtml(e[0])}</b></div><span class="li-amt">${Math.round(e[1]/total*100)} %</span></div>`).join('');
+}
 
-async function setStatus(id,status){
-  const {error}=await sb.from('bookings').update({status}).eq('id',id);
-  if(error){toast('Erreur : '+error.message);return;}
-  toast('Statut mis à jour ✓'); refresh();
-}
-async function setPartnerStatus(id,status){
-  const {error}=await sb.from('partner_requests').update({status}).eq('id',id);
-  if(error){toast('Erreur : '+error.message);return;}
-  toast('Demande mise à jour ✓'); refresh();
-}
-async function editPoints(id,cur){
-  const v=prompt('Points de fidélité :',cur);
-  if(v===null)return;
-  const n=parseInt(v,10); if(isNaN(n)||n<0){toast('Valeur invalide');return;}
-  const {error}=await sb.from('profiles').update({loyalty_points:n}).eq('id',id);
-  if(error){toast('Erreur : '+error.message);return;}
-  toast('Points mis à jour ✓'); refresh();
-}
-async function toggleRole(id,role){
-  const next=role==='admin'?'client':'admin';
-  if(!confirm('Changer le rôle en « '+next+' » ?'))return;
-  const {error}=await sb.from('profiles').update({role:next}).eq('id',id);
-  if(error){toast('Erreur : '+error.message);return;}
-  toast('Rôle mis à jour ✓'); refresh();
-}
+async function setStatus(id,status){const{error}=await sb.from('bookings').update({status}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Statut mis à jour ✓');refresh();}
+async function setPartnerStatus(id,status){const{error}=await sb.from('partner_requests').update({status}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Demande mise à jour ✓');refresh();}
+async function editPoints(id,cur){const v=prompt('Points de fidélité :',cur);if(v===null)return;const n=parseInt(v,10);if(isNaN(n)||n<0){toast('Valeur invalide');return;}const{error}=await sb.from('profiles').update({loyalty_points:n}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Points mis à jour ✓');refresh();}
+async function toggleRole(id,role){const next=role==='admin'?'client':'admin';if(!confirm('Changer le rôle en « '+next+' » ?'))return;const{error}=await sb.from('profiles').update({role:next}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Rôle mis à jour ✓');refresh();}
 
 load();
 </script>
