@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>ParisVTCDriver — Administration</title>
+<link rel="icon" href="logo.png" type="image/png">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070a12;--navy:#0d1730;--panel:#0e1626;--panel-2:#121d33;--line:rgba(201,162,74,.16);--line-soft:rgba(255,255,255,.07);--gold:#c9a24a;--gold-2:#e7c878;--gold-bright:#f1d894;--txt:#eef2fb;--muted:#9aa6bf;--muted-2:#6f7c97;--green:#34d399;--amber:#e7b04a;--red:#f87171;--blue:#60a5fa}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',system-ui,sans-serif;background:radial-gradient(1000px 500px at 88% -8%,rgba(201,162,74,.08),transparent 60%),radial-gradient(700px 420px at -5% 5%,rgba(20,40,90,.4),transparent 55%),linear-gradient(180deg,#070a12,#080d18 40%,#070a12);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.mono{font-family:'Space Grotesk',sans-serif}
+.app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+.side{background:linear-gradient(180deg,rgba(13,23,48,.55),rgba(7,10,18,.4));border-right:1px solid var(--line-soft);padding:22px 16px;display:flex;flex-direction:column;gap:6px}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 18px;border-bottom:1px solid var(--line-soft);margin-bottom:12px}
+.brand .mk{width:40px;height:40px;border-radius:11px;overflow:hidden;border:1px solid var(--line);flex:none}
+.brand .mk img{width:100%;height:100%;object-fit:cover;display:block}
+.brand b{font-size:15.5px;display:block;line-height:1.1}.brand b span{color:var(--gold-2)}
+.brand small{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted-2)}
+.nav-i{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;transition:.18s;border:1px solid transparent}
+.nav-i svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none}
+.nav-i:hover{background:rgba(255,255,255,.04);color:var(--txt)}
+.nav-i.active{background:linear-gradient(145deg,rgba(201,162,74,.2),rgba(201,162,74,.06));color:var(--gold-2);border-color:var(--line)}
+.nav-i .badge{margin-left:auto;background:var(--gold);color:#1c1604;font-size:11px;font-weight:700;border-radius:20px;padding:1px 8px;display:none}
+.nav-i .badge.show{display:inline}
+.side-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--line-soft);display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.side-foot .av{width:34px;height:34px;border-radius:50%;background:linear-gradient(145deg,#26324d,#16203a);display:grid;place-items:center;color:var(--gold-2);font-weight:700;font-size:13px;border:1px solid var(--line)}
+.main{padding:26px 30px 40px;overflow:auto}
+.top{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.top h1{font-size:23px;font-weight:700;letter-spacing:-.01em}
+.top .sub{color:var(--muted-2);font-size:13px;margin-top:2px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi{padding:18px 20px;border:1px solid var(--line-soft);border-radius:16px;background:linear-gradient(165deg,var(--panel-2),var(--panel))}
+.kpi .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:rgba(201,162,74,.12);border:1px solid var(--line);color:var(--gold-2);margin-bottom:14px}
+.kpi .ic svg{width:19px;height:19px;stroke:currentColor;fill:none}
+.kpi .lbl{color:var(--muted-2);font-size:12.5px;font-weight:500}
+.kpi .val{font-family:'Space Grotesk';font-size:26px;font-weight:700;color:var(--txt);margin-top:3px}
+.card{border:1px solid var(--line-soft);border-radius:16px;background:linear-gradient(165deg,var(--panel-2),var(--panel));overflow:hidden;margin-bottom:20px}
+.card-h{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line-soft)}
+.card-h h2{font-size:15px;font-weight:600}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:560px}
+thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-2);font-weight:600;padding:12px 20px;border-bottom:1px solid var(--line-soft)}
+tbody td{padding:13px 20px;border-bottom:1px solid var(--line-soft);font-size:13.5px;color:var(--muted);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+.cli{color:var(--txt);font-weight:600}
+.sub2{color:var(--muted-2);font-size:11.5px;margin-top:2px}
+.amt{font-family:'Space Grotesk';color:var(--gold-bright);font-weight:600;white-space:nowrap}
+.st{font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.st::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.st.conf{color:var(--green);background:rgba(52,211,153,.12)}
+.st.att{color:var(--amber);background:rgba(231,176,74,.14)}
+.st.term{color:var(--blue);background:rgba(96,165,250,.12)}
+.st.ann{color:var(--red);background:rgba(248,113,113,.12)}
+.lvl-tag{font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(201,162,74,.12);color:var(--gold-2)}
+select.mini,input.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:var(--txt);font-family:inherit;font-size:12.5px;border-radius:8px;padding:6px 9px}
+.btn-mini{font-family:inherit;font-weight:600;cursor:pointer;border:1px solid var(--line-soft);background:rgba(255,255,255,.03);color:var(--muted);border-radius:8px;padding:6px 11px;font-size:12px}
+.btn-mini:hover{color:var(--gold-2);border-color:var(--line)}
+.btn-mini.gold{background:linear-gradient(135deg,var(--gold-bright),var(--gold));color:#1c1604;border:none}
+.empty{padding:40px 20px;text-align:center;color:var(--muted-2);font-size:13.5px}
+.view{display:none}.view.show{display:block}
+.tagrole{font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px}
+.tagrole.admin{background:rgba(231,176,74,.16);color:var(--gold-2)}
+.tagrole.client{background:rgba(96,165,250,.12);color:var(--blue)}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--navy);border:1px solid var(--gold);color:var(--gold-2);padding:11px 20px;border-radius:12px;font-size:13px;box-shadow:0 20px 40px -18px rgba(0,0,0,.7);opacity:0;pointer-events:none;transition:.3s;z-index:60}
+.toast.show{opacity:1}
+.mtoggle{display:none}
+.pcard{padding:16px 20px;border-bottom:1px solid var(--line-soft)}
+.pcard:last-child{border-bottom:none}
+.pcard b{color:var(--txt)}
+@media(max-width:1080px){.app{grid-template-columns:1fr}.side{position:fixed;z-index:40;top:0;bottom:0;left:0;width:248px;transform:translateX(-100%);transition:.25s}.side.open{transform:none}.main{padding-top:64px}.kpis{grid-template-columns:repeat(2,1fr)}.mtoggle{display:grid;place-items:center;position:fixed;top:12px;left:12px;z-index:45;width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--navy);color:var(--txt);cursor:pointer}}
+</style>
+</head>
+<body>
+<button class="mtoggle" onclick="document.querySelector('.side').classList.toggle('open')">☰</button>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="mk"><img src="logo.png" alt="ParisVTCDriver"></div><div><b>Paris<span>VTC</span>Driver</b><small>Espace Admin</small></div></div>
+    <div class="nav-i active" data-v="dash"><svg viewBox="0 0 24 24" stroke-width="1.7"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg> Tableau de bord</div>
+    <div class="nav-i" data-v="resa"><svg viewBox="0 0 24 24" stroke-width="1.7"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg> Réservations <span class="badge" id="bResa"></span></div>
+    <div class="nav-i" data-v="cli"><svg viewBox="0 0 24 24" stroke-width="1.7"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg> Clients</div>
+    <div class="nav-i" data-v="part"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M16 11a4 4 0 1 0-8 0M2 21v-1a5 5 0 0 1 5-5h2M22 21v-1a5 5 0 0 0-5-5h-2"/></svg> Partenaires <span class="badge" id="bPart"></span></div>
+    <div class="side-foot"><div class="av" id="sfAv">··</div><div><b id="sfName" style="color:var(--txt);font-size:13px">…</b><div style="font-size:11px;color:var(--muted-2)">Administrateur</div></div>
+      <a onclick="signOut()" title="Déconnexion" style="margin-left:auto;width:32px;height:32px;border-radius:8px;border:1px solid var(--line-soft);display:grid;place-items:center;color:var(--muted-2);cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a></div>
+  </aside>
+
+  <main class="main">
+    <!-- DASHBOARD -->
+    <section class="view show" id="dash">
+      <div class="top"><div><h1 id="hello">Bonjour 👋</h1><div class="sub" id="todayStr"></div></div></div>
+      <div class="kpis">
+        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/></svg></div><div class="lbl">Réservations</div><div class="val" id="kResa">0</div></div>
+        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div class="lbl">En attente</div><div class="val" id="kPend">0</div></div>
+        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="lbl">CA confirmé (TTC)</div><div class="val" id="kCA">0 €</div></div>
+        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div><div class="lbl">Clients</div><div class="val" id="kCli">0</div></div>
+      </div>
+      <div class="card"><div class="card-h"><h2>Dernières réservations</h2></div><div class="scroll"><table><thead><tr><th>Client</th><th>Service</th><th>Rendez-vous</th><th>Montant</th><th>Statut</th></tr></thead><tbody id="dashResa"></tbody></table></div></div>
+      <div class="card"><div class="card-h"><h2>Demandes de partenariat récentes</h2></div><div id="dashPart"></div></div>
+    </section>
+
+    <!-- RESERVATIONS -->
+    <section class="view" id="resa">
+      <div class="top"><div><h1>Réservations</h1><div class="sub">Gérez le statut de chaque course</div></div></div>
+      <div class="card"><div class="scroll"><table>
+        <thead><tr><th>Client</th><th>Service</th><th>Rendez-vous</th><th>Véhicule</th><th>Montant</th><th>Statut</th></tr></thead>
+        <tbody id="allResa"></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- CLIENTS -->
+    <section class="view" id="cli">
+      <div class="top"><div><h1>Clients</h1><div class="sub">Comptes, fidélité et rôles</div></div></div>
+      <div class="card"><div class="scroll"><table>
+        <thead><tr><th>Nom</th><th>Contact</th><th>Points</th><th>Niveau</th><th>Rôle</th><th>Actions</th></tr></thead>
+        <tbody id="allCli"></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- PARTENAIRES -->
+    <section class="view" id="part">
+      <div class="top"><div><h1>Demandes de partenariat</h1><div class="sub">Sociétés souhaitant un compte pro</div></div></div>
+      <div class="card" id="allPart"></div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-init.js"></script>
+<script>
+function show(v){document.querySelectorAll('.nav-i').forEach(x=>x.classList.toggle('active',x.dataset.v===v));document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.id===v));window.scrollTo(0,0);document.querySelector('.side').classList.remove('open');}
+document.querySelectorAll('.nav-i').forEach(n=>n.addEventListener('click',()=>show(n.dataset.v)));
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600);}
+function initials(name){return (name||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()||'?';}
+const STMAP={pending:['att','En attente'],confirmed:['conf','Confirmée'],completed:['term','Terminée'],cancelled:['ann','Annulée']};
+const STATUSES=['pending','confirmed','completed','cancelled'];
+function stSelect(id,cur){return `<select class="mini" onchange="setStatus('${id}',this.value)">`+STATUSES.map(s=>`<option value="${s}"${s===cur?' selected':''}>${STMAP[s][1]}</option>`).join('')+`</select>`;}
+
+let ME=null, PROFILES={}, BOOKINGS=[];
+
+async function load(){
+  ME = await requireAdmin();
+  if(!ME) return;
+  document.getElementById('hello').textContent='Bonjour '+((ME.full_name||'').split(' ')[0]||'')+' 👋';
+  document.getElementById('sfName').textContent=ME.full_name||'Admin';
+  document.getElementById('sfAv').textContent=initials(ME.full_name);
+  document.getElementById('todayStr').textContent="Activité de ParisVTCDriver — "+new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  await refresh();
+}
+
+async function refresh(){
+  const [{data:profs},{data:bk},{data:parts}] = await Promise.all([
+    sb.from('profiles').select('*').order('created_at',{ascending:false}),
+    sb.from('bookings').select('*').order('date_time',{ascending:false,nullsFirst:false}),
+    sb.from('partner_requests').select('*').order('created_at',{ascending:false})
+  ]);
+  PROFILES={}; (profs||[]).forEach(p=>PROFILES[p.id]=p);
+  BOOKINGS=bk||[];
+  const PARTS=parts||[];
+
+  // KPIs
+  const resaList=BOOKINGS.filter(b=>b.type==='reservation');
+  document.getElementById('kResa').textContent=resaList.length;
+  document.getElementById('kPend').textContent=BOOKINGS.filter(b=>b.status==='pending').length;
+  const ca=BOOKINGS.filter(b=>b.status==='confirmed'||b.status==='completed').reduce((s,b)=>s+Number(b.amount_ttc||0),0);
+  document.getElementById('kCA').textContent=eur(ca);
+  document.getElementById('kCli').textContent=(profs||[]).filter(p=>p.role==='client').length;
+
+  // badges
+  const pend=BOOKINGS.filter(b=>b.status==='pending').length;
+  const newp=PARTS.filter(p=>p.status==='new').length;
+  setBadge('bResa',pend); setBadge('bPart',newp);
+
+  renderResaTable('dashResa',BOOKINGS.slice(0,6),false);
+  renderResaTable('allResa',BOOKINGS,true);
+  renderClients(profs||[]);
+  renderPartners('dashPart',PARTS.slice(0,4));
+  renderPartners('allPart',PARTS);
+}
+function setBadge(id,n){const e=document.getElementById(id);if(n>0){e.textContent=n;e.classList.add('show');}else e.classList.remove('show');}
+
+function clientName(uid){const p=PROFILES[uid];return p?(p.full_name||p.email||'Client'):'—';}
+function renderResaTable(elId,list,withSelect){
+  const el=document.getElementById(elId);
+  if(!list.length){el.innerHTML='<tr><td colspan="6" class="empty">Aucune réservation.</td></tr>';return;}
+  el.innerHTML=list.map(b=>{
+    const typeTag = b.type!=='reservation'? ` <span class="sub2">(${b.type})</span>`:'';
+    return `<tr><td class="cli">${escapeHtml(clientName(b.user_id))}</td>
+      <td>${escapeHtml(b.service||'')}${typeTag}<div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
+      <td>${dateFR(b.date_time)}</td>`+
+      (elId==='dashResa'?'':`<td>${escapeHtml(b.vehicle||'—')}</td>`)+
+      `<td class="amt">${eur(b.amount_ttc)}</td>
+      <td>${withSelect?stSelect(b.id,b.status):('<span class="st '+STMAP[b.status][0]+'">'+STMAP[b.status][1]+'</span>')}</td></tr>`;
+  }).join('');
+}
+
+function renderClients(profs){
+  const el=document.getElementById('allCli');
+  const clients=profs;
+  if(!clients.length){el.innerHTML='<tr><td colspan="6" class="empty">Aucun client.</td></tr>';return;}
+  el.innerHTML=clients.map(p=>{
+    const L=loyalty(p.loyalty_points);
+    const isMe=p.id===ME.id;
+    return `<tr><td class="cli">${escapeHtml(p.full_name||'—')}</td>
+      <td>${escapeHtml(p.email||'')}<div class="sub2">${escapeHtml(p.phone||'')}</div></td>
+      <td><span class="mono">${p.loyalty_points||0}</span> <button class="btn-mini" onclick="editPoints('${p.id}',${p.loyalty_points||0})">±</button></td>
+      <td><span class="lvl-tag">★ ${L.name}${L.off?' −'+L.off+'%':''}</span></td>
+      <td><span class="tagrole ${p.role}">${p.role}</span></td>
+      <td>${isMe?'<span class="sub2">vous</span>':'<button class="btn-mini" onclick="toggleRole(\''+p.id+'\',\''+p.role+'\')">'+(p.role==='admin'?'Rétrograder':'Promouvoir admin')+'</button>'}</td></tr>`;
+  }).join('');
+}
+
+function renderPartners(elId,list){
+  const el=document.getElementById(elId);
+  if(!list.length){el.innerHTML='<div class="empty">Aucune demande.</div>';return;}
+  el.innerHTML=list.map(p=>{
+    const stOpts=['new','in_review','accepted','declined'];
+    const stLbl={new:'Nouvelle',in_review:'En cours',accepted:'Acceptée',declined:'Refusée'};
+    const sel=`<select class="mini" onchange="setPartnerStatus('${p.id}',this.value)">`+stOpts.map(s=>`<option value="${s}"${s===p.status?' selected':''}>${stLbl[s]}</option>`).join('')+`</select>`;
+    return `<div class="pcard"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <b>${escapeHtml(p.company||'Société')}</b> <span class="sub2">${escapeHtml(p.sector||'')}</span>
+      <span style="margin-left:auto">${sel}</span></div>
+      <div class="sub2" style="margin-top:6px">${escapeHtml(p.contact_name||'')}${p.contact_role?' · '+escapeHtml(p.contact_role):''} — ${escapeHtml(p.email||'')}${p.phone?' · '+escapeHtml(p.phone):''}${p.city?' · '+escapeHtml(p.city):''}</div>
+      ${p.volume?'<div class="sub2">Volume estimé : '+escapeHtml(p.volume)+'</div>':''}
+      ${(p.needs&&p.needs.length)?'<div class="sub2">Besoins : '+p.needs.map(escapeHtml).join(', ')+'</div>':''}
+      ${p.message?'<div style="margin-top:8px;color:var(--muted);font-size:13px">“'+escapeHtml(p.message)+'”</div>':''}
+      ${p.siret?'<div class="sub2" style="margin-top:6px">SIRET : '+escapeHtml(p.siret)+(p.website?' · '+escapeHtml(p.website):'')+'</div>':''}
+      </div>`;
+  }).join('');
+}
+
+async function setStatus(id,status){
+  const {error}=await sb.from('bookings').update({status}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Statut mis à jour ✓'); refresh();
+}
+async function setPartnerStatus(id,status){
+  const {error}=await sb.from('partner_requests').update({status}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Demande mise à jour ✓'); refresh();
+}
+async function editPoints(id,cur){
+  const v=prompt('Points de fidélité :',cur);
+  if(v===null)return;
+  const n=parseInt(v,10); if(isNaN(n)||n<0){toast('Valeur invalide');return;}
+  const {error}=await sb.from('profiles').update({loyalty_points:n}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Points mis à jour ✓'); refresh();
+}
+async function toggleRole(id,role){
+  const next=role==='admin'?'client':'admin';
+  if(!confirm('Changer le rôle en « '+next+' » ?'))return;
+  const {error}=await sb.from('profiles').update({role:next}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Rôle mis à jour ✓'); refresh();
+}
+
+load();
+</script>
+</body>
+</html>

@@ -155,31 +155,45 @@ window.PAGE_I18N={
 };
 </script>
 <script src="pack.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-init.js"></script>
 <script>
-function submitPartner(e){
-  e.preventDefault();
+var SENT_MSG={
+  fr:"Merci ! Votre demande de partenariat a bien été enregistrée. Nous revenons vers vous sous 24–48 h.",
+  en:"Thank you! Your partnership request has been received. We'll get back to you within 24–48 h.",
+  es:"¡Gracias! Su solicitud de colaboración se ha registrado. Le responderemos en 24–48 h.",
+  it:"Grazie! La tua richiesta di partnership è stata registrata. Ti rispondiamo entro 24–48 h.",
+  pt:"Obrigado! O seu pedido de parceria foi registado. Respondemos em 24–48 h.",
+  tr:"Teşekkürler! İş ortaklığı talebiniz alındı. 24–48 saat içinde dönüş yapacağız.",
+  zh:"感谢！您的合作申请已收到，我们将在 24–48 小时内回复您。"
+};
+function mailtoFallback(){
   var v=function(id){var el=document.getElementById(id);return el?el.value.trim():"";};
   var checks=[].slice.call(document.querySelectorAll('input[name=besoin]:checked')).map(function(c){return c.value;}).join(', ')||'—';
-  var lines=[
-    "Société : "+v('p_company'),
-    "Secteur : "+(v('p_sector')||'—'),
-    "SIRET / N° : "+(v('p_siret')||'—'),
-    "Site web : "+(v('p_web')||'—'),
-    "",
-    "Contact : "+v('p_name')+(v('p_role')?(" ("+v('p_role')+")"):""),
-    "Email : "+v('p_email'),
-    "Téléphone : "+v('p_phone'),
-    "Ville / Établissement : "+(v('p_city')||'—'),
-    "Volume estimé : "+(v('p_volume')||'—'),
-    "",
-    "Besoins : "+checks,
-    "",
-    "Demande spécifique :",
-    v('p_message')||'—'
-  ];
-  var subject="Demande de partenariat — "+(v('p_company')||"Société");
-  var body=lines.join("\n");
-  window.location.href="mailto:ParisVTCdriver@gmail.com?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);
+  var lines=["Société : "+v('p_company'),"Secteur : "+(v('p_sector')||'—'),"SIRET / N° : "+(v('p_siret')||'—'),"Site web : "+(v('p_web')||'—'),"","Contact : "+v('p_name')+(v('p_role')?(" ("+v('p_role')+")"):""),"Email : "+v('p_email'),"Téléphone : "+v('p_phone'),"Ville / Établissement : "+(v('p_city')||'—'),"Volume estimé : "+(v('p_volume')||'—'),"","Besoins : "+checks,"","Demande spécifique :",v('p_message')||'—'];
+  window.location.href="mailto:ParisVTCdriver@gmail.com?subject="+encodeURIComponent("Demande de partenariat — "+(v('p_company')||"Société"))+"&body="+encodeURIComponent(lines.join("\n"));
+}
+async function submitPartner(e){
+  e.preventDefault();
+  var v=function(id){var el=document.getElementById(id);return el?el.value.trim():"";};
+  var needs=[].slice.call(document.querySelectorAll('input[name=besoin]:checked')).map(function(c){return c.value;});
+  var btn=document.querySelector('#partnerForm button[type=submit]');
+  if(btn){btn.disabled=true;btn.textContent="…";}
+  var payload={
+    company:v('p_company'), sector:v('p_sector'), siret:v('p_siret'), website:v('p_web'),
+    contact_name:v('p_name'), contact_role:v('p_role'), email:v('p_email'), phone:v('p_phone'),
+    city:v('p_city'), volume:v('p_volume'), needs:needs, message:v('p_message')
+  };
+  try{
+    var res=await sb.from('partner_requests').insert(payload);
+    if(res.error) throw res.error;
+    var lang=(localStorage.getItem('pvtc_lang')||'fr');
+    var msg=SENT_MSG[lang]||SENT_MSG.fr;
+    document.getElementById('partnerForm').innerHTML='<div style="text-align:center;padding:30px 10px"><div style="font-size:40px;margin-bottom:12px">✓</div><p style="color:var(--gold-2);font-size:16px;line-height:1.6">'+msg+'</p></div>';
+  }catch(err){
+    if(btn){btn.disabled=false;btn.textContent="Envoyer ma demande";}
+    mailtoFallback();
+  }
   return false;
 }
 </script>

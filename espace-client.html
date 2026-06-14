@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>ParisVTCDriver — Mon espace</title>
+<link rel="icon" href="logo.png" type="image/png">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070a12;--navy:#0d1730;--panel:#0e1626;--panel-2:#121d33;--line:rgba(201,162,74,.16);--line-soft:rgba(255,255,255,.07);--gold:#c9a24a;--gold-2:#e7c878;--gold-bright:#f1d894;--txt:#eef2fb;--muted:#9aa6bf;--muted-2:#6f7c97;--green:#34d399;--amber:#e7b04a;--red:#f87171;--blue:#60a5fa}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',system-ui,sans-serif;background:radial-gradient(1000px 500px at 88% -8%,rgba(201,162,74,.08),transparent 60%),radial-gradient(700px 420px at -5% 5%,rgba(20,40,90,.4),transparent 55%),linear-gradient(180deg,#070a12,#080d18 40%,#070a12);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.mono{font-family:'Space Grotesk',sans-serif}
+.app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+.side{background:linear-gradient(180deg,rgba(13,23,48,.55),rgba(7,10,18,.4));border-right:1px solid var(--line-soft);padding:22px 16px;display:flex;flex-direction:column;gap:6px}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 18px;border-bottom:1px solid var(--line-soft);margin-bottom:12px}
+.brand .mk{width:40px;height:40px;border-radius:11px;overflow:hidden;border:1px solid var(--line);display:grid;place-items:center;flex:none}
+.brand .mk img{width:100%;height:100%;object-fit:cover;display:block}
+.brand b{font-size:15.5px;display:block;line-height:1.1}.brand b span{color:var(--gold-2)}
+.brand small{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted-2)}
+.nav-i{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;transition:.18s;border:1px solid transparent}
+.nav-i svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none}
+.nav-i:hover{background:rgba(255,255,255,.04);color:var(--txt)}
+.nav-i.active{background:linear-gradient(145deg,rgba(201,162,74,.2),rgba(201,162,74,.06));color:var(--gold-2);border-color:var(--line)}
+.side-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--line-soft);display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.side-foot .av{width:34px;height:34px;border-radius:50%;background:linear-gradient(145deg,#26324d,#16203a);display:grid;place-items:center;color:var(--gold-2);font-weight:700;font-size:13px;border:1px solid var(--line)}
+.main{padding:26px 30px 40px;overflow:auto}
+.top{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.top h1{font-size:23px;font-weight:700;letter-spacing:-.01em}
+.top .sub{color:var(--muted-2);font-size:13px;margin-top:2px}
+.btn{font-family:inherit;font-weight:600;cursor:pointer;border:none;border-radius:11px;padding:10px 18px;font-size:13.5px;display:inline-flex;align-items:center;gap:8px}
+.btn-gold{background:linear-gradient(135deg,var(--gold-bright),var(--gold) 55%,#a9842f);color:#1c1604;box-shadow:0 8px 22px -12px rgba(201,162,74,.7)}
+.btn-ghost{background:rgba(255,255,255,.04);color:var(--txt);border:1px solid var(--line-soft)}
+.btn-sm{padding:7px 13px;font-size:12.5px;border-radius:9px}
+.card{border:1px solid var(--line-soft);border-radius:16px;background:linear-gradient(165deg,var(--panel-2),var(--panel));overflow:hidden}
+.card-h{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line-soft)}
+.card-h h2{font-size:15px;font-weight:600}
+.card-h .link{margin-left:auto;font-size:12.5px;color:var(--gold-2);cursor:pointer}
+.next{display:flex;gap:22px;align-items:center;padding:24px 26px;margin-bottom:22px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,rgba(201,162,74,.14),rgba(201,162,74,.03))}
+.next .big{width:58px;height:58px;border-radius:14px;background:rgba(201,162,74,.16);border:1px solid var(--line);display:grid;place-items:center;color:var(--gold-2);flex:none}
+.next .big svg{width:28px;height:28px;stroke:currentColor;fill:none}
+.next .lbl{color:var(--muted-2);font-size:12.5px}
+.next .ttl{font-size:18px;font-weight:700;margin-top:2px}
+.next .meta{color:var(--muted);font-size:13px;margin-top:4px}
+.next .right{margin-left:auto;text-align:right}
+.next .amt{font-family:'Space Grotesk';font-size:24px;font-weight:700;color:var(--gold-bright)}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-2);font-weight:600;padding:12px 20px;border-bottom:1px solid var(--line-soft)}
+tbody td{padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:13.5px;color:var(--muted);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+.cli{color:var(--txt);font-weight:600}
+.sub2{color:var(--muted-2);font-size:11.5px;margin-top:2px}
+.amt{font-family:'Space Grotesk';color:var(--gold-bright);font-weight:600;white-space:nowrap}
+.st{font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.st::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.st.conf{color:var(--green);background:rgba(52,211,153,.12)}
+.st.att{color:var(--amber);background:rgba(231,176,74,.14)}
+.st.term{color:var(--blue);background:rgba(96,165,250,.12)}
+.st.ann{color:var(--red);background:rgba(248,113,113,.12)}
+.empty{padding:40px 20px;text-align:center;color:var(--muted-2);font-size:13.5px}
+.view{display:none}.view.show{display:block}
+.lvl-badge{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;background:linear-gradient(145deg,var(--gold),var(--gold-2));color:#1c1604}
+.prog{height:9px;border-radius:20px;background:rgba(255,255,255,.07);overflow:hidden;margin:10px 0 6px}
+.prog .fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--gold-2),var(--gold))}
+.lvl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:4px}
+.lvl{padding:16px;border:1px solid var(--line-soft);border-radius:14px;background:rgba(255,255,255,.02);text-align:center}
+.lvl.cur{border-color:var(--gold);background:rgba(201,162,74,.08)}
+.lvl .n{font-size:12.5px;color:var(--muted-2);font-weight:600}
+.lvl .pct{font-family:'Space Grotesk';font-size:24px;font-weight:700;color:var(--gold-bright);margin:6px 0 2px}
+.lvl .th{font-size:11.5px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--muted-2);margin-bottom:6px;font-weight:500}
+.field input{width:100%;background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:var(--txt);font-family:inherit;font-size:14px;border-radius:10px;padding:11px 13px}
+.field input:disabled{opacity:.6}
+.note-box{padding:12px 15px;border:1px solid var(--line-soft);border-radius:11px;background:rgba(231,176,74,.07);border-color:rgba(231,176,74,.25);color:var(--muted);font-size:12.5px;line-height:1.5;margin-top:18px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--navy);border:1px solid var(--gold);color:var(--gold-2);padding:11px 20px;border-radius:12px;font-size:13px;box-shadow:0 20px 40px -18px rgba(0,0,0,.7);opacity:0;pointer-events:none;transition:.3s}
+.toast.show{opacity:1}
+.mtoggle{display:none}
+@media(max-width:760px){.lvl-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:1080px){.app{grid-template-columns:1fr}.side{position:fixed;z-index:40;top:0;bottom:0;left:0;width:248px;transform:translateX(-100%);transition:.25s}.side.open{transform:none}.main{padding-top:64px}.grid2{grid-template-columns:1fr}.next{flex-wrap:wrap}.next .right{margin-left:0;text-align:left}.mtoggle{display:grid;place-items:center;position:fixed;top:12px;left:12px;z-index:45;width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--navy);color:var(--txt);cursor:pointer}}
+</style>
+</head>
+<body>
+<button class="mtoggle" onclick="document.querySelector('.side').classList.toggle('open')">☰</button>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="mk"><img src="logo.png" alt="ParisVTCDriver"></div><div><b>Paris<span>VTC</span>Driver</b><small>Espace client</small></div></div>
+    <div class="nav-i active" data-v="home"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg> Accueil</div>
+    <div class="nav-i" data-v="resa"><svg viewBox="0 0 24 24" stroke-width="1.7"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg> Mes réservations</div>
+    <div class="nav-i" data-v="fact"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg> Devis &amp; factures</div>
+    <div class="nav-i" data-v="fid"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z"/></svg> Fidélité</div>
+    <div class="nav-i" data-v="prof"><svg viewBox="0 0 24 24" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg> Mon profil</div>
+    <div class="side-foot"><div class="av" id="sfAv">··</div><div><b id="sfName" style="color:var(--txt);font-size:13px">…</b><div style="font-size:11px;color:var(--muted-2)">Client</div></div>
+      <a onclick="signOut()" title="Déconnexion" style="margin-left:auto;width:32px;height:32px;border-radius:8px;border:1px solid var(--line-soft);display:grid;place-items:center;color:var(--muted-2);cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a></div>
+  </aside>
+
+  <main class="main">
+    <!-- HOME -->
+    <section class="view show" id="home">
+      <div class="top"><div><h1 id="hello">Bonjour 👋</h1><div class="sub">Bienvenue dans votre espace ParisVTCDriver</div></div>
+        <a class="btn btn-gold" style="margin-left:auto" href="index.html#booking">+ Nouvelle réservation</a></div>
+      <div id="nextWrap"></div>
+      <div class="card" style="margin-bottom:22px;padding:20px 24px;display:flex;align-items:center;gap:22px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(201,162,74,.12),rgba(201,162,74,.03));border-color:var(--line)">
+        <div style="flex:none"><div style="color:var(--muted-2);font-size:12.5px">Programme fidélité</div><div style="display:flex;align-items:center;gap:10px;margin-top:4px"><span class="mono" id="hPts" style="font-size:26px;font-weight:700;color:var(--gold-bright)">0 pts</span><span class="lvl-badge" id="hBadge">Membre</span></div></div>
+        <div style="flex:1;min-width:200px"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted-2)"><span id="hCur">—</span><span id="hNext">—</span></div><div class="prog"><div class="fill" id="hFill" style="width:0%"></div></div><div style="font-size:11.5px;color:var(--muted)" id="hHint"></div></div>
+        <button class="btn btn-ghost btn-sm" data-go="fid" style="margin-left:auto">Voir mon programme</button>
+      </div>
+      <div class="card"><div class="card-h"><h2>Mes dernières réservations</h2><span class="link" data-go="resa">Tout voir</span></div>
+        <table><tbody id="homeResa"></tbody></table>
+      </div>
+    </section>
+
+    <!-- RESERVATIONS -->
+    <section class="view" id="resa">
+      <div class="top"><div><h1>Mes réservations</h1><div class="sub">Suivi de vos courses</div></div>
+        <a class="btn btn-gold" style="margin-left:auto" href="index.html#booking">+ Nouvelle réservation</a></div>
+      <div class="card"><table>
+        <thead><tr><th>Réservation</th><th>Rendez-vous</th><th>Véhicule</th><th>Montant</th><th>Statut</th></tr></thead>
+        <tbody id="allResa"></tbody>
+      </table></div>
+      <div class="note-box">Pour annuler une réservation, contactez-nous. Conditions : plus de 24 h avant → remboursement intégral ; entre 24 h et 2 h → avoir valable 2 mois ; moins de 2 h ou non-présentation → aucun remboursement.</div>
+    </section>
+
+    <!-- FACTURES -->
+    <section class="view" id="fact">
+      <div class="top"><div><h1>Devis &amp; factures</h1><div class="sub">Vos documents</div></div></div>
+      <div class="card"><table>
+        <thead><tr><th>N°</th><th>Objet</th><th>Date</th><th>TTC</th><th>Type</th></tr></thead>
+        <tbody id="allDocs"></tbody>
+      </table></div>
+    </section>
+
+    <!-- FIDELITE -->
+    <section class="view" id="fid">
+      <div class="top"><div><h1>Programme de fidélité</h1><div class="sub">1 € dépensé = 1 point · cumulables sur vos courses</div></div></div>
+      <div class="card" style="padding:26px;margin-bottom:20px;background:linear-gradient(135deg,rgba(201,162,74,.14),rgba(201,162,74,.03));border-color:var(--line)">
+        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+          <div><div style="color:var(--muted-2);font-size:12.5px">Vos points</div><div class="mono" id="fPts" style="font-size:38px;font-weight:700;color:var(--gold-bright);line-height:1">0</div></div>
+          <div style="margin-left:6px"><span class="lvl-badge" id="fBadge" style="font-size:13px;padding:7px 14px">Membre</span><div style="font-size:12px;color:var(--muted);margin-top:8px">Réduction appliquée automatiquement à vos prochaines réservations, sur les prestations d'au moins 60 €.</div></div>
+        </div>
+        <div style="margin-top:18px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted-2)"><span id="fCur">—</span><span id="fNext">—</span></div><div class="prog"><div class="fill" id="fFill" style="width:0%"></div></div><div style="font-size:12px;color:var(--muted)" id="fHint"></div></div>
+      </div>
+      <div class="card" style="padding:22px"><h2 style="font-size:14px;margin-bottom:14px">Les niveaux</h2>
+        <div class="lvl-grid" id="lvlGrid"></div>
+      </div>
+      <div class="note-box"><b style="color:var(--gold-2)">Maintien des niveaux :</b> votre niveau est conservé 2 mois après votre dernière réservation terminée. Sans nouvelle réservation, vous perdez un seul niveau (points ramenés au minimum du niveau inférieur), et ainsi de suite.</div>
+    </section>
+
+    <!-- PROFIL -->
+    <section class="view" id="prof">
+      <div class="top"><div><h1>Mon profil</h1><div class="sub">Vos informations sont reprises dans vos réservations</div></div></div>
+      <div class="card" style="padding:24px 26px">
+        <div class="grid2">
+          <div class="field"><label>Nom complet</label><input id="pName"></div>
+          <div class="field"><label>Téléphone</label><input id="pPhone"></div>
+          <div class="field"><label>E-mail</label><input id="pEmail" disabled></div>
+          <div class="field"><label>Membre depuis</label><input id="pSince" disabled></div>
+        </div>
+        <button class="btn btn-gold btn-sm" style="margin-top:6px" onclick="saveProfile()">Enregistrer</button>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-init.js"></script>
+<script>
+function show(v){document.querySelectorAll('.nav-i').forEach(x=>x.classList.toggle('active',x.dataset.v===v));document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.id===v));window.scrollTo(0,0);document.querySelector('.side').classList.remove('open');}
+document.querySelectorAll('.nav-i').forEach(n=>n.addEventListener('click',()=>show(n.dataset.v)));
+document.querySelectorAll('[data-go]').forEach(l=>l.addEventListener('click',()=>show(l.dataset.go)));
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2600);}
+function initials(name){return (name||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase()||'?';}
+const STMAP={pending:['att','En attente'],confirmed:['conf','Confirmée'],completed:['term','Terminée'],cancelled:['ann','Annulée']};
+function stBadge(s){const m=STMAP[s]||['att',s||'—'];return `<span class="st ${m[0]}">${m[1]}</span>`;}
+
+let PROFILE=null;
+
+async function load(){
+  await requireAuth();
+  PROFILE = await getProfile();
+  if(!PROFILE){ return; }
+  if(PROFILE.role==='admin'){ location.replace('admin.html'); return; }
+
+  // entête / profil
+  const fn = PROFILE.full_name || 'client';
+  document.getElementById('hello').textContent = 'Bonjour '+fn.split(' ')[0]+' 👋';
+  document.getElementById('sfName').textContent = fn;
+  document.getElementById('sfAv').textContent = initials(fn);
+  document.getElementById('pName').value = PROFILE.full_name||'';
+  document.getElementById('pPhone').value = PROFILE.phone||'';
+  document.getElementById('pEmail').value = PROFILE.email||'';
+  document.getElementById('pSince').value = PROFILE.created_at? new Date(PROFILE.created_at).toLocaleDateString('fr-FR'):'';
+
+  renderLoyalty(PROFILE.loyalty_points);
+
+  // réservations
+  const { data: bookings } = await sb.from('bookings').select('*').order('date_time',{ascending:false,nullsFirst:false});
+  const list = bookings||[];
+  renderReservations(list);
+  renderDocs(list);
+}
+
+function renderLoyalty(points){
+  const L = loyalty(points);
+  const badge = '★ '+L.name+(L.off?` · −${L.off} %`:'');
+  document.getElementById('hPts').textContent = (points||0)+' pts';
+  document.getElementById('fPts').textContent = (points||0);
+  document.getElementById('hBadge').textContent = badge;
+  document.getElementById('fBadge').textContent = badge;
+  const curTxt = L.name+(L.name!=='Membre'?'':' (0)');
+  document.getElementById('hCur').textContent = L.name;
+  document.getElementById('fCur').textContent = L.name;
+  if(L.next){
+    document.getElementById('hNext').textContent = L.next.name+' — '+L.next.min+' pts';
+    document.getElementById('fNext').textContent = L.next.name+' — '+L.next.min+' pts';
+    const remain=L.next.min-(points||0);
+    document.getElementById('hHint').innerHTML = 'Plus que <b style="color:var(--gold-2)">'+remain+' pts</b> pour −'+L.next.off+' %';
+    document.getElementById('fHint').innerHTML = 'Plus que <b style="color:var(--gold-2)">'+remain+' points</b> pour −'+L.next.off+' %';
+  } else {
+    document.getElementById('hNext').textContent='Niveau maximum';
+    document.getElementById('fNext').textContent='Niveau maximum';
+    document.getElementById('hHint').textContent='Vous profitez de la réduction maximale.';
+    document.getElementById('fHint').textContent='Vous profitez de la réduction maximale.';
+  }
+  document.getElementById('hFill').style.width=L.progress+'%';
+  document.getElementById('fFill').style.width=L.progress+'%';
+  // grille niveaux
+  const tiers=[['Bronze',5,100],['Argent',10,500],['Or',15,1000],['Diamant',20,5000]];
+  document.getElementById('lvlGrid').innerHTML = tiers.map(t=>{
+    const cur = L.name===t[0];
+    return `<div class="lvl${cur?' cur':''}"><div class="n">★ ${t[0]}${cur?' · actuel':''}</div><div class="pct">−${t[1]} %</div><div class="th">dès ${t[2]} pts</div></div>`;
+  }).join('');
+}
+
+function rowResa(b){
+  return `<tr><td><div class="cli">${escapeHtml(b.service||b.type)}</div><div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
+    <td>${dateFR(b.date_time)}</td><td>${escapeHtml(b.vehicle||'—')}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${stBadge(b.status)}</td></tr>`;
+}
+function renderReservations(list){
+  const resa=list.filter(b=>b.type==='reservation');
+  const all=document.getElementById('allResa');
+  const home=document.getElementById('homeResa');
+  if(!resa.length){ all.innerHTML=home.innerHTML='<tr><td colspan="5" class="empty">Aucune réservation pour le moment.</td></tr>'; }
+  else { all.innerHTML=resa.map(rowResa).join(''); home.innerHTML=resa.slice(0,3).map(rowResa).join(''); }
+
+  // prochaine course = réservation à venir la plus proche
+  const now=Date.now();
+  const upcoming=resa.filter(b=>b.date_time && new Date(b.date_time).getTime()>=now && b.status!=='cancelled')
+                     .sort((a,b)=>new Date(a.date_time)-new Date(b.date_time));
+  const nw=document.getElementById('nextWrap');
+  if(upcoming.length){
+    const b=upcoming[0];
+    nw.innerHTML=`<div class="next"><div class="big"><svg viewBox="0 0 24 24"><path d="M5 17h14l-1.5-6.5a2 2 0 0 0-2-1.5h-7a2 2 0 0 0-2 1.5z"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="16.5" cy="17.5" r="1.6"/></svg></div>
+      <div><div class="lbl">Votre prochaine course · ${(STMAP[b.status]||['','—'])[1]}</div><div class="ttl">${escapeHtml(b.service||'Réservation')}</div>
+      <div class="meta">${dateFR(b.date_time)} · ${escapeHtml(b.vehicle||'')} · ${b.pax||1} passager(s)${b.pickup?'<br>Prise en charge : '+escapeHtml(b.pickup):''}</div></div>
+      <div class="right"><div class="lbl">Montant TTC</div><div class="amt">${eur(b.amount_ttc)}</div></div></div>`;
+  } else { nw.innerHTML=''; }
+}
+function renderDocs(list){
+  const docs=list.filter(b=>b.type==='devis'||b.type==='facture');
+  const el=document.getElementById('allDocs');
+  if(!docs.length){ el.innerHTML='<tr><td colspan="5" class="empty">Aucun document pour le moment.</td></tr>'; return; }
+  el.innerHTML=docs.map(b=>`<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(b.service||'')}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${b.type==='facture'?'<span class="st conf">Facture</span>':'<span class="st att">Devis</span>'}</td></tr>`).join('');
+}
+
+async function saveProfile(){
+  const full_name=document.getElementById('pName').value.trim();
+  const phone=document.getElementById('pPhone').value.trim();
+  const { error } = await sb.from('profiles').update({ full_name, phone }).eq('id', PROFILE.id);
+  if(error){ toast('Erreur : '+error.message); return; }
+  PROFILE.full_name=full_name; PROFILE.phone=phone;
+  document.getElementById('sfName').textContent=full_name;
+  document.getElementById('sfAv').textContent=initials(full_name);
+  document.getElementById('hello').textContent='Bonjour '+(full_name.split(' ')[0]||'')+' 👋';
+  toast('Profil enregistré ✓');
+}
+
+load();
+</script>
+</body>
+</html>

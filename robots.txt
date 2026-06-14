@@ -1,9 +1,9 @@
 User-agent: *
 Allow: /
 
-# Pages internes (maquettes) — ne pas indexer
-Disallow: /admin-dashboard-maquette.html
-Disallow: /client-space-maquette.html
-Disallow: /connexion-maquette.html
+# Pages d'application (espace client / admin) — ne pas indexer
+Disallow: /connexion.html
+Disallow: /espace-client.html
+Disallow: /admin.html
 
 Sitemap: https://www.parisvtcdriver.com/sitemap.xml
