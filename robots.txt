@@ -6,4 +6,4 @@ Disallow: /admin-dashboard-maquette.html
 Disallow: /client-space-maquette.html
 Disallow: /connexion-maquette.html
 
-Sitemap: https://www.parisvtcdriver.fr/sitemap.xml
+Sitemap: https://www.parisvtcdriver.com/sitemap.xml
