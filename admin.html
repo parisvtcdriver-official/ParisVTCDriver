@@ -354,7 +354,7 @@ function renderResaTable(elId,list,withSelect){
     const cancelReq=(c&&c.requested&&!resolved);
     let statusCell;
     if(withSelect){
-      statusCell=stSelect(b.id,b.status);
+      statusCell=stSelect(b.id,b.status)+` <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer">✕</button>`;
       if(cancelReq) statusCell+=`<div class="sub2" style="color:var(--amber);margin-top:5px">⚠ Annulation demandée — ${escapeHtml(c.policy||'')}${c.reason?'<br>Motif : '+escapeHtml(c.reason):''}<br>→ choisir « Annulée », « Remboursé » ou « Avoir émis »</div>`;
     } else {
       statusCell=statusBadgeFull(b)+(cancelReq?' <span class="sub2" style="color:var(--amber)">⚠ annul.</span>':'');
@@ -446,11 +446,17 @@ function renderDocs(){
     if(b.type==='devis') typeCell='<span class="st att">Devis</span>';
     else if(['cancelled','refunded','avoir'].includes(b.status)) typeCell=statusBadgeFull(b);
     else typeCell=(b.pay_status==='paid')?'<span class="st conf">Facture payée</span>':'<span class="st att">Facture à payer</span>';
-    let act=`<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button>`;
+    let act=`<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer ce document">✕</button>`;
     if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
     else if(b.type==='facture'&&b.pay_status!=='paid') act=`<button class="btn-mini gold" onclick="validatePayment('${b.id}')">Valider paiement</button> `+act;
     return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(bookingClient(b))}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td>${eur(b.amount_ht)}</td><td>${eur(b.vat)}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${typeCell}</td><td>${act}</td></tr>`;
   }).join('');
+}
+async function deleteBooking(id){
+  if(!confirm('Supprimer définitivement ce document/réservation ? Action irréversible.'))return;
+  const {error}=await sb.from('bookings').delete().eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Supprimé ✓'); refresh();
 }
 
 /* ---------- PDF (polices accentuées + retour à la ligne, comme le site) ---------- */
