@@ -126,7 +126,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
       <div class="top"><div><h1>Mes réservations</h1><div class="sub">Suivi de vos courses</div></div>
         <a class="btn btn-gold" style="margin-left:auto" href="index.html#booking">+ Nouvelle réservation</a></div>
       <div class="card"><table>
-        <thead><tr><th>Réservation</th><th>Rendez-vous</th><th>Véhicule</th><th>Montant</th><th>Statut</th></tr></thead>
+        <thead><tr><th>Réservation</th><th>Rendez-vous</th><th>Véhicule</th><th>Montant</th><th>Statut</th><th></th></tr></thead>
         <tbody id="allResa"></tbody>
       </table></div>
       <div class="note-box">Pour annuler une réservation, contactez-nous. Conditions : plus de 24 h avant → remboursement intégral ; entre 24 h et 2 h → avoir valable 2 mois ; moins de 2 h ou non-présentation → aucun remboursement.</div>
@@ -200,7 +200,7 @@ function medalFor(name){return ({Diamant:'platine',Or:'or',Argent:'argent',Bronz
 const STMAP={pending:['att','En attente'],confirmed:['conf','Confirmée'],completed:['term','Terminée'],cancelled:['ann','Annulée']};
 function stBadge(s){const m=STMAP[s]||['att',s||'—'];return `<span class="st ${m[0]}">${m[1]}</span>`;}
 
-let PROFILE=null;
+let PROFILE=null, ALLBK=[];
 
 async function load(){
   await requireAuth();
@@ -223,6 +223,7 @@ async function load(){
   // réservations
   const { data: bookings } = await sb.from('bookings').select('*').order('date_time',{ascending:false,nullsFirst:false});
   const list = bookings||[];
+  ALLBK = list;
   renderReservations(list);
   renderDocs(list);
 }
@@ -262,27 +263,55 @@ function renderLoyalty(points){
   }).join('');
 }
 
-function rowResa(b){
-  return `<tr><td><div class="cli">${escapeHtml(b.service||b.type)}</div><div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
-    <td>${dateFR(b.date_time)}</td><td>${escapeHtml(b.vehicle||'—')}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${stBadge(b.status)}</td></tr>`;
+function parseRDV(s){ if(!s)return null; s=String(s); let m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/),y,mo,d; if(m){d=+m[1];mo=+m[2];y=+m[3];} else { m=s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/); if(m){y=+m[1];mo=+m[2];d=+m[3];} else return null; } const t=s.match(/(\d{1,2}):(\d{2})/); return new Date(y,mo-1,d,t?+t[1]:0,t?+t[2]:0).getTime(); }
+function bkTime(b){ if(b.date_time) return new Date(b.date_time).getTime(); const l=b.details&&b.details.lines&&b.details.lines[0]; return l&&l.dt?parseRDV(l.dt):null; }
+function bkRDV(b){ if(b.date_time) return dateFR(b.date_time); const l=b.details&&b.details.lines&&b.details.lines[0]; return (l&&l.dt)||'—'; }
+function cancelPolicy(ts){
+  if(!ts) return {key:'none',label:'Aucun remboursement (date inconnue ou passée)'};
+  const h=(ts-Date.now())/36e5;
+  if(h>=24) return {key:'refund',label:'Remboursement intégral (annulation plus de 24 h avant)'};
+  if(h>=2)  return {key:'avoir',label:'Avoir valable 2 mois (entre 24 h et 2 h avant)'};
+  return {key:'none',label:'Aucun remboursement ni avoir (moins de 2 h avant ou départ passé)'};
+}
+function rowResa(b,withCancel){
+  let extra='';
+  const ts=bkTime(b);
+  if(withCancel){
+    if(b.details&&b.details.cancel&&b.details.cancel.requested&&b.status!=='cancelled') extra='<span class="sub2">Annulation demandée</span>';
+    else if(b.status!=='cancelled'&&b.status!=='completed'&&ts&&ts>=Date.now()) extra=`<button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">Annuler</button>`;
+  }
+  const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">payée</span>':' <span class="st att" style="margin-left:6px">à payer</span>'):'';
+  return `<tr><td><div class="cli">${escapeHtml(b.service||b.type)}${payTag}</div><div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
+    <td>${bkRDV(b)}</td><td>${escapeHtml(b.vehicle||'—')}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${stBadge(b.status)}</td>${withCancel?`<td>${extra}</td>`:''}</tr>`;
+}
+async function requestCancel(id){
+  const b=ALLBK.find(x=>x.id===id); if(!b)return;
+  const pol=cancelPolicy(bkTime(b));
+  const reason=prompt('Motif de l’annulation (facultatif) :\n\nCondition applicable : '+pol.label,'');
+  if(reason===null)return;
+  if(!confirm('Confirmer la demande d’annulation ?\n\n'+pol.label))return;
+  const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'cancel-request',booking_id:id,reason:reason,policy:pol.label}});
+  if(error||(data&&data.ok===false)){ toast('Échec : '+((data&&data.error)||(error&&error.message)||'')); return; }
+  toast('Demande d’annulation envoyée ✓');
+  load();
 }
 function renderReservations(list){
-  const resa=list.filter(b=>b.type==='reservation');
+  const resa=list.filter(b=>b.type==='reservation'||b.type==='facture');
   const all=document.getElementById('allResa');
   const home=document.getElementById('homeResa');
-  if(!resa.length){ all.innerHTML=home.innerHTML='<tr><td colspan="5" class="empty">Aucune réservation pour le moment.</td></tr>'; }
-  else { all.innerHTML=resa.map(rowResa).join(''); home.innerHTML=resa.slice(0,3).map(rowResa).join(''); }
+  if(!resa.length){ all.innerHTML='<tr><td colspan="6" class="empty">Aucune réservation pour le moment.</td></tr>'; home.innerHTML='<tr><td colspan="5" class="empty">Aucune réservation pour le moment.</td></tr>'; }
+  else { all.innerHTML=resa.map(b=>rowResa(b,true)).join(''); home.innerHTML=resa.slice(0,3).map(b=>rowResa(b,false)).join(''); }
 
   // prochaine course = réservation à venir la plus proche
   const now=Date.now();
-  const upcoming=resa.filter(b=>b.date_time && new Date(b.date_time).getTime()>=now && b.status!=='cancelled')
-                     .sort((a,b)=>new Date(a.date_time)-new Date(b.date_time));
+  const upcoming=resa.filter(b=>{const ts=bkTime(b);return ts&&ts>=now&&b.status!=='cancelled';})
+                     .sort((a,b)=>bkTime(a)-bkTime(b));
   const nw=document.getElementById('nextWrap');
   if(upcoming.length){
     const b=upcoming[0];
     nw.innerHTML=`<div class="next"><div class="big"><svg viewBox="0 0 24 24"><path d="M5 17h14l-1.5-6.5a2 2 0 0 0-2-1.5h-7a2 2 0 0 0-2 1.5z"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="16.5" cy="17.5" r="1.6"/></svg></div>
       <div><div class="lbl">Votre prochaine course · ${(STMAP[b.status]||['','—'])[1]}</div><div class="ttl">${escapeHtml(b.service||'Réservation')}</div>
-      <div class="meta">${dateFR(b.date_time)} · ${escapeHtml(b.vehicle||'')} · ${b.pax||1} passager(s)${b.pickup?'<br>Prise en charge : '+escapeHtml(b.pickup):''}</div></div>
+      <div class="meta">${bkRDV(b)} · ${escapeHtml(b.vehicle||'')} · ${b.pax||1} passager(s)${b.pickup?'<br>Prise en charge : '+escapeHtml(b.pickup):''}</div></div>
       <div class="right"><div class="lbl">Montant TTC</div><div class="amt">${eur(b.amount_ttc)}</div></div></div>`;
   } else { nw.innerHTML=''; }
 }
@@ -290,7 +319,10 @@ function renderDocs(list){
   const docs=list.filter(b=>b.type==='devis'||b.type==='facture');
   const el=document.getElementById('allDocs');
   if(!docs.length){ el.innerHTML='<tr><td colspan="5" class="empty">Aucun document pour le moment.</td></tr>'; return; }
-  el.innerHTML=docs.map(b=>`<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(b.service||'')}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${b.type==='facture'?'<span class="st conf">Facture</span>':'<span class="st att">Devis</span>'}</td></tr>`).join('');
+  el.innerHTML=docs.map(b=>{
+    const badge=b.type==='facture'?(b.pay_status==='paid'?'<span class="st conf">Facture payée</span>':'<span class="st att">À payer</span>'):'<span class="st att">Devis</span>';
+    return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(b.service||'')}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${badge}</td></tr>`;
+  }).join('');
 }
 
 async function saveProfile(){
