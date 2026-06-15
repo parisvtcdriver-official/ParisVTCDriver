@@ -235,22 +235,22 @@ async function load(){
   ALLBK = list;
   renderReservations(list);
   renderDocs(list);
-  renderAvoirs(list);
+  let avoirCodes=[];
+  try{ const {data:ac}=await sb.from('promo_codes').select('*').eq('kind','avoir').eq('used_by',PROFILE.id).eq('status','available'); avoirCodes=ac||[]; }catch(e){}
+  renderAvoirs(avoirCodes);
 }
-function renderAvoirs(list){
+function renderAvoirs(codes){
   const el=document.getElementById('avoirList'); if(!el)return;
-  const avoirs=list.filter(b=>b.status==='avoir'||(b.status==='cancelled'&&b.details&&b.details.cancel&&b.details.cancel.outcome==='avoir'&&b.details.cancel.refunded));
-  if(!avoirs.length){ el.innerHTML='<div class="card"><div class="empty">Aucun avoir disponible pour le moment.<br>En cas d’annulation éligible, votre avoir apparaîtra ici.</div></div>'; return; }
-  el.innerHTML='<div class="grid2">'+avoirs.map(b=>{
-    const emis=b.details.cancel.refunded_at?new Date(b.details.cancel.refunded_at):null;
-    const fin=emis?new Date(emis.getTime()+62*24*36e5):null;
-    const expired=fin?Date.now()>fin.getTime():false;
-    return `<div class="avoir"${expired?' style="opacity:.55"':''}>
-      <div style="color:var(--muted-2);font-size:12.5px">Avoir · ${escapeHtml(b.reference||'')}</div>
-      <div class="v">${eur(b.amount_ttc)}</div>
-      <div class="x">${emis?('Émis le '+emis.toLocaleDateString('fr-FR')):''}${fin?(' · valable jusqu’au '+fin.toLocaleDateString('fr-FR')):''}</div>
-      <div style="margin-top:10px">${expired?'<span class="st ann">Expiré</span>':'<span class="st conf">Disponible</span>'}</div>
-      <div class="sub2" style="margin-top:8px">À mentionner lors de votre prochaine réservation.</div>
+  const valid=(codes||[]).filter(c=>!c.expires_at || new Date(c.expires_at)>=new Date());
+  if(!valid.length){ el.innerHTML='<div class="card"><div class="empty">Aucun avoir disponible pour le moment.<br>En cas d’annulation éligible, votre avoir apparaîtra ici.</div></div>'; return; }
+  el.innerHTML='<div class="grid2">'+valid.map(c=>{
+    const fin=c.expires_at?new Date(c.expires_at):null;
+    return `<div class="avoir">
+      <div style="color:var(--muted-2);font-size:12.5px">Avoir · ${escapeHtml(c.avoir_no||'')}</div>
+      <div class="v">${eur(c.amount)}</div>
+      <div class="x">Code : <b style="color:var(--gold-2)">${escapeHtml(c.code)}</b>${fin?(' · valable jusqu’au '+fin.toLocaleDateString('fr-FR')):''}</div>
+      <div style="margin-top:10px"><span class="st conf">Disponible</span></div>
+      <div class="sub2" style="margin-top:8px">Saisissez ce code dans « Code de réduction » au moment de réserver.</div>
     </div>`;
   }).join('')+'</div>';
 }
@@ -365,7 +365,7 @@ async function clientDocPDF(id){
   const b=ALLBK.find(x=>x.id===id); if(!b){toast('Document introuvable');return;}
   if(!window.jspdf){toast('PDF indisponible');return;}
   toast('Génération du PDF…');
-  const cancel=(b.status==='refunded'||b.status==='avoir'||(b.status==='cancelled'&&b.details&&b.details.cancel&&b.details.cancel.refunded));
+  const cancel=['cancelled','refunded','avoir'].includes(b.status);
   const isAvoir=(b.status==='avoir')||(b.details&&b.details.cancel&&b.details.cancel.outcome==='avoir');
   const doc=await buildInvoiceDoc(b,{cancellation:cancel,isAvoir});
   doc.save((cancel?'facture-annulation-':'facture-')+(b.reference||'doc')+'.pdf');
@@ -427,7 +427,10 @@ async function buildInvoiceDoc(b,opts){
   if(cancel){
     doc.setFont(F,'bold');doc.setTextColor(...red);doc.setFontSize(9.5);doc.text('Réservation annulée',40,y);y+=14;
     doc.setFont(F,'normal');doc.setTextColor(60,70,90);
-    doc.text(isAvoir?('Avoir de '+eur(b.amount_ttc)+' valable 2 mois, utilisable sur une prochaine réservation.'):('Remboursement de '+eur(b.amount_ttc)+' effectué.'),40,y);
+    const refunded=b.status==='refunded'||b.status==='avoir'||(b.details&&b.details.cancel&&b.details.cancel.refunded);
+    if(isAvoir) doc.text('Avoir de '+eur(b.amount_ttc)+' valable 2 mois, utilisable sur une prochaine réservation.',40,y);
+    else if(refunded) doc.text('Remboursement de '+eur(b.amount_ttc)+' effectué.',40,y);
+    else doc.text('Annulation enregistrée.',40,y);
   } else {
     doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);
     doc.text(paid?'Paiement reçu — merci.':'Règlement par virement bancaire',40,y);y+=14;

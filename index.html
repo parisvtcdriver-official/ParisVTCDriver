@@ -1033,15 +1033,19 @@ function loyaltyDiscount(){      // s'applique aux prestations d'au moins 60 €
 function usedCodes(){try{return JSON.parse(localStorage.getItem("pvtc_usedCodes")||"[]");}catch(e){return [];}}
 function isCodeUsed(c){return usedCodes().includes(c);}
 function markCodeUsed(c){const u=usedCodes();if(c&&!u.includes(c)){u.push(c);try{localStorage.setItem("pvtc_usedCodes",JSON.stringify(u));}catch(e){}}}
-function currentDiscount(){return (appliedCode && !isCodeUsed(appliedCode)) ? appliedVal : 0;}
-function applyCode(){
+let appliedCodeRow=null;
+function currentDiscount(){return appliedCode ? appliedVal : 0;}
+async function applyCode(){
   const inp=document.getElementById("s_code");const code=(inp.value||"").trim().toUpperCase();inp.value=code;
   const msg=document.getElementById("codeMsg");
-  if(!code){appliedCode="";appliedVal=0;msg.textContent="";msg.className="code-msg";recalc();return;}
-  const found=DISCOUNT_CODES.find(c=>c.code===code);
-  if(!found){appliedCode="";appliedVal=0;msg.className="code-msg err";msg.textContent=t("code_invalid");recalc();return;}
-  if(isCodeUsed(code)){appliedCode="";appliedVal=0;msg.className="code-msg err";msg.textContent=t("code_used");recalc();return;}
-  appliedCode=code;appliedVal=found.val;msg.className="code-msg ok";msg.textContent=t("code_ok").replace("{v}",eur(found.val));recalc();saveForm();
+  if(!code){appliedCode="";appliedVal=0;appliedCodeRow=null;msg.textContent="";msg.className="code-msg";recalc();saveForm();return;}
+  let row=null;
+  try{ if(typeof sb!=="undefined"&&sb){ const {data}=await sb.from("promo_codes").select("*").eq("code",code).maybeSingle(); row=data||null; } }catch(e){}
+  if(!row){ const f=DISCOUNT_CODES.find(c=>c.code===code); if(f) row={code:f.code,amount:f.val,status:"available"}; }
+  if(!row){appliedCode="";appliedVal=0;appliedCodeRow=null;msg.className="code-msg err";msg.textContent=t("code_invalid");recalc();return;}
+  if(row.status!=="available" || (row.expires_at && new Date(row.expires_at)<new Date())){appliedCode="";appliedVal=0;appliedCodeRow=null;msg.className="code-msg err";msg.textContent=t("code_used");recalc();return;}
+  appliedCode=code;appliedVal=Number(row.amount)||0;appliedCodeRow=row;
+  msg.className="code-msg ok";msg.textContent=t("code_ok").replace("{v}",eur(appliedVal));recalc();saveForm();
 }
 
 /* ---------------- I18N ---------------- */
@@ -1669,6 +1673,7 @@ async function sendQuoteRequest(btn){
     pickup: rt[0]||"", dropoff: rt[1]||"",
     date_time: null, pax:1, vehicle:"",
     subtotal: ttc, discount: disc, discount_label: dl.join(" + "),
+    applied_code: appliedCode||"", applied_code_used: appliedCode?Math.min(appliedVal,ttc):0,
     amount_ht: Math.round((total-tax)*100)/100, vat: tax, amount_ttc: total,
     total_label: eur(total), lines
   };

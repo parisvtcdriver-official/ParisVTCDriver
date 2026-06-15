@@ -723,18 +723,43 @@ async function setStatus(id,status){
   if(isRefund){
     const d=(b&&b.details)||{};
     d.cancel=Object.assign({},d.cancel,{refunded:true,outcome:(status==='avoir'?'avoir':'refund'),refunded_at:new Date().toISOString(),policy:((d.cancel&&d.cancel.policy)||(status==='avoir'?'Avoir':'Remboursement'))});
+    if(status==='avoir'){
+      const code='AV-'+Math.floor(10000+Math.random()*89999);
+      const exp=new Date(Date.now()+62*24*36e5).toISOString();
+      d.cancel.code=code; d.cancel.expires_at=exp;
+      try{ await sb.from('promo_codes').insert({code,amount:Number(b.amount_ttc)||0,kind:'avoir',avoir_no:(b.reference||code),expires_at:exp,status:'available',used_by:b.user_id}); }catch(e){}
+    }
     upd.details=d;
   }
   const {error}=await sb.from('bookings').update(upd).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
+  if(status==='completed' && b && b.details && b.details.applied_code){ await processAvoirRedemption(b); }
   if(isRefund){
-    toast(status==='avoir'?'Avoir émis ✓':'Remboursement validé ✓');
+    toast(status==='avoir'?'Avoir émis ✓ (code généré)':'Remboursement validé ✓');
     await refresh();
     await emailCancellation(BOOKINGS.find(x=>x.id===id), status==='avoir');
   } else {
     toast(status==='completed'?'Course terminée ✓ (points crédités)':'Statut mis à jour ✓');
     refresh();
   }
+}
+async function processAvoirRedemption(b){
+  // À la fin de course : consomme le code/avoir utilisé et reporte le solde restant.
+  try{
+    const code=b.details.applied_code; if(!code)return;
+    const {data:row}=await sb.from('promo_codes').select('*').eq('code',code).maybeSingle();
+    if(!row || row.status!=='available') return;
+    await sb.from('promo_codes').update({status:'used',used_by:b.user_id||row.used_by,used_at:new Date().toISOString()}).eq('id',row.id);
+    if(row.kind==='avoir'){
+      const used=Number(b.details.applied_code_used)|| Math.min(Number(row.amount)||0, Number(b.amount_ttc)||0);
+      const remainder=Math.round(((Number(row.amount)||0)-used)*100)/100;
+      if(remainder>0.009){
+        const newCode='AV-'+Math.floor(10000+Math.random()*89999);
+        await sb.from('promo_codes').insert({code:newCode,amount:remainder,kind:'avoir',avoir_no:(row.avoir_no||row.code),expires_at:row.expires_at,status:'available',used_by:row.used_by});
+        toast('Solde d’avoir reporté : '+eur(remainder)+' ('+newCode+')');
+      }
+    }
+  }catch(e){}
 }
 async function setPartnerStatus(id,status){const{error}=await sb.from('partner_requests').update({status}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Demande mise à jour ✓');refresh();}
 async function editPoints(id,cur){const v=prompt('Points de fidélité :',cur);if(v===null)return;const n=parseInt(v,10);if(isNaN(n)||n<0){toast('Valeur invalide');return;}let{error}=await sb.from('profiles').update({loyalty_points:n,loyalty_decay_at:new Date().toISOString()}).eq('id',id);if(error&&/loyalty_decay_at/.test(error.message||'')){({error}=await sb.from('profiles').update({loyalty_points:n}).eq('id',id));}if(error){toast('Erreur : '+error.message);return;}toast('Points mis à jour ✓');refresh();}
