@@ -88,6 +88,8 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:var(--txt);font-family:inherit;font-size:12.5px;border-radius:8px;padding:6px 9px}
 .btn-mini{font-family:inherit;font-weight:600;cursor:pointer;border:1px solid var(--line-soft);background:rgba(255,255,255,.03);color:var(--muted);border-radius:8px;padding:6px 11px;font-size:12px}
 .btn-mini:hover{color:var(--gold-2);border-color:var(--line)}
+.btn-mini.gold{background:linear-gradient(135deg,var(--gold-bright),var(--gold));color:#1c1604;border:none}
+.btn-mini.gold:hover{filter:brightness(1.05);color:#1c1604}
 .empty{padding:36px 20px;text-align:center;color:var(--muted-2);font-size:13.5px}
 .infobox{padding:16px 20px;color:var(--muted);font-size:12.5px;line-height:1.6}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--navy);border:1px solid var(--gold);color:var(--gold-2);padding:11px 20px;border-radius:12px;font-size:13px;box-shadow:0 20px 40px -18px rgba(0,0,0,.7);opacity:0;pointer-events:none;transition:.3s;z-index:60}
@@ -344,13 +346,30 @@ function renderResaTable(elId,list,withSelect){
   if(!list.length){el.innerHTML='<tr><td colspan="6" class="empty">Aucune réservation.</td></tr>';return;}
   el.innerHTML=list.map(b=>{
     const typeTag=b.type!=='reservation'?` <span class="sub2">(${b.type})</span>`:'';
+    const cancelReq=(b.details&&b.details.cancel&&b.details.cancel.requested&&!b.details.cancel.handled&&b.status!=='cancelled');
+    let statusCell;
+    if(withSelect){
+      statusCell=stSelect(b.id,b.status);
+      if(cancelReq) statusCell+=`<div class="sub2" style="color:var(--amber);margin-top:5px">⚠ Annulation demandée — ${escapeHtml(b.details.cancel.policy||'')}${b.details.cancel.reason?'<br>Motif : '+escapeHtml(b.details.cancel.reason):''}</div><button class="btn-mini gold" style="margin-top:5px" onclick="validateCancel('${b.id}')">Valider l'annulation</button>`;
+    } else {
+      statusCell='<span class="st '+STMAP[b.status][0]+'">'+STMAP[b.status][1]+'</span>'+(cancelReq?' <span class="sub2" style="color:var(--amber)">⚠ annul.</span>':'');
+    }
     return `<tr><td class="cli">${escapeHtml(bookingClient(b))}</td>
       <td>${escapeHtml(b.service||'')}${typeTag}<div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
       <td>${dateFR(b.date_time)}</td>`+
       (elId==='dashResa'?'':`<td>${escapeHtml(b.vehicle||'—')}</td>`)+
       `<td class="amt">${eur(b.amount_ttc)}</td>
-      <td>${withSelect?stSelect(b.id,b.status):('<span class="st '+STMAP[b.status][0]+'">'+STMAP[b.status][1]+'</span>')}</td></tr>`;
+      <td>${statusCell}</td></tr>`;
   }).join('');
+}
+async function validateCancel(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  const pol=(b.details&&b.details.cancel&&b.details.cancel.policy)||'';
+  if(!confirm('Valider l\'annulation de cette réservation ?\n\n'+pol+'\n\n(Le remboursement ou l\'avoir éventuel reste à effectuer de votre côté.)'))return;
+  const d=b.details||{}; if(d.cancel) d.cancel.handled=true;
+  const {error}=await sb.from('bookings').update({status:'cancelled',details:d}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Annulation validée ✓'); refresh();
 }
 function renderResaChips(){
   const counts={all:BOOKINGS.length,pending:0,confirmed:0,completed:0,cancelled:0};
@@ -380,64 +399,135 @@ function renderDocs(){
   const docs=BOOKINGS.filter(b=>b.type==='devis'||b.type==='facture');
   const el=document.getElementById('allDocs');
   if(!docs.length){el.innerHTML='<tr><td colspan="8" class="empty">Aucun document.</td></tr>';return;}
-  el.innerHTML=docs.map(b=>`<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(bookingClient(b))}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td>${eur(b.amount_ht)}</td><td>${eur(b.vat)}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${b.type==='facture'?'<span class="st conf">Facture</span>':'<span class="st att">Devis</span>'}</td><td><button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> ${b.type==='devis'?`<button class="btn-mini" onclick="toFacture('${b.id}')">→ Facture</button>`:''}</td></tr>`).join('');
+  el.innerHTML=docs.map(b=>{
+    const typeCell=b.type==='facture'?(b.pay_status==='paid'?'<span class="st conf">Facture payée</span>':'<span class="st att">À payer</span>'):'<span class="st att">Devis</span>';
+    let act=`<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button>`;
+    if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
+    else if(b.type==='facture'&&b.pay_status!=='paid') act=`<button class="btn-mini gold" onclick="validatePayment('${b.id}')">Valider paiement</button> `+act;
+    return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(bookingClient(b))}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td>${eur(b.amount_ht)}</td><td>${eur(b.vat)}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${typeCell}</td><td>${act}</td></tr>`;
+  }).join('');
 }
-function toFacture(id){
-  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
-  if(!confirm('Convertir ce devis en facture ?'))return;
-  sb.from('bookings').update({type:'facture'}).eq('id',id).then(({error})=>{ if(error){toast('Erreur : '+error.message);return;} toast('Devis converti en facture ✓'); refresh(); });
-}
-function docPDF(id){
-  const b=BOOKINGS.find(x=>x.id===id); if(!b){toast('Document introuvable');return;}
-  if(!window.jspdf){toast('PDF indisponible, réessayez');return;}
+
+/* ---------- PDF (polices accentuées + retour à la ligne, comme le site) ---------- */
+const PDF_FONT_URLS={r:"https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf",b:"https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans-Bold.ttf"};
+let _fc={};
+function _ab2b64(buf){let bin="";const by=new Uint8Array(buf),ch=0x8000;for(let i=0;i<by.length;i+=ch)bin+=String.fromCharCode.apply(null,by.subarray(i,i+ch));return btoa(bin);}
+async function _loadFont(u){if(_fc[u])return _fc[u];const buf=await fetch(u).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();});return _fc[u]=_ab2b64(buf);}
+async function pdfFont(doc){try{const r=await _loadFont(PDF_FONT_URLS.r),b=await _loadFont(PDF_FONT_URLS.b);doc.addFileToVFS("dv-r.ttf",r);doc.addFont("dv-r.ttf","DV","normal");doc.addFileToVFS("dv-b.ttf",b);doc.addFont("dv-b.ttf","DV","bold");return "DV";}catch(e){return "helvetica";}}
+
+async function buildInvoiceDoc(b){
   const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:'pt',format:'a4'});
-  const gold=[201,162,74],dark=[20,28,46]; const W=595; let y; const d=b.details||{};
+  const F=await pdfFont(doc);
+  const gold=[201,162,74],dark=[20,28,46]; const W=595; const d=b.details||{};
+  const isInv=b.type==='facture', paid=b.pay_status==='paid';
   doc.setFillColor(7,10,18);doc.rect(0,0,W,134,'F');
-  doc.setTextColor(...gold);doc.setFont('helvetica','bold');doc.setFontSize(22);doc.text('ParisVTCDriver',40,58);
-  doc.setTextColor(150,160,180);doc.setFont('helvetica','normal');doc.setFontSize(8.5);
-  doc.text("Chauffeur prive · +33 7 49 19 83 18 · ParisVTCdriver@gmail.com",40,74);
-  doc.text("Siege : 38 Av. des Combattants de l'Afrique du Nord, 93420 Villepinte",40,87);
+  doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(22);doc.text('ParisVTCDriver',40,58);
+  doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(8.5);
+  doc.text("Chauffeur privé · +33 7 49 19 83 18 · ParisVTCdriver@gmail.com",40,74);
+  doc.text("Siège : 38 Av. des Combattants de l'Afrique du Nord, 93420 Villepinte",40,87);
   doc.text("SIRET 934505702 · TVA intracom. FR32934505702",40,100);
-  const isInv=b.type==='facture';
-  doc.setTextColor(...gold);doc.setFont('helvetica','bold');doc.setFontSize(15);
+  doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(15);
   doc.text(isInv?'FACTURE':'DEVIS',W-40,60,{align:'right'});
-  doc.setTextColor(150,160,180);doc.setFont('helvetica','normal');doc.setFontSize(9);
+  doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(9);
   doc.text((isInv?'Facture n° ':'Devis n° ')+(b.reference||'—'),W-40,76,{align:'right'});
   doc.text(b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):new Date().toLocaleDateString('fr-FR'),W-40,90,{align:'right'});
-  y=162;
-  doc.setTextColor(...dark);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Client :',40,y);
-  doc.setFont('helvetica','normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
+  if(isInv){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?'PAYÉE':'EN ATTENTE DE PAIEMENT',W-40,106,{align:'right'});}
+  let y=160;
+  doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(10);doc.text('Client :',40,y);
+  doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
   const cl=[bookingClient(b).replace(' (sans compte)','')];
   if(d.client_company)cl.push(d.client_company);
   if(d.client_email)cl.push(d.client_email);
   if(d.client_phone)cl.push(d.client_phone);
   cl.forEach((line,i)=>doc.text(String(line),40,y+15+i*13));
-  y=y+15+cl.length*13+16;
+  y=y+15+cl.length*13+18;
   doc.setFillColor(245,242,234);doc.rect(40,y,W-80,22,'F');
-  doc.setTextColor(...dark);doc.setFont('helvetica','bold');doc.setFontSize(9);
+  doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(9);
   doc.text('Prestation',48,y+15);doc.text('Prix',W-48,y+15,{align:'right'});
   y+=34;
-  doc.setFontSize(9.5);
   (d.lines||[]).forEach(l=>{
-    doc.setFont('helvetica','bold');doc.setTextColor(30,38,56);doc.text(String(l.label||''),48,y);
-    doc.setFont('helvetica','normal');doc.text(String(l.priceLabel||''),W-48,y,{align:'right'});
-    if(l.detail){y+=13;doc.setTextColor(120,130,150);doc.setFontSize(8.5);doc.text(String(l.detail),48,y);doc.setFontSize(9.5);}
-    ['route','dt','req'].forEach(k=>{ if(l[k]){y+=12;doc.setTextColor(150,120,40);doc.text(({route:'Trajet : ',dt:'RDV : ',req:'Demande : '}[k])+l[k],48,y);} });
+    doc.setFont(F,'bold');doc.setTextColor(30,38,56);doc.setFontSize(9.5);
+    doc.splitTextToSize(String(l.label||''),W-180).forEach((ln,i)=>{if(i)y+=13;doc.text(ln,48,y);});
+    doc.setFont(F,'normal');doc.text(String(l.priceLabel||''),W-48,y,{align:'right'});
+    if(l.detail){y+=13;doc.setTextColor(120,130,150);doc.setFontSize(8.5);doc.splitTextToSize(String(l.detail),W-96).forEach((ln,i)=>{if(i)y+=12;doc.text(ln,48,y);});doc.setFontSize(9.5);}
+    [['route','Trajet : '],['dt','RDV : '],['req','Demande : ']].forEach(([k,pfx])=>{ if(l[k]){doc.setTextColor(150,120,40);doc.splitTextToSize(pfx+l[k],W-96).forEach(ln=>{y+=12;doc.text(ln,48,y);});} });
     y+=20;
-    if(y>740){doc.addPage();y=60;}
+    if(y>730){doc.addPage();y=60;}
   });
   y+=6;doc.setDrawColor(220);doc.line(W-230,y,W-40,y);y+=16;
-  doc.setFont('helvetica','normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
+  doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
   doc.text('Total HT',W-230,y);doc.text(eur(b.amount_ht),W-40,y,{align:'right'});y+=15;
   doc.text('TVA',W-230,y);doc.text(eur(b.vat),W-40,y,{align:'right'});y+=18;
-  doc.setFont('helvetica','bold');doc.setTextColor(...gold);doc.setFontSize(12);
+  doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
   doc.text('Total TTC',W-230,y);doc.text(eur(b.amount_ttc),W-40,y,{align:'right'});
   y+=40;doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
-  doc.setFont('helvetica','bold');doc.setTextColor(...dark);doc.setFontSize(9.5);doc.text('Reglement : virement bancaire ou carte',40,y);y+=14;
-  doc.setFont('helvetica','normal');doc.setTextColor(60,70,90);
-  doc.text('Beneficiaire : PARISVTCDRIVER · BIC : QNTOFRP1XXX',40,y);y+=13;
+  doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);
+  doc.text(paid?'Paiement reçu — merci.':'Règlement par virement bancaire',40,y);y+=14;
+  doc.setFont(F,'normal');doc.setTextColor(60,70,90);
+  doc.text('Bénéficiaire : PARISVTCDRIVER · BIC : QNTOFRP1XXX',40,y);y+=13;
   doc.text('IBAN : FR7616958000014883777337715',40,y);
-  doc.save((isInv?'facture-':'devis-')+(b.reference||'doc')+'.pdf');
+  return doc;
+}
+async function docPDF(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b){toast('Document introuvable');return;}
+  if(!window.jspdf){toast('PDF indisponible, réessayez');return;}
+  toast('Génération du PDF…');
+  const doc=await buildInvoiceDoc(b);
+  doc.save((b.type==='facture'?'facture-':'devis-')+(b.reference||'doc')+'.pdf');
+}
+
+/* ---------- Circuit devis → facture → paiement ---------- */
+async function proposePrice(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  const v=prompt('Prix TTC à proposer pour ce devis (€) :', b.amount_ttc||'');
+  if(v===null)return;
+  const ttc=parseFloat(String(v).replace(',','.'));
+  if(isNaN(ttc)||ttc<=0){toast('Montant invalide');return;}
+  const ht=Math.round(ttc/1.10*100)/100, vat=Math.round((ttc-ht)*100)/100;
+  const d=b.details||{};
+  if(Array.isArray(d.lines)){const i=d.lines.findIndex(l=>l.custom); if(i>=0){d.lines[i].priceLabel=eur(ttc);d.lines[i].custom=false;}}
+  const {error}=await sb.from('bookings').update({amount_ht:ht,vat,amount_ttc:ttc,details:d}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Prix enregistré ✓ '+eur(ttc)); refresh();
+}
+async function acceptDevis(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  if(!Number(b.amount_ttc)){ toast('Proposez d’abord un prix.'); return; }
+  if(!confirm('Accepter ce devis et émettre une facture en attente de paiement ? Un e-mail avec la facture et le RIB sera envoyé au client.'))return;
+  const {error}=await sb.from('bookings').update({type:'facture',status:'confirmed',pay_status:'awaiting',accepted_at:new Date().toISOString()}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Facture émise (en attente de paiement) ✓');
+  await refresh();
+  await emailInvoice(BOOKINGS.find(x=>x.id===id),'awaiting');
+}
+async function validatePayment(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  if(!confirm('Confirmer la réception du paiement ? La facture payée sera envoyée au client.'))return;
+  const {error}=await sb.from('bookings').update({pay_status:'paid',paid_at:new Date().toISOString()}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Paiement validé ✓ (la course reste à passer en « Terminée » après réalisation)');
+  await refresh();
+  await emailInvoice(BOOKINGS.find(x=>x.id===id),'paid');
+}
+async function emailInvoice(b,mode){
+  if(!b)return;
+  const to=(b.details&&b.details.client_email)||(b.user_id&&PROFILES[b.user_id]&&PROFILES[b.user_id].email);
+  if(!to){toast('Pas d’e-mail client — facture non envoyée');return;}
+  toast('Envoi de la facture par e-mail…');
+  let pdf64='';
+  try{const doc=await buildInvoiceDoc(b);pdf64=doc.output('datauristring').split(',')[1];}catch(e){}
+  const name=(b.details&&b.details.client_name)||'';
+  const paid=mode==='paid';
+  const ref=b.reference||'';
+  const subject=paid?('Facture payée '+ref+' · ParisVTCDriver'):('Facture à régler '+ref+' · ParisVTCDriver');
+  const html=paid
+    ? `<h2 style="color:#a07d2c">Merci pour votre paiement</h2><p>Bonjour ${escapeHtml(name)},</p><p>Nous confirmons la réception de votre paiement. Votre facture acquittée est en pièce jointe.</p><p>Montant réglé : <b>${eur(b.amount_ttc)}</b></p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`
+    : `<h2 style="color:#a07d2c">Votre devis est accepté</h2><p>Bonjour ${escapeHtml(name)},</p><p>Votre facture est en pièce jointe. Merci de procéder au règlement par virement bancaire :</p><p><b>Montant : ${eur(b.amount_ttc)}</b><br>Bénéficiaire : PARISVTCDRIVER<br>IBAN : FR7616958000014883777337715<br>BIC : QNTOFRP1XXX<br>Référence à indiquer : ${escapeHtml(ref)}</p><p>Dès réception, nous vous confirmerons le paiement.</p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`;
+  try{
+    const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject,html,pdf_base64:pdf64,filename:(paid?'facture-payee-':'facture-')+(ref||'doc')+'.pdf'}});
+    if(error||(data&&data.ok===false)) throw new Error((data&&data.error)||(error&&error.message)||'err');
+    toast('Facture envoyée par e-mail ✓');
+  }catch(e){ toast('Facture émise, mais e-mail non envoyé : '+(e&&e.message?e.message:e)); }
 }
 function clientStats(uid){
   const bs=BOOKINGS.filter(b=>b.user_id===uid&&b.type==='reservation');
