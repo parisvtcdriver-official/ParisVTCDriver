@@ -744,7 +744,7 @@ function renderPromo(){
       <td><span class="lvl-tag" style="${isAvoir?'':'background:rgba(96,165,250,.12);color:var(--blue)'}">${isAvoir?'Avoir':'Promo'}</span></td>
       <td class="amt">−${eur(p.amount)}</td>
       <td class="${expired?'':''}" style="${expired?'color:var(--red)':''}">${validite}</td>
-      <td>${p.used_by?escapeHtml(clientName(p.used_by)):'—'}</td>
+      <td>${p.used_by?escapeHtml(clientName(p.used_by)):'—'}${p.used_at?'<div class="sub2">utilisé le '+new Date(p.used_at).toLocaleDateString('fr-FR')+'</div>':''}</td>
       <td><span class="st ${s[0]}">${s[1]}</span></td><td>${act}</td></tr>`;
   }).join('');
 }
