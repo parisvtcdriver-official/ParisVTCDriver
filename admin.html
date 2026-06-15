@@ -172,7 +172,7 @@ select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:
     <section class="view" id="cli">
       <div class="top"><div><h1>Clients</h1><div class="sub">Fiches, historique et dépenses</div></div></div>
       <div class="card"><div class="scroll"><table>
-        <thead><tr><th>Client</th><th>Contact</th><th>Courses</th><th>Total dépensé</th><th>Dernière course</th></tr></thead>
+        <thead><tr><th>Client</th><th>Contact</th><th>Courses</th><th>Total dépensé</th><th>Dernière course</th><th></th></tr></thead>
         <tbody id="allCli"></tbody>
       </table></div></div>
     </section>
@@ -340,6 +340,9 @@ async function refresh(){
 
 function clientName(uid){const p=PROFILES[uid];return p?(p.full_name||p.email||'Client'):'—';}
 function bookingClient(b){if(b.user_id&&PROFILES[b.user_id])return PROFILES[b.user_id].full_name||PROFILES[b.user_id].email||'Client';if(b.details&&b.details.client_name)return b.details.client_name+' (sans compte)';if(b.details&&b.details.client_email)return b.details.client_email+' (sans compte)';return '—';}
+function firstLine(b){return b.details&&b.details.lines&&b.details.lines[0];}
+function bkRDV(b){if(b.date_time)return dateFR(b.date_time);const l=firstLine(b);return (l&&l.dt)||'—';}
+function bkVehicle(b){if(b.vehicle)return b.vehicle;const l=firstLine(b);if(l&&l.detail){return String(l.detail).split('·')[0].trim()||'—';}return '—';}
 
 function renderResaTable(elId,list,withSelect){
   const el=document.getElementById(elId);
@@ -358,8 +361,8 @@ function renderResaTable(elId,list,withSelect){
     }
     return `<tr><td class="cli">${escapeHtml(bookingClient(b))}</td>
       <td>${escapeHtml(b.service||'')}${typeTag}<div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
-      <td>${dateFR(b.date_time)}</td>`+
-      (elId==='dashResa'?'':`<td>${escapeHtml(b.vehicle||'—')}</td>`)+
+      <td>${bkRDV(b)}</td>`+
+      (elId==='dashResa'?'':`<td>${escapeHtml(bkVehicle(b))}</td>`)+
       `<td class="amt">${eur(b.amount_ttc)}</td>
       <td>${statusCell}</td></tr>`;
   }).join('');
@@ -426,7 +429,7 @@ function renderDashNext(){
   const el=document.getElementById('dashNext');
   if(!up.length){el.innerHTML='<div class="empty">Aucune course à venir.</div>';return;}
   const dot={pending:'var(--amber)',confirmed:'var(--green)',completed:'var(--blue)'};
-  el.innerHTML=up.map(b=>`<div class="list-i"><span class="dot" style="background:${dot[b.status]||'var(--muted-2)'}"></span><div class="li-main"><b>${escapeHtml(bookingClient(b))}</b><small>${dateFR(b.date_time)} · ${escapeHtml(b.service||'')}</small></div><span class="li-amt">${eur(b.amount_ttc)}</span></div>`).join('');
+  el.innerHTML=up.map(b=>`<div class="list-i"><span class="dot" style="background:${dot[b.status]||'var(--muted-2)'}"></span><div class="li-main"><b>${escapeHtml(bookingClient(b))}</b><small>${bkRDV(b)} · ${escapeHtml(b.service||'')}</small></div><span class="li-amt">${eur(b.amount_ttc)}</span></div>`).join('');
 }
 function renderBars(elId,yr,dt,paid){
   const sums=new Array(12).fill(0);
@@ -439,7 +442,10 @@ function renderDocs(){
   const el=document.getElementById('allDocs');
   if(!docs.length){el.innerHTML='<tr><td colspan="8" class="empty">Aucun document.</td></tr>';return;}
   el.innerHTML=docs.map(b=>{
-    const typeCell=b.type==='facture'?(b.pay_status==='paid'?'<span class="st conf">Facture payée</span>':'<span class="st att">À payer</span>'):'<span class="st att">Devis</span>';
+    let typeCell;
+    if(b.type==='devis') typeCell='<span class="st att">Devis</span>';
+    else if(['cancelled','refunded','avoir'].includes(b.status)) typeCell=statusBadgeFull(b);
+    else typeCell=(b.pay_status==='paid')?'<span class="st conf">Facture payée</span>':'<span class="st att">Facture à payer</span>';
     let act=`<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button>`;
     if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
     else if(b.type==='facture'&&b.pay_status!=='paid') act=`<button class="btn-mini gold" onclick="validatePayment('${b.id}')">Valider paiement</button> `+act;
@@ -580,22 +586,34 @@ async function emailInvoice(b,mode){
   }catch(e){ toast('Facture émise, mais e-mail non envoyé : '+(e&&e.message?e.message:e)); }
 }
 function clientStats(uid){
-  const bs=BOOKINGS.filter(b=>b.user_id===uid&&(b.type==='reservation'||b.type==='facture'));
-  const total=bs.filter(b=>b.pay_status==='paid'||b.status==='completed').reduce((s,b)=>s+Number(b.amount_ttc||0),0);
+  // uniquement les courses TERMINÉES
+  const bs=BOOKINGS.filter(b=>b.user_id===uid&&b.status==='completed'&&(b.type==='reservation'||b.type==='facture'));
+  const total=bs.reduce((s,b)=>s+Number(b.amount_ttc||0),0);
   const times=bs.map(b=>b.date_time?new Date(b.date_time).getTime():(b.created_at?new Date(b.created_at).getTime():0)).filter(Boolean);
   const last=times.length?new Date(Math.max(...times)):null;
   return {count:bs.length,total,last};
 }
 function renderClients(profs){
   const el=document.getElementById('allCli');
-  if(!profs.length){el.innerHTML='<tr><td colspan="5" class="empty">Aucun client.</td></tr>';return;}
+  if(!profs.length){el.innerHTML='<tr><td colspan="6" class="empty">Aucun client.</td></tr>';return;}
   el.innerHTML=profs.map(p=>{
     const L=loyalty(p.loyalty_points), s=clientStats(p.id);
+    const act=p.id===ME.id?'<span class="sub2">vous</span>':`<button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteClient('${p.id}','${escapeHtml((p.full_name||p.email||'').replace(/'/g,''))}')">Supprimer</button>`;
     return `<tr><td class="cli">${medal(medalFor(L.name))}${escapeHtml(p.full_name||'—')}</td>
       <td>${escapeHtml(p.email||'')}<div class="sub2">${escapeHtml(p.phone||'')}</div></td>
       <td>${s.count}</td><td class="amt">${eur(s.total)}</td>
-      <td>${s.last?new Date(s.last).toLocaleDateString('fr-FR'):'—'}</td></tr>`;
+      <td>${s.last?new Date(s.last).toLocaleDateString('fr-FR'):'—'}</td>
+      <td>${act}</td></tr>`;
   }).join('');
+}
+async function deleteClient(id,name){
+  if(!confirm('Supprimer définitivement le compte de '+(name||'ce client')+' ?\n\nSon compte de connexion sera supprimé. Ses factures/courses passées sont conservées (sans rattachement au compte). Action irréversible.'))return;
+  toast('Suppression…');
+  try{
+    const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'delete-client',target_id:id}});
+    if(error||(data&&data.ok===false)) throw new Error((data&&data.error)||(error&&error.message)||'err');
+    toast('Compte supprimé ✓'); refresh();
+  }catch(e){ toast('Échec : '+(e&&e.message?e.message:e)); }
 }
 function renderFidelity(profs){
   document.getElementById('fMembers').textContent=profs.filter(p=>(p.loyalty_points||0)>=100).length;
