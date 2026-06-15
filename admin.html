@@ -239,8 +239,8 @@ select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:
 <script src="supabase-init.js"></script>
 <script>
 const MONTHS=['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
-const STMAP={pending:['att','En attente'],confirmed:['conf','Confirmée'],completed:['term','Terminée'],cancelled:['ann','Annulée']};
-const STATUSES=['pending','confirmed','completed','cancelled'];
+const STMAP={pending:['att','En attente'],confirmed:['conf','Confirmée'],completed:['term','Terminée'],cancelled:['ann','Annulée'],refunded:['term','Remboursé'],avoir:['term','Avoir émis']};
+const STATUSES=['pending','confirmed','completed','cancelled','refunded','avoir'];
 function stSelect(id,cur){return `<select class="mini" onchange="setStatus('${id}',this.value)">`+STATUSES.map(s=>`<option value="${s}"${s===cur?' selected':''}>${STMAP[s][1]}</option>`).join('')+`</select>`;}
 function show(v){document.querySelectorAll('.nav-i').forEach(x=>x.classList.toggle('active',x.dataset.v===v));document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.id===v));window.scrollTo(0,0);document.querySelector('.side').classList.remove('open');}
 document.querySelectorAll('.nav-i').forEach(n=>n.addEventListener('click',()=>show(n.dataset.v)));
@@ -347,17 +347,12 @@ function renderResaTable(elId,list,withSelect){
   el.innerHTML=list.map(b=>{
     const typeTag=b.type!=='reservation'?` <span class="sub2">(${b.type})</span>`:'';
     const c=b.details&&b.details.cancel;
-    const cancelReq=(c&&c.requested&&!c.handled&&b.status!=='cancelled');
+    const resolved=['cancelled','refunded','avoir'].includes(b.status);
+    const cancelReq=(c&&c.requested&&!resolved);
     let statusCell;
-    if(b.status==='cancelled'){
-      statusCell=statusBadgeFull(b);
-      if(withSelect && c && !c.refunded && /remboursement|avoir/i.test(c.policy||'')){
-        const av=/avoir/i.test(c.policy||'');
-        statusCell+=`<br><button class="btn-mini gold" style="margin-top:5px" onclick="refundBooking('${b.id}')">${av?"Émettre l'avoir":'Valider remboursement'}</button>`;
-      }
-    } else if(withSelect){
+    if(withSelect){
       statusCell=stSelect(b.id,b.status);
-      if(cancelReq) statusCell+=`<div class="sub2" style="color:var(--amber);margin-top:5px">⚠ Annulation demandée — ${escapeHtml(c.policy||'')}${c.reason?'<br>Motif : '+escapeHtml(c.reason):''}</div><button class="btn-mini gold" style="margin-top:5px" onclick="validateCancel('${b.id}')">Valider l'annulation</button>`;
+      if(cancelReq) statusCell+=`<div class="sub2" style="color:var(--amber);margin-top:5px">⚠ Annulation demandée — ${escapeHtml(c.policy||'')}${c.reason?'<br>Motif : '+escapeHtml(c.reason):''}<br>→ choisir « Annulée », « Remboursé » ou « Avoir émis »</div>`;
     } else {
       statusCell=statusBadgeFull(b)+(cancelReq?' <span class="sub2" style="color:var(--amber)">⚠ annul.</span>':'');
     }
@@ -585,9 +580,10 @@ async function emailInvoice(b,mode){
   }catch(e){ toast('Facture émise, mais e-mail non envoyé : '+(e&&e.message?e.message:e)); }
 }
 function clientStats(uid){
-  const bs=BOOKINGS.filter(b=>b.user_id===uid&&b.type==='reservation');
-  const total=bs.filter(b=>b.status==='confirmed'||b.status==='completed').reduce((s,b)=>s+Number(b.amount_ttc||0),0);
-  const last=bs.map(b=>b.date_time).filter(Boolean).sort().slice(-1)[0];
+  const bs=BOOKINGS.filter(b=>b.user_id===uid&&(b.type==='reservation'||b.type==='facture'));
+  const total=bs.filter(b=>b.pay_status==='paid'||b.status==='completed').reduce((s,b)=>s+Number(b.amount_ttc||0),0);
+  const times=bs.map(b=>b.date_time?new Date(b.date_time).getTime():(b.created_at?new Date(b.created_at).getTime():0)).filter(Boolean);
+  const last=times.length?new Date(Math.max(...times)):null;
   return {count:bs.length,total,last};
 }
 function renderClients(profs){
@@ -687,12 +683,25 @@ async function generatePromo(){
 async function disablePromo(id){if(!confirm('Désactiver ce code ?'))return;const{error}=await sb.from('promo_codes').update({status:'disabled'}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Code désactivé ✓');refresh();}
 
 async function setStatus(id,status){
-  // Les points de fidélité sont crédités automatiquement par la base (déclencheur)
-  // quand le statut passe à « completed ».
-  const {error}=await sb.from('bookings').update({status}).eq('id',id);
+  // Les points de fidélité sont crédités automatiquement par la base (déclencheur) au statut « completed ».
+  const b=BOOKINGS.find(x=>x.id===id);
+  const upd={status};
+  const isRefund=(status==='refunded'||status==='avoir');
+  if(isRefund){
+    const d=(b&&b.details)||{};
+    d.cancel=Object.assign({},d.cancel,{refunded:true,outcome:(status==='avoir'?'avoir':'refund'),refunded_at:new Date().toISOString(),policy:((d.cancel&&d.cancel.policy)||(status==='avoir'?'Avoir':'Remboursement'))});
+    upd.details=d;
+  }
+  const {error}=await sb.from('bookings').update(upd).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
-  toast(status==='completed'?'Course terminée ✓ (points de fidélité crédités)':'Statut mis à jour ✓');
-  refresh();
+  if(isRefund){
+    toast(status==='avoir'?'Avoir émis ✓':'Remboursement validé ✓');
+    await refresh();
+    await emailCancellation(BOOKINGS.find(x=>x.id===id), status==='avoir');
+  } else {
+    toast(status==='completed'?'Course terminée ✓ (points crédités)':'Statut mis à jour ✓');
+    refresh();
+  }
 }
 async function setPartnerStatus(id,status){const{error}=await sb.from('partner_requests').update({status}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Demande mise à jour ✓');refresh();}
 async function editPoints(id,cur){const v=prompt('Points de fidélité :',cur);if(v===null)return;const n=parseInt(v,10);if(isNaN(n)||n<0){toast('Valeur invalide');return;}let{error}=await sb.from('profiles').update({loyalty_points:n,loyalty_decay_at:new Date().toISOString()}).eq('id',id);if(error&&/loyalty_decay_at/.test(error.message||'')){({error}=await sb.from('profiles').update({loyalty_points:n}).eq('id',id));}if(error){toast('Erreur : '+error.message);return;}toast('Points mis à jour ✓');refresh();}
