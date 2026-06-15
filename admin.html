@@ -686,9 +686,27 @@ async function generatePromo(){
 }
 async function disablePromo(id){if(!confirm('Désactiver ce code ?'))return;const{error}=await sb.from('promo_codes').update({status:'disabled'}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Code désactivé ✓');refresh();}
 
-async function setStatus(id,status){const{error}=await sb.from('bookings').update({status}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Statut mis à jour ✓');refresh();}
+async function setStatus(id,status){
+  const b=BOOKINGS.find(x=>x.id===id);
+  const upd={status};
+  // Fidélité : 1 € dépensé = 1 point, crédité quand la course passe en « Terminée » (une seule fois)
+  let award=0, uid=null;
+  if(status==='completed' && b && b.user_id && !(b.details&&b.details.points_awarded)){
+    award=Math.round(Number(b.amount_ttc)||0);
+    if(award>0){ const d=b.details||{}; d.points_awarded=true; d.points_value=award; upd.details=d; uid=b.user_id; }
+  }
+  const {error}=await sb.from('bookings').update(upd).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  if(uid && award>0){
+    const prof=PROFILES[uid];
+    const newPts=((prof&&prof.loyalty_points)||0)+award;
+    const {error:e2}=await sb.from('profiles').update({loyalty_points:newPts}).eq('id',uid);
+    toast(e2?('Statut mis à jour ✓ (points : '+e2.message+')'):('Course terminée ✓ +'+award+' pts fidélité'));
+  } else { toast('Statut mis à jour ✓'); }
+  refresh();
+}
 async function setPartnerStatus(id,status){const{error}=await sb.from('partner_requests').update({status}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Demande mise à jour ✓');refresh();}
-async function editPoints(id,cur){const v=prompt('Points de fidélité :',cur);if(v===null)return;const n=parseInt(v,10);if(isNaN(n)||n<0){toast('Valeur invalide');return;}const{error}=await sb.from('profiles').update({loyalty_points:n}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Points mis à jour ✓');refresh();}
+async function editPoints(id,cur){const v=prompt('Points de fidélité :',cur);if(v===null)return;const n=parseInt(v,10);if(isNaN(n)||n<0){toast('Valeur invalide');return;}let{error}=await sb.from('profiles').update({loyalty_points:n,loyalty_decay_at:new Date().toISOString()}).eq('id',id);if(error&&/loyalty_decay_at/.test(error.message||'')){({error}=await sb.from('profiles').update({loyalty_points:n}).eq('id',id));}if(error){toast('Erreur : '+error.message);return;}toast('Points mis à jour ✓');refresh();}
 async function toggleRole(id,role){const next=role==='admin'?'client':'admin';if(!confirm('Changer le rôle en « '+next+' » ?'))return;const{error}=await sb.from('profiles').update({role:next}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Rôle mis à jour ✓');refresh();}
 
 load();
