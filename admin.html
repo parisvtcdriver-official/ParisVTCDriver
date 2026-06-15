@@ -687,22 +687,11 @@ async function generatePromo(){
 async function disablePromo(id){if(!confirm('Désactiver ce code ?'))return;const{error}=await sb.from('promo_codes').update({status:'disabled'}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Code désactivé ✓');refresh();}
 
 async function setStatus(id,status){
-  const b=BOOKINGS.find(x=>x.id===id);
-  const upd={status};
-  // Fidélité : 1 € dépensé = 1 point, crédité quand la course passe en « Terminée » (une seule fois)
-  let award=0, uid=null;
-  if(status==='completed' && b && b.user_id && !(b.details&&b.details.points_awarded)){
-    award=Math.round(Number(b.amount_ttc)||0);
-    if(award>0){ const d=b.details||{}; d.points_awarded=true; d.points_value=award; upd.details=d; uid=b.user_id; }
-  }
-  const {error}=await sb.from('bookings').update(upd).eq('id',id);
+  // Les points de fidélité sont crédités automatiquement par la base (déclencheur)
+  // quand le statut passe à « completed ».
+  const {error}=await sb.from('bookings').update({status}).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
-  if(uid && award>0){
-    const prof=PROFILES[uid];
-    const newPts=((prof&&prof.loyalty_points)||0)+award;
-    const {error:e2}=await sb.from('profiles').update({loyalty_points:newPts}).eq('id',uid);
-    toast(e2?('Statut mis à jour ✓ (points : '+e2.message+')'):('Course terminée ✓ +'+award+' pts fidélité'));
-  } else { toast('Statut mis à jour ✓'); }
+  toast(status==='completed'?'Course terminée ✓ (points de fidélité crédités)':'Statut mis à jour ✓');
   refresh();
 }
 async function setPartnerStatus(id,status){const{error}=await sb.from('partner_requests').update({status}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Demande mise à jour ✓');refresh();}
