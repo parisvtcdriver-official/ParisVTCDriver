@@ -565,13 +565,19 @@ async function proposePrice(id){
 }
 async function acceptDevis(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
-  if(!Number(b.amount_ttc)){ toast('Proposez d’abord un prix.'); return; }
-  if(!confirm('Accepter ce devis et émettre une facture en attente de paiement ? Un e-mail avec la facture et le RIB sera envoyé au client.'))return;
-  const {error}=await sb.from('bookings').update({type:'facture',status:'confirmed',pay_status:'awaiting',accepted_at:new Date().toISOString()}).eq('id',id);
+  // Un prix réel doit exister : montant TTC > 0 OU un sous-total avant remise (cas avoir couvrant tout → 0 € à payer)
+  const sub=Number((b.details&&b.details.subtotal)||0);
+  if(!Number(b.amount_ttc) && !sub){ toast('Proposez d’abord un prix.'); return; }
+  const free=!Number(b.amount_ttc);
+  if(!confirm((free?'Ce devis est à 0 € (couvert par un avoir/code). ':'')+'Accepter ce devis et émettre une facture'+(free?' (soldée)':' en attente de paiement')+' ? Un e-mail avec la facture sera envoyé au client.'))return;
+  const upd=free
+    ? {type:'facture',status:'confirmed',pay_status:'paid',accepted_at:new Date().toISOString(),paid_at:new Date().toISOString()}
+    : {type:'facture',status:'confirmed',pay_status:'awaiting',accepted_at:new Date().toISOString()};
+  const {error}=await sb.from('bookings').update(upd).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
-  toast('Facture émise (en attente de paiement) ✓');
+  toast(free?'Facture soldée émise ✓':'Facture émise (en attente de paiement) ✓');
   await refresh();
-  await emailInvoice(BOOKINGS.find(x=>x.id===id),'awaiting');
+  await emailInvoice(BOOKINGS.find(x=>x.id===id), free?'paid':'awaiting');
 }
 async function validatePayment(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
