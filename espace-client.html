@@ -144,7 +144,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
     <!-- AVOIRS -->
     <section class="view" id="avoir">
       <div class="top"><div><h1>Mes avoirs</h1><div class="sub">Montants à valoir sur vos prochaines réservations</div></div></div>
-      <div class="card"><div class="empty">Aucun avoir disponible pour le moment.<br>En cas d'annulation éligible, votre avoir apparaîtra ici.</div></div>
+      <div id="avoirList"></div>
     </section>
 
     <!-- FIDELITE -->
@@ -198,7 +198,7 @@ function medal(lvl,big){
   return `<svg class="${c} m-${lvl}" viewBox="0 0 24 24" fill="currentColor"><path d="${STAR}"/></svg>`;
 }
 function medalFor(name){return ({Diamant:'platine',Or:'or',Argent:'argent',Bronze:'bronze'})[name]||'';}
-const STMAP={pending:['att','En attente'],confirmed:['conf','Confirmée'],completed:['term','Terminée'],cancelled:['ann','Annulée']};
+const STMAP={pending:['att','En attente'],confirmed:['conf','Confirmée'],completed:['term','Terminée'],cancelled:['ann','Annulée'],refunded:['term','Remboursé'],avoir:['term','Avoir émis']};
 function stBadge(s){const m=STMAP[s]||['att',s||'—'];return `<span class="st ${m[0]}">${m[1]}</span>`;}
 function statusBadgeFull(b){
   if(b.status==='cancelled'){
@@ -235,6 +235,24 @@ async function load(){
   ALLBK = list;
   renderReservations(list);
   renderDocs(list);
+  renderAvoirs(list);
+}
+function renderAvoirs(list){
+  const el=document.getElementById('avoirList'); if(!el)return;
+  const avoirs=list.filter(b=>b.status==='avoir'||(b.status==='cancelled'&&b.details&&b.details.cancel&&b.details.cancel.outcome==='avoir'&&b.details.cancel.refunded));
+  if(!avoirs.length){ el.innerHTML='<div class="card"><div class="empty">Aucun avoir disponible pour le moment.<br>En cas d’annulation éligible, votre avoir apparaîtra ici.</div></div>'; return; }
+  el.innerHTML='<div class="grid2">'+avoirs.map(b=>{
+    const emis=b.details.cancel.refunded_at?new Date(b.details.cancel.refunded_at):null;
+    const fin=emis?new Date(emis.getTime()+62*24*36e5):null;
+    const expired=fin?Date.now()>fin.getTime():false;
+    return `<div class="avoir"${expired?' style="opacity:.55"':''}>
+      <div style="color:var(--muted-2);font-size:12.5px">Avoir · ${escapeHtml(b.reference||'')}</div>
+      <div class="v">${eur(b.amount_ttc)}</div>
+      <div class="x">${emis?('Émis le '+emis.toLocaleDateString('fr-FR')):''}${fin?(' · valable jusqu’au '+fin.toLocaleDateString('fr-FR')):''}</div>
+      <div style="margin-top:10px">${expired?'<span class="st ann">Expiré</span>':'<span class="st conf">Disponible</span>'}</div>
+      <div class="sub2" style="margin-top:8px">À mentionner lors de votre prochaine réservation.</div>
+    </div>`;
+  }).join('')+'</div>';
 }
 
 function renderLoyalty(points){
@@ -287,7 +305,7 @@ function rowResa(b,withCancel){
   const ts=bkTime(b);
   if(withCancel){
     if(b.details&&b.details.cancel&&b.details.cancel.requested&&b.status!=='cancelled') extra='<span class="sub2" style="color:var(--amber)">Demande envoyée</span>';
-    else if(b.status!=='cancelled'&&b.status!=='completed') extra=`<button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">Annuler / remboursement</button>`;
+    else if(!['cancelled','completed','refunded','avoir'].includes(b.status)) extra=`<button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">Annuler / remboursement</button>`;
   }
   const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">payée</span>':' <span class="st att" style="margin-left:6px">à payer</span>'):'';
   return `<tr><td><div class="cli">${escapeHtml(b.service||b.type)}${payTag}</div><div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
@@ -331,7 +349,7 @@ function renderDocs(list){
   if(!docs.length){ el.innerHTML='<tr><td colspan="6" class="empty">Aucun document récent.<br>Les factures sont conservées 2 mois.</td></tr>'; return; }
   el.innerHTML=docs.map(b=>{
     let badge;
-    if(b.type==='facture') badge=(b.status==='cancelled')?statusBadgeFull(b):(b.pay_status==='paid'?'<span class="st conf">Facture payée</span>':'<span class="st att">À payer</span>');
+    if(b.type==='facture') badge=(['cancelled','refunded','avoir'].includes(b.status))?statusBadgeFull(b):(b.pay_status==='paid'?'<span class="st conf">Facture payée</span>':'<span class="st att">À payer</span>');
     else badge='<span class="st att">Devis</span>';
     return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(b.service||'')}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${badge}</td><td>${b.type==='facture'?`<button class="btn btn-ghost btn-sm" onclick="clientDocPDF('${b.id}')">PDF</button>`:''}</td></tr>`;
   }).join('');
@@ -347,8 +365,8 @@ async function clientDocPDF(id){
   const b=ALLBK.find(x=>x.id===id); if(!b){toast('Document introuvable');return;}
   if(!window.jspdf){toast('PDF indisponible');return;}
   toast('Génération du PDF…');
-  const cancel=(b.status==='cancelled'&&b.details&&b.details.cancel&&b.details.cancel.refunded);
-  const isAvoir=cancel&&b.details.cancel.outcome==='avoir';
+  const cancel=(b.status==='refunded'||b.status==='avoir'||(b.status==='cancelled'&&b.details&&b.details.cancel&&b.details.cancel.refunded));
+  const isAvoir=(b.status==='avoir')||(b.details&&b.details.cancel&&b.details.cancel.outcome==='avoir');
   const doc=await buildInvoiceDoc(b,{cancellation:cancel,isAvoir});
   doc.save((cancel?'facture-annulation-':'facture-')+(b.reference||'doc')+'.pdf');
 }
@@ -396,6 +414,11 @@ async function buildInvoiceDoc(b,opts){
   });
   y+=6;doc.setDrawColor(220);doc.line(W-230,y,W-40,y);y+=16;
   doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
+  if(Number(d.discount)>0){
+    doc.text('Sous-total',W-230,y);doc.text(eur(d.subtotal),W-40,y,{align:'right'});y+=15;
+    doc.setTextColor(40,160,110);doc.text('Remise'+(d.discount_label?' ('+d.discount_label+')':''),W-230,y);doc.text('−'+eur(d.discount),W-40,y,{align:'right'});y+=15;
+    doc.setTextColor(60,70,90);
+  }
   doc.text('Total HT',W-230,y);doc.text(eur(b.amount_ht),W-40,y,{align:'right'});y+=15;
   doc.text('TVA',W-230,y);doc.text(eur(b.vat),W-40,y,{align:'right'});y+=18;
   doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);

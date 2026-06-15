@@ -1653,12 +1653,14 @@ async function sendQuoteRequest(btn){
   const email=cv("c_email");
   if(!email){toast(LANG==="fr"?"Entrez votre e-mail pour recevoir le devis.":"Enter your email to receive the quote.");return;}
   if(typeof sb==="undefined"){toast(LANG==="fr"?"Service indisponible, réessayez.":"Service unavailable, retry.");return;}
-  const {tax,total}=computeTotals();
+  const {ttc,disc,tax,total}=computeTotals();
   const ref=peekRef();
   const L=sortedLines();
   const lines=L.map(l=>({label:l.label,detail:l.detail,custom:!!l.custom,priceLabel:l.custom?t("on_quote"):eur(l.price),route:l.route||"",dt:l.dt||"",req:l.req||""}));
   const first=L[0]||{};
   const rt=(first.route||"").split("→").map(s=>s.trim());
+  // libellé de remise (fidélité et/ou code promo)
+  let dl=[]; if(loyaltyDiscount()>0) dl.push("Fidélité −"+LOYALTY.off+"%"); if(currentDiscount()>0&&appliedCode) dl.push(appliedCode);
   const payload={
     reference:ref,
     client_name:cv("c_name"), client_email:email,
@@ -1666,6 +1668,7 @@ async function sendQuoteRequest(btn){
     service: lines.length>1?(LANG==="fr"?("Devis — "+lines.length+" prestations"):("Quote — "+lines.length+" services")):(first.label||"Devis"),
     pickup: rt[0]||"", dropoff: rt[1]||"",
     date_time: null, pax:1, vehicle:"",
+    subtotal: ttc, discount: disc, discount_label: dl.join(" + "),
     amount_ht: Math.round((total-tax)*100)/100, vat: tax, amount_ttc: total,
     total_label: eur(total), lines
   };
