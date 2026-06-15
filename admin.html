@@ -306,11 +306,11 @@ async function refresh(){
 
   const now=new Date(), yr=now.getFullYear(), mo=now.getMonth();
   const dt=b=>b.date_time?new Date(b.date_time):(b.created_at?new Date(b.created_at):null);
-  // CA : confirmées + terminées + avoirs (paiement encaissé, non remboursable)
-  const paid=BOOKINGS.filter(b=>['confirmed','completed','avoir'].includes(b.status));
+  // CA : confirmées + terminées + avoirs (y compris annulations donnant droit à un avoir = paiement conservé)
+  const paid=BOOKINGS.filter(b=>isEarned(b));
   const caMonth=paid.filter(b=>{const d=dt(b);return d&&d.getFullYear()===yr&&d.getMonth()===mo;}).reduce((s,b)=>s+Number(b.amount_ttc||0),0);
   const caYear=paid.filter(b=>{const d=dt(b);return d&&d.getFullYear()===yr;}).reduce((s,b)=>s+Number(b.amount_ttc||0),0);
-  const resaList=BOOKINGS.filter(b=>(b.type==='reservation'||b.type==='facture')&&!['cancelled','refunded'].includes(b.status));
+  const resaList=BOOKINGS.filter(b=>(b.type==='reservation'||b.type==='facture')&&(!['cancelled','refunded'].includes(b.status)||keptAsAvoir(b)));
   const monthRides=resaList.filter(b=>{const d=dt(b);return d&&d.getFullYear()===yr&&d.getMonth()===mo;}).length;
   const pend=BOOKINGS.filter(b=>b.status==='pending').length;
   const decided=BOOKINGS.filter(b=>b.status!=='pending').length;
@@ -363,6 +363,9 @@ async function refresh(){
 
 function clientName(uid){const p=PROFILES[uid];return p?(p.full_name||p.email||'Client'):'—';}
 function bookingClient(b){if(b.user_id&&PROFILES[b.user_id])return PROFILES[b.user_id].full_name||PROFILES[b.user_id].email||'Client';if(b.details&&b.details.client_name)return b.details.client_name+' (sans compte)';if(b.details&&b.details.client_email)return b.details.client_email+' (sans compte)';return '—';}
+function keptAsAvoir(b){return b.status==='avoir' || (b.status==='cancelled' && b.details && b.details.cancel && b.details.cancel.outcome==='avoir');}
+function isEarned(b){return ['confirmed','completed'].includes(b.status) || keptAsAvoir(b);}  // paiement encaissé
+function isCourseDone(b){return b.status==='completed' || keptAsAvoir(b);}                    // course réalisée (ou avoir conservé)
 function firstLine(b){return b.details&&b.details.lines&&b.details.lines[0];}
 function bkRDV(b){if(b.date_time)return dateFR(b.date_time);const l=firstLine(b);return (l&&l.dt)||'—';}
 function bkVehicle(b){if(b.vehicle)return b.vehicle;const l=firstLine(b);if(l&&l.detail){return String(l.detail).split('·')[0].trim()||'—';}return '—';}
@@ -643,7 +646,7 @@ async function emailInvoice(b,mode){
 }
 function clientStats(uid){
   // uniquement les courses TERMINÉES
-  const bs=BOOKINGS.filter(b=>b.user_id===uid&&['completed','avoir'].includes(b.status)&&(b.type==='reservation'||b.type==='facture'));
+  const bs=BOOKINGS.filter(b=>b.user_id===uid&&isCourseDone(b)&&(b.type==='reservation'||b.type==='facture'));
   const total=bs.reduce((s,b)=>s+Number(b.amount_ttc||0),0);
   const times=bs.map(b=>b.date_time?new Date(b.date_time).getTime():(b.created_at?new Date(b.created_at).getTime():0)).filter(Boolean);
   const last=times.length?new Date(Math.max(...times)):null;
