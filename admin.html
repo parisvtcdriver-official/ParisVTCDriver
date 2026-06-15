@@ -306,10 +306,11 @@ async function refresh(){
 
   const now=new Date(), yr=now.getFullYear(), mo=now.getMonth();
   const dt=b=>b.date_time?new Date(b.date_time):(b.created_at?new Date(b.created_at):null);
-  const paid=BOOKINGS.filter(b=>b.status==='confirmed'||b.status==='completed');
+  // CA : confirmées + terminées + avoirs (paiement encaissé, non remboursable)
+  const paid=BOOKINGS.filter(b=>['confirmed','completed','avoir'].includes(b.status));
   const caMonth=paid.filter(b=>{const d=dt(b);return d&&d.getFullYear()===yr&&d.getMonth()===mo;}).reduce((s,b)=>s+Number(b.amount_ttc||0),0);
   const caYear=paid.filter(b=>{const d=dt(b);return d&&d.getFullYear()===yr;}).reduce((s,b)=>s+Number(b.amount_ttc||0),0);
-  const resaList=BOOKINGS.filter(b=>b.type==='reservation');
+  const resaList=BOOKINGS.filter(b=>(b.type==='reservation'||b.type==='facture')&&!['cancelled','refunded'].includes(b.status));
   const monthRides=resaList.filter(b=>{const d=dt(b);return d&&d.getFullYear()===yr&&d.getMonth()===mo;}).length;
   const pend=BOOKINGS.filter(b=>b.status==='pending').length;
   const decided=BOOKINGS.filter(b=>b.status!=='pending').length;
@@ -642,7 +643,7 @@ async function emailInvoice(b,mode){
 }
 function clientStats(uid){
   // uniquement les courses TERMINÉES
-  const bs=BOOKINGS.filter(b=>b.user_id===uid&&b.status==='completed'&&(b.type==='reservation'||b.type==='facture'));
+  const bs=BOOKINGS.filter(b=>b.user_id===uid&&['completed','avoir'].includes(b.status)&&(b.type==='reservation'||b.type==='facture'));
   const total=bs.reduce((s,b)=>s+Number(b.amount_ttc||0),0);
   const times=bs.map(b=>b.date_time?new Date(b.date_time).getTime():(b.created_at?new Date(b.created_at).getTime():0)).filter(Boolean);
   const last=times.length?new Date(Math.max(...times)):null;
