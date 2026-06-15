@@ -129,7 +129,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
         <thead><tr><th>Réservation</th><th>Rendez-vous</th><th>Véhicule</th><th>Montant</th><th>Statut</th><th></th></tr></thead>
         <tbody id="allResa"></tbody>
       </table></div>
-      <div class="note-box">Pour annuler une réservation, contactez-nous. Conditions : plus de 24 h avant → remboursement intégral ; entre 24 h et 2 h → avoir valable 2 mois ; moins de 2 h ou non-présentation → aucun remboursement.</div>
+      <div class="note-box">Pour demander une annulation et le remboursement, cliquez sur <b style="color:var(--gold-2)">« Annuler / remboursement »</b> en face de la réservation concernée. La condition applicable s'affiche selon le délai. Conditions : plus de 24 h avant → remboursement intégral ; entre 24 h et 2 h → avoir valable 2 mois ; moins de 2 h ou non-présentation → aucun remboursement.</div>
     </section>
 
     <!-- FACTURES -->
@@ -286,8 +286,8 @@ function rowResa(b,withCancel){
   let extra='';
   const ts=bkTime(b);
   if(withCancel){
-    if(b.details&&b.details.cancel&&b.details.cancel.requested&&b.status!=='cancelled') extra='<span class="sub2">Annulation demandée</span>';
-    else if(b.status!=='cancelled'&&b.status!=='completed'&&ts&&ts>=Date.now()) extra=`<button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">Annuler</button>`;
+    if(b.details&&b.details.cancel&&b.details.cancel.requested&&b.status!=='cancelled') extra='<span class="sub2" style="color:var(--amber)">Demande envoyée</span>';
+    else if(b.status!=='cancelled'&&b.status!=='completed') extra=`<button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">Annuler / remboursement</button>`;
   }
   const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">payée</span>':' <span class="st att" style="margin-left:6px">à payer</span>'):'';
   return `<tr><td><div class="cli">${escapeHtml(b.service||b.type)}${payTag}</div><div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
