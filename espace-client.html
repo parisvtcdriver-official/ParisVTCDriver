@@ -416,7 +416,9 @@ async function buildInvoiceDoc(b,opts){
   doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
   if(Number(d.discount)>0){
     doc.text('Sous-total',W-230,y);doc.text(eur(d.subtotal),W-40,y,{align:'right'});y+=15;
-    doc.setTextColor(40,160,110);doc.text('Remise'+(d.discount_label?' ('+d.discount_label+')':''),W-230,y);doc.text('−'+eur(d.discount),W-40,y,{align:'right'});y+=15;
+    doc.setTextColor(40,160,110);
+    doc.text('Remise',W-230,y);doc.text('−'+eur(d.discount),W-40,y,{align:'right'});y+=12;
+    if(d.discount_label){doc.setFontSize(8);doc.text(String(d.discount_label),W-230,y);doc.setFontSize(9.5);y+=12;}
     doc.setTextColor(60,70,90);
   }
   doc.text('Total HT',W-230,y);doc.text(eur(b.amount_ht),W-40,y,{align:'right'});y+=15;
