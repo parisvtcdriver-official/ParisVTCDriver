@@ -349,7 +349,7 @@ function renderDocs(list){
   if(!docs.length){ el.innerHTML='<tr><td colspan="6" class="empty">Aucun document récent.<br>Les factures sont conservées 2 mois.</td></tr>'; return; }
   el.innerHTML=docs.map(b=>{
     let badge;
-    if(b.type==='facture') badge=(['cancelled','refunded','avoir'].includes(b.status))?statusBadgeFull(b):(b.pay_status==='paid'?'<span class="st conf">Facture payée</span>':'<span class="st att">À payer</span>');
+    if(b.type==='facture') badge=(['cancelled','refunded'].includes(b.status))?statusBadgeFull(b):(b.pay_status==='paid'?'<span class="st conf">Facture payée</span>':'<span class="st att">À payer</span>');
     else badge='<span class="st att">Devis</span>';
     return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(b.service||'')}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${badge}</td><td>${b.type==='facture'?`<button class="btn btn-ghost btn-sm" onclick="clientDocPDF('${b.id}')">PDF</button>`:''}</td></tr>`;
   }).join('');
@@ -365,8 +365,8 @@ async function clientDocPDF(id){
   const b=ALLBK.find(x=>x.id===id); if(!b){toast('Document introuvable');return;}
   if(!window.jspdf){toast('PDF indisponible');return;}
   toast('Génération du PDF…');
-  const cancel=['cancelled','refunded','avoir'].includes(b.status);
-  const isAvoir=(b.status==='avoir')||(b.details&&b.details.cancel&&b.details.cancel.outcome==='avoir');
+  const cancel=['cancelled','refunded'].includes(b.status);   // l'avoir reste une facture payée
+  const isAvoir=false;
   const doc=await buildInvoiceDoc(b,{cancellation:cancel,isAvoir});
   doc.save((cancel?'facture-annulation-':'facture-')+(b.reference||'doc')+'.pdf');
 }

@@ -399,18 +399,28 @@ async function refundBooking(id){
 async function emailCancellation(b,isAvoir){
   if(!b)return;
   const to=(b.details&&b.details.client_email)||(b.user_id&&PROFILES[b.user_id]&&PROFILES[b.user_id].email);
-  if(!to){toast('Pas d’e-mail client — facture d’annulation non envoyée');return;}
-  toast('Envoi de la facture d’annulation…');
-  let pdf64='';
-  try{const doc=await buildInvoiceDoc(b,{cancellation:true,isAvoir});pdf64=doc.output('datauristring').split(',')[1];}catch(e){}
+  if(!to){toast('Pas d’e-mail client — e-mail non envoyé');return;}
+  toast('Envoi de l’e-mail…');
   const name=(b.details&&b.details.client_name)||'';
   const ref=b.reference||'';
-  const subject="Facture d'annulation "+ref+" · ParisVTCDriver";
-  const html=`<h2 style="color:#c0392b">Annulation confirmée</h2><p>Bonjour ${escapeHtml(name)},</p><p>Votre réservation « ${escapeHtml(b.service||'')} » a bien été annulée.</p><p>${isAvoir?('Un <b>avoir de '+eur(b.amount_ttc)+'</b> valable 2 mois vous est accordé, utilisable sur une prochaine réservation.'):('Le <b>remboursement de '+eur(b.amount_ttc)+'</b> a été effectué.')}</p><p>Votre facture d'annulation est en pièce jointe.</p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`;
+  const code=(b.details&&b.details.cancel&&b.details.cancel.code)||'';
+  let pdf64='';
+  // Avoir : facture PAYÉE (argent conservé). Remboursement : facture d'annulation.
+  try{const doc=await buildInvoiceDoc(b,{cancellation:!isAvoir});pdf64=doc.output('datauristring').split(',')[1];}catch(e){}
+  let subject, html, filename;
+  if(isAvoir){
+    subject="Avoir crédité "+ref+" · ParisVTCDriver";
+    html=`<h2 style="color:#a07d2c">Avoir crédité</h2><p>Bonjour ${escapeHtml(name)},</p><p>Suite à l'annulation de « ${escapeHtml(b.service||'')} », un <b>avoir de ${eur(b.amount_ttc)}</b> valable 2 mois vous est crédité.</p>${code?('<p>Code à saisir dans « Code de réduction » lors de votre prochaine réservation : <b style="color:#a07d2c">'+escapeHtml(code)+'</b></p>'):''}<p>Votre facture acquittée est en pièce jointe.</p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`;
+    filename='facture-'+(ref||'doc')+'.pdf';
+  } else {
+    subject="Facture d'annulation "+ref+" · ParisVTCDriver";
+    html=`<h2 style="color:#c0392b">Annulation confirmée</h2><p>Bonjour ${escapeHtml(name)},</p><p>Votre réservation « ${escapeHtml(b.service||'')} » a bien été annulée.</p><p>Le <b>remboursement de ${eur(b.amount_ttc)}</b> a été effectué.</p><p>Votre facture d'annulation est en pièce jointe.</p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`;
+    filename='facture-annulation-'+(ref||'doc')+'.pdf';
+  }
   try{
-    const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject,html,pdf_base64:pdf64,filename:'facture-annulation-'+(ref||'doc')+'.pdf'}});
+    const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject,html,pdf_base64:pdf64,filename}});
     if(error||(data&&data.ok===false))throw new Error((data&&data.error)||(error&&error.message)||'err');
-    toast("Facture d'annulation envoyée ✓");
+    toast(isAvoir?"E-mail d'avoir envoyé ✓":"Facture d'annulation envoyée ✓");
   }catch(e){toast('Statut mis à jour, e-mail non envoyé : '+(e&&e.message?e.message:e));}
 }
 function renderResaChips(){
@@ -444,7 +454,8 @@ function renderDocs(){
   el.innerHTML=docs.map(b=>{
     let typeCell;
     if(b.type==='devis') typeCell='<span class="st att">Devis</span>';
-    else if(['cancelled','refunded','avoir'].includes(b.status)) typeCell=statusBadgeFull(b);
+    else if(['cancelled','refunded'].includes(b.status)) typeCell=statusBadgeFull(b);
+    else if(b.status==='avoir') typeCell='<span class="st conf">Facture payée</span> <span class="sub2" style="color:var(--gold-2)">· avoir</span>';
     else typeCell=(b.pay_status==='paid')?'<span class="st conf">Facture payée</span>':'<span class="st att">Facture à payer</span>';
     let act=`<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer ce document">✕</button>`;
     if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
@@ -543,9 +554,8 @@ async function docPDF(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b){toast('Document introuvable');return;}
   if(!window.jspdf){toast('PDF indisponible, réessayez');return;}
   toast('Génération du PDF…');
-  const cancel=['cancelled','refunded','avoir'].includes(b.status);
-  const isAvoir=(b.status==='avoir')||(b.details&&b.details.cancel&&b.details.cancel.outcome==='avoir');
-  const doc=await buildInvoiceDoc(b,{cancellation:cancel,isAvoir});
+  const cancel=['cancelled','refunded'].includes(b.status);   // l'avoir reste une facture payée
+  const doc=await buildInvoiceDoc(b,{cancellation:cancel,isAvoir:false});
   doc.save((cancel?'facture-annulation-':(b.type==='facture'?'facture-':'devis-'))+(b.reference||'doc')+'.pdf');
 }
 
@@ -732,6 +742,7 @@ async function setStatus(id,status){
     const d=(b&&b.details)||{};
     d.cancel=Object.assign({},d.cancel,{refunded:true,outcome:(status==='avoir'?'avoir':'refund'),refunded_at:new Date().toISOString(),policy:((d.cancel&&d.cancel.policy)||(status==='avoir'?'Avoir':'Remboursement'))});
     if(status==='avoir'){
+      upd.pay_status='paid'; upd.paid_at=new Date().toISOString();   // l'argent est encaissé (gardé en crédit)
       const code='AV-'+Math.floor(10000+Math.random()*89999);
       const exp=new Date(Date.now()+62*24*36e5).toISOString();
       d.cancel.code=code; d.cancel.expires_at=exp;
