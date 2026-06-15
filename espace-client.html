@@ -136,7 +136,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
     <section class="view" id="fact">
       <div class="top"><div><h1>Devis &amp; factures</h1><div class="sub">Vos documents</div></div></div>
       <div class="card"><table>
-        <thead><tr><th>N°</th><th>Objet</th><th>Date</th><th>TTC</th><th>Type</th></tr></thead>
+        <thead><tr><th>N°</th><th>Objet</th><th>Date</th><th>TTC</th><th>Type</th><th>PDF</th></tr></thead>
         <tbody id="allDocs"></tbody>
       </table></div>
     </section>
@@ -180,6 +180,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 </div>
 <div class="toast" id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-init.js"></script>
 <script>
@@ -199,6 +200,14 @@ function medal(lvl,big){
 function medalFor(name){return ({Diamant:'platine',Or:'or',Argent:'argent',Bronze:'bronze'})[name]||'';}
 const STMAP={pending:['att','En attente'],confirmed:['conf','Confirmée'],completed:['term','Terminée'],cancelled:['ann','Annulée']};
 function stBadge(s){const m=STMAP[s]||['att',s||'—'];return `<span class="st ${m[0]}">${m[1]}</span>`;}
+function statusBadgeFull(b){
+  if(b.status==='cancelled'){
+    const c=b.details&&b.details.cancel;
+    if(c&&c.refunded){ if(c.outcome==='avoir') return '<span class="st term">Avoir émis</span>'; if(c.outcome==='refund') return '<span class="st term">Remboursé</span>'; }
+    return '<span class="st ann">Annulée</span>';
+  }
+  return stBadge(b.status);
+}
 
 let PROFILE=null, ALLBK=[];
 
@@ -282,7 +291,7 @@ function rowResa(b,withCancel){
   }
   const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">payée</span>':' <span class="st att" style="margin-left:6px">à payer</span>'):'';
   return `<tr><td><div class="cli">${escapeHtml(b.service||b.type)}${payTag}</div><div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
-    <td>${bkRDV(b)}</td><td>${escapeHtml(b.vehicle||'—')}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${stBadge(b.status)}</td>${withCancel?`<td>${extra}</td>`:''}</tr>`;
+    <td>${bkRDV(b)}</td><td>${escapeHtml(b.vehicle||'—')}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${statusBadgeFull(b)}</td>${withCancel?`<td>${extra}</td>`:''}</tr>`;
 }
 async function requestCancel(id){
   const b=ALLBK.find(x=>x.id===id); if(!b)return;
@@ -316,13 +325,94 @@ function renderReservations(list){
   } else { nw.innerHTML=''; }
 }
 function renderDocs(list){
-  const docs=list.filter(b=>b.type==='devis'||b.type==='facture');
+  const cutoff=Date.now()-62*24*36e5; // factures conservées 2 mois max
+  const docs=list.filter(b=>(b.type==='devis'||b.type==='facture') && (!b.created_at || new Date(b.created_at).getTime()>=cutoff));
   const el=document.getElementById('allDocs');
-  if(!docs.length){ el.innerHTML='<tr><td colspan="5" class="empty">Aucun document pour le moment.</td></tr>'; return; }
+  if(!docs.length){ el.innerHTML='<tr><td colspan="6" class="empty">Aucun document récent.<br>Les factures sont conservées 2 mois.</td></tr>'; return; }
   el.innerHTML=docs.map(b=>{
-    const badge=b.type==='facture'?(b.pay_status==='paid'?'<span class="st conf">Facture payée</span>':'<span class="st att">À payer</span>'):'<span class="st att">Devis</span>';
-    return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(b.service||'')}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${badge}</td></tr>`;
+    let badge;
+    if(b.type==='facture') badge=(b.status==='cancelled')?statusBadgeFull(b):(b.pay_status==='paid'?'<span class="st conf">Facture payée</span>':'<span class="st att">À payer</span>');
+    else badge='<span class="st att">Devis</span>';
+    return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(b.service||'')}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${badge}</td><td>${b.type==='facture'?`<button class="btn btn-ghost btn-sm" onclick="clientDocPDF('${b.id}')">PDF</button>`:''}</td></tr>`;
   }).join('');
+}
+/* ---- PDF côté client (mêmes polices accentuées + retour à la ligne) ---- */
+const PDF_FONT_URLS={r:"https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf",b:"https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans-Bold.ttf"};
+let _fc={};
+function _ab2b64(buf){let bin="";const by=new Uint8Array(buf),ch=0x8000;for(let i=0;i<by.length;i+=ch)bin+=String.fromCharCode.apply(null,by.subarray(i,i+ch));return btoa(bin);}
+async function _loadFont(u){if(_fc[u])return _fc[u];const buf=await fetch(u).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();});return _fc[u]=_ab2b64(buf);}
+async function pdfFont(doc){try{const r=await _loadFont(PDF_FONT_URLS.r),b=await _loadFont(PDF_FONT_URLS.b);doc.addFileToVFS("dv-r.ttf",r);doc.addFont("dv-r.ttf","DV","normal");doc.addFileToVFS("dv-b.ttf",b);doc.addFont("dv-b.ttf","DV","bold");return "DV";}catch(e){return "helvetica";}}
+function clientNameFor(b){return (b.details&&b.details.client_name)||(PROFILE&&PROFILE.full_name)||'';}
+async function clientDocPDF(id){
+  const b=ALLBK.find(x=>x.id===id); if(!b){toast('Document introuvable');return;}
+  if(!window.jspdf){toast('PDF indisponible');return;}
+  toast('Génération du PDF…');
+  const cancel=(b.status==='cancelled'&&b.details&&b.details.cancel&&b.details.cancel.refunded);
+  const isAvoir=cancel&&b.details.cancel.outcome==='avoir';
+  const doc=await buildInvoiceDoc(b,{cancellation:cancel,isAvoir});
+  doc.save((cancel?'facture-annulation-':'facture-')+(b.reference||'doc')+'.pdf');
+}
+async function buildInvoiceDoc(b,opts){
+  opts=opts||{}; const cancel=!!opts.cancellation; const isAvoir=!!opts.isAvoir;
+  const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:'pt',format:'a4'});
+  const F=await pdfFont(doc);
+  const gold=[201,162,74],dark=[20,28,46],red=[192,57,43]; const W=595; const d=b.details||{};
+  const isInv=b.type==='facture', paid=b.pay_status==='paid';
+  doc.setFillColor(7,10,18);doc.rect(0,0,W,134,'F');
+  doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(22);doc.text('ParisVTCDriver',40,58);
+  doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(8.5);
+  doc.text("Chauffeur privé · +33 7 49 19 83 18 · ParisVTCdriver@gmail.com",40,74);
+  doc.text("Siège : 38 Av. des Combattants de l'Afrique du Nord, 93420 Villepinte",40,87);
+  doc.text("SIRET 934505702 · TVA intracom. FR32934505702",40,100);
+  doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(15);
+  doc.text(cancel?'FACTURE':(isInv?'FACTURE':'DEVIS'),W-40,60,{align:'right'});
+  let yh=76;
+  if(cancel){doc.setTextColor(...red);doc.setFont(F,'bold');doc.setFontSize(11);doc.text('— ANNULATION —',W-40,yh,{align:'right'});yh+=15;}
+  doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(9);
+  doc.text(((isInv||cancel)?'Facture n° ':'Devis n° ')+(b.reference||'—'),W-40,yh,{align:'right'});yh+=14;
+  doc.text(b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):new Date().toLocaleDateString('fr-FR'),W-40,yh,{align:'right'});yh+=16;
+  if(isInv&&!cancel){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?'PAYÉE':'EN ATTENTE DE PAIEMENT',W-40,yh,{align:'right'});}
+  let y=160;
+  doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(10);doc.text('Client :',40,y);
+  doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
+  const cl=[clientNameFor(b)];
+  if(d.client_company)cl.push(d.client_company);
+  if(d.client_email)cl.push(d.client_email);
+  if(d.client_phone)cl.push(d.client_phone);
+  cl.filter(Boolean).forEach((line,i)=>doc.text(String(line),40,y+15+i*13));
+  y=y+15+cl.filter(Boolean).length*13+18;
+  doc.setFillColor(245,242,234);doc.rect(40,y,W-80,22,'F');
+  doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(9);
+  doc.text('Prestation',48,y+15);doc.text('Prix',W-48,y+15,{align:'right'});
+  y+=34;
+  (d.lines||[]).forEach(l=>{
+    doc.setFont(F,'bold');doc.setTextColor(30,38,56);doc.setFontSize(9.5);
+    doc.splitTextToSize(String(l.label||''),W-180).forEach((ln,i)=>{if(i)y+=13;doc.text(ln,48,y);});
+    doc.setFont(F,'normal');doc.text(String(l.priceLabel||''),W-48,y,{align:'right'});
+    if(l.detail){y+=13;doc.setTextColor(120,130,150);doc.setFontSize(8.5);doc.splitTextToSize(String(l.detail),W-96).forEach((ln,i)=>{if(i)y+=12;doc.text(ln,48,y);});doc.setFontSize(9.5);}
+    [['route','Trajet : '],['dt','RDV : '],['req','Demande : ']].forEach(([k,pfx])=>{ if(l[k]){doc.setTextColor(150,120,40);doc.splitTextToSize(pfx+l[k],W-96).forEach(ln=>{y+=12;doc.text(ln,48,y);});} });
+    y+=20;
+    if(y>730){doc.addPage();y=60;}
+  });
+  y+=6;doc.setDrawColor(220);doc.line(W-230,y,W-40,y);y+=16;
+  doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
+  doc.text('Total HT',W-230,y);doc.text(eur(b.amount_ht),W-40,y,{align:'right'});y+=15;
+  doc.text('TVA',W-230,y);doc.text(eur(b.vat),W-40,y,{align:'right'});y+=18;
+  doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
+  doc.text('Total TTC',W-230,y);doc.text(eur(b.amount_ttc),W-40,y,{align:'right'});
+  y+=40;doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
+  if(cancel){
+    doc.setFont(F,'bold');doc.setTextColor(...red);doc.setFontSize(9.5);doc.text('Réservation annulée',40,y);y+=14;
+    doc.setFont(F,'normal');doc.setTextColor(60,70,90);
+    doc.text(isAvoir?('Avoir de '+eur(b.amount_ttc)+' valable 2 mois, utilisable sur une prochaine réservation.'):('Remboursement de '+eur(b.amount_ttc)+' effectué.'),40,y);
+  } else {
+    doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);
+    doc.text(paid?'Paiement reçu — merci.':'Règlement par virement bancaire',40,y);y+=14;
+    doc.setFont(F,'normal');doc.setTextColor(60,70,90);
+    doc.text('Bénéficiaire : PARISVTCDRIVER · BIC : QNTOFRP1XXX',40,y);y+=13;
+    doc.text('IBAN : FR7616958000014883777337715',40,y);
+  }
+  return doc;
 }
 
 async function saveProfile(){

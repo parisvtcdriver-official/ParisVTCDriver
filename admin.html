@@ -346,13 +346,20 @@ function renderResaTable(elId,list,withSelect){
   if(!list.length){el.innerHTML='<tr><td colspan="6" class="empty">Aucune réservation.</td></tr>';return;}
   el.innerHTML=list.map(b=>{
     const typeTag=b.type!=='reservation'?` <span class="sub2">(${b.type})</span>`:'';
-    const cancelReq=(b.details&&b.details.cancel&&b.details.cancel.requested&&!b.details.cancel.handled&&b.status!=='cancelled');
+    const c=b.details&&b.details.cancel;
+    const cancelReq=(c&&c.requested&&!c.handled&&b.status!=='cancelled');
     let statusCell;
-    if(withSelect){
+    if(b.status==='cancelled'){
+      statusCell=statusBadgeFull(b);
+      if(withSelect && c && !c.refunded && /remboursement|avoir/i.test(c.policy||'')){
+        const av=/avoir/i.test(c.policy||'');
+        statusCell+=`<br><button class="btn-mini gold" style="margin-top:5px" onclick="refundBooking('${b.id}')">${av?"Émettre l'avoir":'Valider remboursement'}</button>`;
+      }
+    } else if(withSelect){
       statusCell=stSelect(b.id,b.status);
-      if(cancelReq) statusCell+=`<div class="sub2" style="color:var(--amber);margin-top:5px">⚠ Annulation demandée — ${escapeHtml(b.details.cancel.policy||'')}${b.details.cancel.reason?'<br>Motif : '+escapeHtml(b.details.cancel.reason):''}</div><button class="btn-mini gold" style="margin-top:5px" onclick="validateCancel('${b.id}')">Valider l'annulation</button>`;
+      if(cancelReq) statusCell+=`<div class="sub2" style="color:var(--amber);margin-top:5px">⚠ Annulation demandée — ${escapeHtml(c.policy||'')}${c.reason?'<br>Motif : '+escapeHtml(c.reason):''}</div><button class="btn-mini gold" style="margin-top:5px" onclick="validateCancel('${b.id}')">Valider l'annulation</button>`;
     } else {
-      statusCell='<span class="st '+STMAP[b.status][0]+'">'+STMAP[b.status][1]+'</span>'+(cancelReq?' <span class="sub2" style="color:var(--amber)">⚠ annul.</span>':'');
+      statusCell=statusBadgeFull(b)+(cancelReq?' <span class="sub2" style="color:var(--amber)">⚠ annul.</span>':'');
     }
     return `<tr><td class="cli">${escapeHtml(bookingClient(b))}</td>
       <td>${escapeHtml(b.service||'')}${typeTag}<div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
@@ -370,6 +377,43 @@ async function validateCancel(id){
   const {error}=await sb.from('bookings').update({status:'cancelled',details:d}).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
   toast('Annulation validée ✓'); refresh();
+}
+function statusBadgeFull(b){
+  if(b.status==='cancelled'){
+    const c=b.details&&b.details.cancel;
+    if(c&&c.refunded){ if(c.outcome==='avoir') return '<span class="st term">Avoir émis</span>'; if(c.outcome==='refund') return '<span class="st term">Remboursé</span>'; }
+    return '<span class="st ann">Annulée</span>';
+  }
+  return '<span class="st '+STMAP[b.status][0]+'">'+STMAP[b.status][1]+'</span>';
+}
+async function refundBooking(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  const c=(b.details&&b.details.cancel)||{};
+  const isAvoir=/avoir/i.test(c.policy||'');
+  if(!confirm(isAvoir?"Confirmer l'émission de l'avoir ? Une facture d'annulation sera envoyée au client.":"Confirmer le remboursement effectué ? Une facture d'annulation sera envoyée au client."))return;
+  const d=b.details||{}; if(!d.cancel)d.cancel={}; d.cancel.refunded=true; d.cancel.outcome=isAvoir?'avoir':'refund'; d.cancel.refunded_at=new Date().toISOString();
+  const {error}=await sb.from('bookings').update({details:d}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast(isAvoir?'Avoir émis ✓':'Remboursement validé ✓');
+  await refresh();
+  await emailCancellation(BOOKINGS.find(x=>x.id===id), isAvoir);
+}
+async function emailCancellation(b,isAvoir){
+  if(!b)return;
+  const to=(b.details&&b.details.client_email)||(b.user_id&&PROFILES[b.user_id]&&PROFILES[b.user_id].email);
+  if(!to){toast('Pas d’e-mail client — facture d’annulation non envoyée');return;}
+  toast('Envoi de la facture d’annulation…');
+  let pdf64='';
+  try{const doc=await buildInvoiceDoc(b,{cancellation:true,isAvoir});pdf64=doc.output('datauristring').split(',')[1];}catch(e){}
+  const name=(b.details&&b.details.client_name)||'';
+  const ref=b.reference||'';
+  const subject="Facture d'annulation "+ref+" · ParisVTCDriver";
+  const html=`<h2 style="color:#c0392b">Annulation confirmée</h2><p>Bonjour ${escapeHtml(name)},</p><p>Votre réservation « ${escapeHtml(b.service||'')} » a bien été annulée.</p><p>${isAvoir?('Un <b>avoir de '+eur(b.amount_ttc)+'</b> valable 2 mois vous est accordé, utilisable sur une prochaine réservation.'):('Le <b>remboursement de '+eur(b.amount_ttc)+'</b> a été effectué.')}</p><p>Votre facture d'annulation est en pièce jointe.</p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`;
+  try{
+    const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject,html,pdf_base64:pdf64,filename:'facture-annulation-'+(ref||'doc')+'.pdf'}});
+    if(error||(data&&data.ok===false))throw new Error((data&&data.error)||(error&&error.message)||'err');
+    toast("Facture d'annulation envoyée ✓");
+  }catch(e){toast('Statut mis à jour, e-mail non envoyé : '+(e&&e.message?e.message:e));}
 }
 function renderResaChips(){
   const counts={all:BOOKINGS.length,pending:0,confirmed:0,completed:0,cancelled:0};
@@ -415,10 +459,11 @@ function _ab2b64(buf){let bin="";const by=new Uint8Array(buf),ch=0x8000;for(let 
 async function _loadFont(u){if(_fc[u])return _fc[u];const buf=await fetch(u).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();});return _fc[u]=_ab2b64(buf);}
 async function pdfFont(doc){try{const r=await _loadFont(PDF_FONT_URLS.r),b=await _loadFont(PDF_FONT_URLS.b);doc.addFileToVFS("dv-r.ttf",r);doc.addFont("dv-r.ttf","DV","normal");doc.addFileToVFS("dv-b.ttf",b);doc.addFont("dv-b.ttf","DV","bold");return "DV";}catch(e){return "helvetica";}}
 
-async function buildInvoiceDoc(b){
+async function buildInvoiceDoc(b,opts){
+  opts=opts||{}; const cancel=!!opts.cancellation; const isAvoir=!!opts.isAvoir;
   const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:'pt',format:'a4'});
   const F=await pdfFont(doc);
-  const gold=[201,162,74],dark=[20,28,46]; const W=595; const d=b.details||{};
+  const gold=[201,162,74],dark=[20,28,46],red=[192,57,43]; const W=595; const d=b.details||{};
   const isInv=b.type==='facture', paid=b.pay_status==='paid';
   doc.setFillColor(7,10,18);doc.rect(0,0,W,134,'F');
   doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(22);doc.text('ParisVTCDriver',40,58);
@@ -427,11 +472,13 @@ async function buildInvoiceDoc(b){
   doc.text("Siège : 38 Av. des Combattants de l'Afrique du Nord, 93420 Villepinte",40,87);
   doc.text("SIRET 934505702 · TVA intracom. FR32934505702",40,100);
   doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(15);
-  doc.text(isInv?'FACTURE':'DEVIS',W-40,60,{align:'right'});
+  doc.text(cancel?'FACTURE':(isInv?'FACTURE':'DEVIS'),W-40,60,{align:'right'});
+  let yh=76;
+  if(cancel){doc.setTextColor(...red);doc.setFont(F,'bold');doc.setFontSize(11);doc.text('— ANNULATION —',W-40,yh,{align:'right'});yh+=15;}
   doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(9);
-  doc.text((isInv?'Facture n° ':'Devis n° ')+(b.reference||'—'),W-40,76,{align:'right'});
-  doc.text(b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):new Date().toLocaleDateString('fr-FR'),W-40,90,{align:'right'});
-  if(isInv){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?'PAYÉE':'EN ATTENTE DE PAIEMENT',W-40,106,{align:'right'});}
+  doc.text(((isInv||cancel)?'Facture n° ':'Devis n° ')+(b.reference||'—'),W-40,yh,{align:'right'});yh+=14;
+  doc.text(b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):new Date().toLocaleDateString('fr-FR'),W-40,yh,{align:'right'});yh+=16;
+  if(isInv&&!cancel){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?'PAYÉE':'EN ATTENTE DE PAIEMENT',W-40,yh,{align:'right'});}
   let y=160;
   doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(10);doc.text('Client :',40,y);
   doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
@@ -461,11 +508,19 @@ async function buildInvoiceDoc(b){
   doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
   doc.text('Total TTC',W-230,y);doc.text(eur(b.amount_ttc),W-40,y,{align:'right'});
   y+=40;doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
-  doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);
-  doc.text(paid?'Paiement reçu — merci.':'Règlement par virement bancaire',40,y);y+=14;
-  doc.setFont(F,'normal');doc.setTextColor(60,70,90);
-  doc.text('Bénéficiaire : PARISVTCDRIVER · BIC : QNTOFRP1XXX',40,y);y+=13;
-  doc.text('IBAN : FR7616958000014883777337715',40,y);
+  if(cancel){
+    doc.setFont(F,'bold');doc.setTextColor(...red);doc.setFontSize(9.5);
+    doc.text('Réservation annulée',40,y);y+=14;
+    doc.setFont(F,'normal');doc.setTextColor(60,70,90);
+    if(isAvoir){doc.text('Avoir de '+eur(b.amount_ttc)+' valable 2 mois, utilisable sur une prochaine réservation.',40,y);}
+    else{doc.text('Remboursement de '+eur(b.amount_ttc)+' effectué.',40,y);}
+  } else {
+    doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);
+    doc.text(paid?'Paiement reçu — merci.':'Règlement par virement bancaire',40,y);y+=14;
+    doc.setFont(F,'normal');doc.setTextColor(60,70,90);
+    doc.text('Bénéficiaire : PARISVTCDRIVER · BIC : QNTOFRP1XXX',40,y);y+=13;
+    doc.text('IBAN : FR7616958000014883777337715',40,y);
+  }
   return doc;
 }
 async function docPDF(id){
