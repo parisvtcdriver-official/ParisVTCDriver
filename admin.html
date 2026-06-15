@@ -524,8 +524,10 @@ async function buildInvoiceDoc(b,opts){
     doc.setFont(F,'bold');doc.setTextColor(...red);doc.setFontSize(9.5);
     doc.text('Réservation annulée',40,y);y+=14;
     doc.setFont(F,'normal');doc.setTextColor(60,70,90);
+    const refunded=b.status==='refunded'||b.status==='avoir'||(b.details&&b.details.cancel&&b.details.cancel.refunded);
     if(isAvoir){doc.text('Avoir de '+eur(b.amount_ttc)+' valable 2 mois, utilisable sur une prochaine réservation.',40,y);}
-    else{doc.text('Remboursement de '+eur(b.amount_ttc)+' effectué.',40,y);}
+    else if(refunded){doc.text('Remboursement de '+eur(b.amount_ttc)+' effectué.',40,y);}
+    else{doc.text('Annulation enregistrée.',40,y);}
   } else {
     doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);
     doc.text(paid?'Paiement reçu — merci.':'Règlement par virement bancaire',40,y);y+=14;
@@ -539,8 +541,10 @@ async function docPDF(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b){toast('Document introuvable');return;}
   if(!window.jspdf){toast('PDF indisponible, réessayez');return;}
   toast('Génération du PDF…');
-  const doc=await buildInvoiceDoc(b);
-  doc.save((b.type==='facture'?'facture-':'devis-')+(b.reference||'doc')+'.pdf');
+  const cancel=['cancelled','refunded','avoir'].includes(b.status);
+  const isAvoir=(b.status==='avoir')||(b.details&&b.details.cancel&&b.details.cancel.outcome==='avoir');
+  const doc=await buildInvoiceDoc(b,{cancellation:cancel,isAvoir});
+  doc.save((cancel?'facture-annulation-':(b.type==='facture'?'facture-':'devis-'))+(b.reference||'doc')+'.pdf');
 }
 
 /* ---------- Circuit devis → facture → paiement ---------- */
