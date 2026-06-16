@@ -442,12 +442,15 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
   .foot-grid{grid-template-columns:1fr 1fr}
   .stats-strip{grid-template-columns:repeat(2,1fr);gap:30px}
 }
+.mob-only{display:none}
 @media(max-width:720px){
   .wrap{padding:0 18px}
   nav.links{display:none}
   nav.links.open{display:flex;flex-direction:column;gap:2px;position:absolute;top:100%;left:0;right:0;margin:0;padding:10px 18px 16px;background:var(--navy);border-top:1px solid var(--line-soft);box-shadow:0 24px 40px -22px rgba(0,0,0,.7)}
   nav.links.open a{padding:13px 12px;border-radius:10px;font-size:15px}
   .menu-toggle{display:grid;place-items:center}
+  .acct{display:none!important}
+  nav.links.open .mob-only{display:flex}
   .nav-inner{height:64px;gap:10px}
   .nav-actions{gap:8px;margin-left:auto}
   .nav-actions .btn-gold{padding:10px 14px;font-size:13.5px}
@@ -513,6 +516,7 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
       <a href="#packs" data-i18n="nav_packs">Packs</a>
       <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
       <a href="#contact" data-i18n="nav_contact">Contact</a>
+      <a href="connexion.html" class="mob-only" data-i18n="nav_account">My account</a>
     </nav>
     <div class="nav-actions">
       <a href="#reviews" class="rev-badge" title="Avis vérifiés · GetYourGuide & Viator">★ <b>4.9</b> <small data-i18n="rv_eyebrow">Avis vérifiés</small></a>
@@ -1052,7 +1056,7 @@ async function applyCode(){
 
 /* ---------------- I18N ---------------- */
 const I18N={
- fr:{brand_tag:"Chauffeur Premium · Paris",nav_quote:"Nouveau Devis",nav_res:"Réservations",nav_fleet:"Flotte",nav_packs:"Packs",nav_pricing:"Tarifs",nav_contact:"Contact",nav_cta:"Réserver",
+ fr:{brand_tag:"Chauffeur Premium · Paris",nav_quote:"Nouveau Devis",nav_account:"Mon espace",nav_res:"Réservations",nav_fleet:"Flotte",nav_packs:"Packs",nav_pricing:"Tarifs",nav_contact:"Contact",nav_cta:"Réserver",
   hero_eyebrow:"Voyage d'Affaires & Tourisme · Paris & France",hero_h1:"Services de Chauffeur<br>Premium <em>à Paris</em><br>& en France",
   hero_lead:"Des chauffeurs privés discrets, ponctuels et impeccablement présentés pour vos transferts aéroport, déplacements professionnels et trajets sur-mesure partout en France.",
   tag1:"Confort",tag2:"Sécurité",tag3:"Ponctualité",tag4:"Excellence",hero_cta1:"Obtenir un devis instantané",hero_cta2:"Découvrir la flotte",
@@ -1081,7 +1085,7 @@ const I18N={
   vehicle:"Véhicule",chauffeur:"Chauffeur",kids:"Enfant -10 ans",babyseat:"Siège bébé (0-2 ans)",booster:"Réhausseur (3 ans +)",svc_type:"Type de service",dt:"Date & heure",pax:"Passagers",hours:"Heures",price:"Prix",rdv:"Rendez-vous",pk_sp_lbl:"Votre demande spéciale",pk_sp_note:"Sans prix : nous vous envoyons un devis sur-mesure sous 24 h.",pk_sp_ph:"Décrivez votre besoin (occasion, trajet, nombre de personnes, exigences…).",remove:"Retirer",service:"Service",
   added:"Service ajouté",confirmed:"Réservation confirmée — un conseiller vous contacte sous 15 min.",noServices:"Ajoutez au moins un service.",date_min:"Réservation possible au minimum 30 min à l'avance.",pdfok:"PDF généré",
   quoteFor:"Devis établi pour",noName:"Client",totalDue:"Total TTC à régler"},
- en:{brand_tag:"Premium Chauffeur · Paris",nav_quote:"New Quote",nav_res:"Reservations",nav_fleet:"Fleet",nav_packs:"Packs",nav_pricing:"Pricing",nav_contact:"Contact",nav_cta:"Book Now",
+ en:{brand_tag:"Premium Chauffeur · Paris",nav_quote:"New Quote",nav_account:"My account",nav_res:"Reservations",nav_fleet:"Fleet",nav_packs:"Packs",nav_pricing:"Pricing",nav_contact:"Contact",nav_cta:"Book Now",
   hero_eyebrow:"Business & Leisure Travel · Paris & France",hero_h1:"Premium Chauffeur<br>Services <em>Across Paris</em><br>& France",
   hero_lead:"Discreet, punctual and impeccably presented private chauffeurs for airport transfers, business travel and bespoke journeys throughout France.",
   tag1:"Comfort",tag2:"Safety",tag3:"Punctuality",tag4:"Excellence",hero_cta1:"Get an Instant Quote",hero_cta2:"Discover the Fleet",
@@ -1110,7 +1114,7 @@ const I18N={
   vehicle:"Vehicle",chauffeur:"Chauffeur",kids:"Child under 10",babyseat:"Baby seat (0-2 yrs)",booster:"Booster seat (3 yrs +)",svc_type:"Service type",dt:"Date & time",pax:"Passengers",hours:"Hours",price:"Price",rdv:"Appointment",pk_sp_lbl:"Your special request",pk_sp_note:"No price: we send you a custom quote within 24 h.",pk_sp_ph:"Describe your need (occasion, route, number of people, requirements…).",remove:"Remove",service:"Service",
   added:"Service added",confirmed:"Reservation confirmed — an advisor will contact you within 15 min.",noServices:"Add at least one service.",date_min:"Bookings must be at least 30 min ahead.",pdfok:"PDF generated",
   quoteFor:"Quotation prepared for",noName:"Client",totalDue:"Total incl. VAT due"},
- tr:{brand_tag:"Premium Şoför · Paris",nav_quote:"Yeni Teklif",nav_res:"Rezervasyonlar",nav_fleet:"Filo",nav_pricing:"Fiyatlar",nav_contact:"İletişim",nav_cta:"Rezervasyon",
+ tr:{brand_tag:"Premium Şoför · Paris",nav_quote:"Yeni Teklif",nav_account:"Hesabım",nav_res:"Rezervasyonlar",nav_fleet:"Filo",nav_pricing:"Fiyatlar",nav_contact:"İletişim",nav_cta:"Rezervasyon",
   hero_eyebrow:"İş & Tatil Seyahati · Paris & Fransa",hero_h1:"Paris ve Fransa'da<br><em>Premium</em> Şoför<br>Hizmetleri",
   hero_lead:"Havalimanı transferleri, iş seyahatleri ve Fransa genelinde özel güzergâhlar için diskret, dakik ve kusursuz görünümlü özel şoförler.",
   tag1:"Konfor",tag2:"Güvenlik",tag3:"Dakiklik",tag4:"Mükemmellik",hero_cta1:"Anında Teklif Alın",hero_cta2:"Filoyu Keşfedin",
@@ -1134,7 +1138,7 @@ const I18N={
   vehicle:"Araç",chauffeur:"Şoför",kids:"10 yaş altı çocuk",babyseat:"Bebek koltuğu (0-2 yaş)",booster:"Yükseltici (3 yaş +)",svc_type:"Hizmet türü",dt:"Tarih & saat",pax:"Yolcu",hours:"Saat",price:"Fiyat",rdv:"Randevu",pk_sp_lbl:"Özel talebiniz",pk_sp_note:"Fiyat yok: size 24 saat içinde özel bir teklif gönderiyoruz.",pk_sp_ph:"İhtiyacınızı açıklayın (etkinlik, güzergâh, kişi sayısı, gereksinimler…).",remove:"Kaldır",service:"Hizmet",
   added:"Hizmet eklendi",confirmed:"Rezervasyon onaylandı — bir danışman 15 dk içinde sizinle iletişime geçecek.",noServices:"En az bir hizmet ekleyin.",date_min:"Rezervasyon en az 30 dk önceden yapılmalıdır.",pdfok:"PDF oluşturuldu",
   quoteFor:"Teklif şunun için hazırlandı",noName:"Müşteri",totalDue:"Ödenecek toplam (KDV dahil)"},
- es:{brand_tag:"Chófer Premium · París",nav_quote:"Nuevo Presupuesto",nav_res:"Reservas",nav_fleet:"Flota",nav_pricing:"Tarifas",nav_contact:"Contacto",nav_cta:"Reservar",
+ es:{brand_tag:"Chófer Premium · París",nav_quote:"Nuevo Presupuesto",nav_account:"Mi cuenta",nav_res:"Reservas",nav_fleet:"Flota",nav_pricing:"Tarifas",nav_contact:"Contacto",nav_cta:"Reservar",
   hero_eyebrow:"Viajes de Negocios y Turismo · París y Francia",hero_h1:"Servicios de Chófer<br><em>Premium</em> en París<br>y Francia",
   hero_lead:"Chóferes privados discretos, puntuales e impecablemente presentados para traslados al aeropuerto, viajes de negocios y trayectos a medida por toda Francia.",
   tag1:"Confort",tag2:"Seguridad",tag3:"Puntualidad",tag4:"Excelencia",hero_cta1:"Obtener presupuesto instantáneo",hero_cta2:"Descubrir la flota",
@@ -1158,7 +1162,7 @@ const I18N={
   vehicle:"Vehículo",chauffeur:"Chófer",kids:"Niño menor de 10",babyseat:"Silla de bebé (0-2 años)",booster:"Elevador (3 años +)",svc_type:"Tipo de servicio",dt:"Fecha y hora",pax:"Pasajeros",hours:"Horas",price:"Precio",rdv:"Cita",pk_sp_lbl:"Su solicitud especial",pk_sp_note:"Sin precio: le enviamos un presupuesto a medida en 24 h.",pk_sp_ph:"Describa su necesidad (ocasión, trayecto, número de personas, requisitos…).",remove:"Quitar",service:"Servicio",
   added:"Servicio añadido",confirmed:"Reserva confirmada — un asesor le contactará en 15 min.",noServices:"Añada al menos un servicio.",date_min:"Reserva con un mínimo de 30 min de antelación.",pdfok:"PDF generado",
   quoteFor:"Presupuesto preparado para",noName:"Cliente",totalDue:"Total con IVA a pagar"},
- it:{brand_tag:"Autista Premium · Parigi",nav_quote:"Nuovo Preventivo",nav_res:"Prenotazioni",nav_fleet:"Flotta",nav_pricing:"Tariffe",nav_contact:"Contatti",nav_cta:"Prenota",
+ it:{brand_tag:"Autista Premium · Parigi",nav_quote:"Nuovo Preventivo",nav_account:"Il mio spazio",nav_res:"Prenotazioni",nav_fleet:"Flotta",nav_pricing:"Tariffe",nav_contact:"Contatti",nav_cta:"Prenota",
   hero_eyebrow:"Viaggi d'Affari e Turismo · Parigi e Francia",hero_h1:"Servizi di Autista<br><em>Premium</em> a Parigi<br>e in Francia",
   hero_lead:"Autisti privati discreti, puntuali e impeccabilmente presentati per transfer aeroportuali, viaggi di lavoro e percorsi su misura in tutta la Francia.",
   tag1:"Comfort",tag2:"Sicurezza",tag3:"Puntualità",tag4:"Eccellenza",hero_cta1:"Ottieni un preventivo istantaneo",hero_cta2:"Scopri la flotta",
@@ -1182,7 +1186,7 @@ const I18N={
   vehicle:"Veicolo",chauffeur:"Autista",kids:"Bambino sotto i 10",babyseat:"Seggiolino (0-2 anni)",booster:"Rialzo (3 anni +)",svc_type:"Tipo di servizio",dt:"Data e ora",pax:"Passeggeri",hours:"Ore",price:"Prezzo",rdv:"Appuntamento",pk_sp_lbl:"La tua richiesta speciale",pk_sp_note:"Nessun prezzo: ti inviamo un preventivo su misura entro 24 h.",pk_sp_ph:"Descrivi la tua esigenza (occasione, tragitto, numero di persone, requisiti…).",remove:"Rimuovi",service:"Servizio",
   added:"Servizio aggiunto",confirmed:"Prenotazione confermata — un consulente ti contatterà entro 15 min.",noServices:"Aggiungi almeno un servizio.",date_min:"Prenotazione con almeno 30 min di anticipo.",pdfok:"PDF generato",
   quoteFor:"Preventivo preparato per",noName:"Cliente",totalDue:"Totale IVA inclusa da pagare"},
- pt:{brand_tag:"Motorista Premium · Paris",nav_quote:"Novo Orçamento",nav_res:"Reservas",nav_fleet:"Frota",nav_pricing:"Tarifas",nav_contact:"Contato",nav_cta:"Reservar",
+ pt:{brand_tag:"Motorista Premium · Paris",nav_quote:"Novo Orçamento",nav_account:"A minha conta",nav_res:"Reservas",nav_fleet:"Frota",nav_pricing:"Tarifas",nav_contact:"Contato",nav_cta:"Reservar",
   hero_eyebrow:"Viagens de Negócios e Turismo · Paris e França",hero_h1:"Serviços de Motorista<br><em>Premium</em> em Paris<br>e na França",
   hero_lead:"Motoristas particulares discretos, pontuais e impecavelmente apresentados para transfers de aeroporto, viagens de negócios e percursos sob medida por toda a França.",
   tag1:"Conforto",tag2:"Segurança",tag3:"Pontualidade",tag4:"Excelência",hero_cta1:"Obter orçamento instantâneo",hero_cta2:"Conhecer a frota",
@@ -1206,7 +1210,7 @@ const I18N={
   vehicle:"Veículo",chauffeur:"Motorista",kids:"Criança menor de 10",babyseat:"Cadeira de bebé (0-2 anos)",booster:"Assento elevatório (3 anos +)",svc_type:"Tipo de serviço",dt:"Data e hora",pax:"Passageiros",hours:"Horas",price:"Preço",rdv:"Encontro",pk_sp_lbl:"O seu pedido especial",pk_sp_note:"Sem preço: enviamos um orçamento à medida em 24 h.",pk_sp_ph:"Descreva a sua necessidade (ocasião, trajeto, número de pessoas, requisitos…).",remove:"Remover",service:"Serviço",
   added:"Serviço adicionado",confirmed:"Reserva confirmada — um consultor entrará em contato em 15 min.",noServices:"Adicione pelo menos um serviço.",date_min:"Reserva com no mínimo 30 min de antecedência.",pdfok:"PDF gerado",
   quoteFor:"Orçamento preparado para",noName:"Cliente",totalDue:"Total com IVA a pagar"},
- zh:{brand_tag:"高级专属司机 · 巴黎",nav_quote:"新报价",nav_res:"预订",nav_fleet:"车队",nav_pricing:"价格",nav_contact:"联系",nav_cta:"立即预订",
+ zh:{brand_tag:"高级专属司机 · 巴黎",nav_quote:"新报价",nav_account:"我的账户",nav_res:"预订",nav_fleet:"车队",nav_pricing:"价格",nav_contact:"联系",nav_cta:"立即预订",
   hero_eyebrow:"商务与旅游出行 · 巴黎及法国",hero_h1:"巴黎及法国<br><em>高级</em>专属<br>司机服务",
   hero_lead:"为机场接送、商务出行及法国各地定制行程提供低调、准时、着装得体的私人司机服务。",
   tag1:"舒适",tag2:"安全",tag3:"准时",tag4:"卓越",hero_cta1:"立即获取报价",hero_cta2:"了解车队",
