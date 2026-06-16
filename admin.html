@@ -311,7 +311,9 @@ async function refresh(){
   const caMonth=paid.filter(b=>{const d=dt(b);return d&&d.getFullYear()===yr&&d.getMonth()===mo;}).reduce((s,b)=>s+Number(b.amount_ttc||0),0);
   const caYear=paid.filter(b=>{const d=dt(b);return d&&d.getFullYear()===yr;}).reduce((s,b)=>s+Number(b.amount_ttc||0),0);
   const resaList=BOOKINGS.filter(b=>(b.type==='reservation'||b.type==='facture')&&(!['cancelled','refunded'].includes(b.status)||keptAsAvoir(b)));
-  const monthRides=resaList.filter(b=>{const d=dt(b);return d&&d.getFullYear()===yr&&d.getMonth()===mo;}).length;
+  // Chaque service compte comme une course (réservations multi-services éclatées)
+  let monthRides=0, totalRides=0;
+  BOOKINGS.forEach(b=>{ const rs=bookingRides(b); totalRides+=rs.length; rs.forEach(r=>{ if(r.date&&r.date.getFullYear()===yr&&r.date.getMonth()===mo) monthRides++; }); });
   const pend=BOOKINGS.filter(b=>b.status==='pending').length;
   const decided=BOOKINGS.filter(b=>b.status!=='pending').length;
   const okc=paid.length;
@@ -351,7 +353,7 @@ async function refresh(){
   // stats
   document.getElementById('sYearCA').textContent=eur(caYear);
   document.getElementById('sMonthCA').textContent=eur(caMonth);
-  document.getElementById('sTotalRides').textContent=resaList.length;
+  document.getElementById('sTotalRides').textContent=totalRides;
   const avg=paid.length?caYear/paid.filter(b=>{const d=dt(b);return d&&d.getFullYear()===yr;}).length:0;
   document.getElementById('sAvgCart').textContent=eur(avg||0);
   const activeCli=allProfs.filter(p=>p.role==='client').length;
@@ -380,6 +382,16 @@ function rollupStatus(b){const ls=lineList(b);if(!ls.length)return b.status;cons
 function stSelectLine(id,idx,cur){return `<select class="mini" onchange="setLineStatus('${id}',${idx},this.value)">`+STATUSES.map(s=>`<option value="${s}"${s===cur?' selected':''}>${STMAP[s][1]}</option>`).join('')+`</select>`;}
 function parseRDV(s){ if(!s)return null; s=String(s); let m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/),y,mo,d; if(m){d=+m[1];mo=+m[2];y=+m[3];} else { m=s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/); if(m){y=+m[1];mo=+m[2];d=+m[3];} else return null; } const t=s.match(/(\d{1,2}):(\d{2})/); return new Date(y,mo-1,d,t?+t[1]:0,t?+t[2]:0).getTime(); }
 function bkSortTime(b){ if(b.date_time) return new Date(b.date_time).getTime(); const ts=lineList(b).map(l=>l.dt?parseRDV(l.dt):null).filter(Boolean); if(ts.length) return Math.min.apply(null,ts); return b.created_at?new Date(b.created_at).getTime():0; }
+function bookingRides(b){ // chaque service réalisable = une course (avec sa date)
+  if(!(b.type==='reservation'||b.type==='facture'))return [];
+  const ls=lineList(b);
+  if(ls.length>1){
+    return ls.filter(l=>!['cancelled','refunded'].includes(l.st)).map(l=>{const ts=l.dt?parseRDV(l.dt):null;return {date:ts?new Date(ts):(b.created_at?new Date(b.created_at):null)};});
+  }
+  if(['cancelled','refunded'].includes(b.status)&&!keptAsAvoir(b))return [];
+  const ts=b.date_time?new Date(b.date_time).getTime():(()=>{const l=firstLine(b);return l&&l.dt?parseRDV(l.dt):null;})();
+  return [{date:ts?new Date(ts):(b.created_at?new Date(b.created_at):null)}];
+}
 
 function renderResaTable(elId,list,withSelect){
   const el=document.getElementById(elId);
