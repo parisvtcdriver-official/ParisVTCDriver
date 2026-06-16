@@ -378,6 +378,8 @@ function lineTTC(b,l){if(l&&l.price!=null&&l.price!=='')return Number(l.price)||
 function lineHT(b,l){if(l&&l.ht!=null&&l.ht!=='')return Number(l.ht)||0;const t=lineTTC(b,l);return Math.round(t/1.10*100)/100;}
 function lineVehicle(l){if(l&&l.detail){return String(l.detail).split('·')[0].trim()||'—';}return '—';}
 function lineStatus(b,l){return (l&&l.st)||b.status;}
+function netRatio(b){const sub=Number(b&&b.details&&b.details.subtotal)||0;const tot=Number(b&&b.amount_ttc)||0;return sub>0?tot/sub:1;}            // part réellement payée (remise incluse)
+function netLineTTC(b,l){if(l&&l.price!=null&&l.price!=='')return Math.round((Number(l.price)||0)*netRatio(b)*100)/100;const n=lineList(b).length||1;return Math.round((Number(b.amount_ttc||0)/n)*100)/100;}
 function rollupStatus(b){const ls=lineList(b);if(!ls.length)return b.status;const sts=ls.map(l=>l.st||b.status);if(sts.every(s=>s==='completed'||s==='avoir'))return 'completed';if(sts.every(s=>s==='cancelled'||s==='refunded'))return 'cancelled';if(sts.some(s=>s==='pending'))return 'pending';return 'confirmed';}
 function stSelectLine(id,idx,cur){return `<select class="mini" onchange="setLineStatus('${id}',${idx},this.value)">`+STATUSES.map(s=>`<option value="${s}"${s===cur?' selected':''}>${STMAP[s][1]}</option>`).join('')+`</select>`;}
 function parseRDV(s){ if(!s)return null; s=String(s); let m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/),y,mo,d; if(m){d=+m[1];mo=+m[2];y=+m[3];} else { m=s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/); if(m){y=+m[1];mo=+m[2];d=+m[3];} else return null; } const t=s.match(/(\d{1,2}):(\d{2})/); return new Date(y,mo-1,d,t?+t[1]:0,t?+t[2]:0).getTime(); }
@@ -599,6 +601,9 @@ async function buildInvoiceDoc(b,opts){
   doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(9);
   doc.text('Prestation',48,y+15);doc.text('Prix',W-48,y+15,{align:'right'});
   y+=34;
+  // montant net réellement payé par ligne (remise globale répartie au prorata)
+  const _lns=(d.lines||[]); const _sub=Number(d.subtotal)||0; const _tot=Number(b.amount_ttc)||0; const _ratio=_sub>0?_tot/_sub:1;
+  const _net=l=>(l.price!=null&&l.price!=='')?Math.round((Number(l.price)||0)*_ratio*100)/100:Math.round((_tot/(_lns.length||1))*100)/100;
   (d.lines||[]).forEach(l=>{
     doc.setFont(F,'bold');doc.setTextColor(30,38,56);doc.setFontSize(9.5);
     doc.splitTextToSize(String(l.label||''),W-180).forEach((ln,i)=>{if(i)y+=13;doc.text(ln,48,y);});
@@ -607,9 +612,9 @@ async function buildInvoiceDoc(b,opts){
     [['route','Trajet : '],['dt','RDV : '],['req','Demande : ']].forEach(([k,pfx])=>{ if(l[k]){doc.setTextColor(150,120,40);doc.splitTextToSize(pfx+l[k],W-96).forEach(ln=>{y+=12;doc.text(ln,48,y);});} });
     if(l.st&&['cancelled','refunded','avoir'].includes(l.st)){
       y+=12; doc.setFont(F,'bold'); doc.setFontSize(8.5);
-      if(l.st==='avoir'){ doc.setTextColor(...gold); doc.text('Avoir émis'+(l.avoirCode?(' · code '+l.avoirCode):'')+' — montant conservé en crédit',48,y); }
-      else if(l.st==='refunded'){ doc.setTextColor(...red); doc.text('Service remboursé — montant déduit du total',48,y); }
-      else { doc.setTextColor(...red); doc.text('Service annulé — montant déduit du total',48,y); }
+      if(l.st==='avoir'){ doc.setTextColor(...gold); doc.text('Avoir émis'+(l.avoirCode?(' · code '+l.avoirCode):'')+' — '+eur(_net(l))+' conservés en crédit (remise incluse)',48,y); }
+      else if(l.st==='refunded'){ doc.setTextColor(...red); doc.text('Service remboursé — −'+eur(_net(l))+' (remise incluse)',48,y); }
+      else { doc.setTextColor(...red); doc.text('Service annulé — −'+eur(_net(l))+' (remise incluse)',48,y); }
       doc.setFont(F,'normal'); doc.setFontSize(9.5);
     }
     y+=20;
@@ -628,19 +633,16 @@ async function buildInvoiceDoc(b,opts){
   doc.text('TVA',W-230,y);doc.text(eur(b.vat),W-40,y,{align:'right'});y+=18;
   doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
   doc.text('Total TTC',W-230,y);doc.text(eur(b.amount_ttc),W-40,y,{align:'right'});
-  // Ajustement par ligne (annulation / remboursement) — la facture reste unique
-  const _lns=(d.lines||[]); const _ttc=l=>(l.price!=null&&l.price!=='')?(Number(l.price)||0):Math.round((Number(b.amount_ttc||0)/(_lns.length||1))*100)/100;
-  const _ded=_lns.filter(l=>l.st==='cancelled'||l.st==='refunded').reduce((s,l)=>s+_ttc(l),0);
-  const _avo=_lns.filter(l=>l.st==='avoir').reduce((s,l)=>s+_ttc(l),0);
-  if(_ded>0.009){
-    y+=16;doc.setFont(F,'normal');doc.setTextColor(...red);doc.setFontSize(9.5);
-    doc.text('Annulé / remboursé',W-230,y);doc.text('−'+eur(_ded),W-40,y,{align:'right'});y+=16;
+  // Ajustement par ligne (montants NETS = remise répartie) — la facture reste unique
+  const _ded=_lns.filter(l=>l.st==='cancelled'||l.st==='refunded').reduce((s,l)=>s+_net(l),0);
+  const _avo=_lns.filter(l=>l.st==='avoir').reduce((s,l)=>s+_net(l),0);
+  if(_ded>0.009||_avo>0.009){
+    y+=10;doc.setDrawColor(225);doc.line(W-230,y,W-40,y);y+=15;
+    if(_ded>0.009){ doc.setFont(F,'normal');doc.setFontSize(9.5);doc.setTextColor(...red);doc.text('Remboursé / annulé',W-230,y);doc.text('−'+eur(_ded),W-40,y,{align:'right'});y+=16; }
     doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(11);
-    doc.text('Net facturé',W-230,y);doc.text(eur(Math.round((Number(b.amount_ttc||0)-_ded)*100)/100),W-40,y,{align:'right'});
-  }
-  if(_avo>0.009){
-    y+=16;doc.setFont(F,'normal');doc.setTextColor(...gold);doc.setFontSize(8.5);
-    doc.text('Dont avoir(s) émis : '+eur(_avo)+' (montant conservé en crédit)',W-230,y);doc.setFontSize(9.5);
+    const _net2=Math.round((Number(b.amount_ttc||0)-_ded)*100)/100;   // encaissé = payé − remboursements (l'avoir reste acquis)
+    doc.text('Net facturé',W-230,y);doc.text(eur(_net2),W-40,y,{align:'right'});y+=14;
+    if(_avo>0.009){ doc.setFont(F,'normal');doc.setFontSize(8.5);doc.setTextColor(...gold);doc.text('dont avoir émis (crédit client, 2 mois) : '+eur(_avo),W-230,y);doc.setFontSize(9.5); }
   }
   y+=40;doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
   if(cancel){
@@ -983,8 +985,8 @@ async function setLineStatus(id,idx,status){
   const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
   const d=b.details||{}; const ls=Array.isArray(d.lines)?d.lines:[]; const l=ls[idx]; if(!l)return;
   if(status==='avoir'){
-    const amt=lineTTC(b,l);
-    if(!confirm('Émettre un avoir pour « '+(l.label||('Service '+(idx+1)))+' » ('+eur(amt)+') ?\nUn code avoir sera généré pour le client.'))return;
+    const amt=netLineTTC(b,l);   // montant réellement payé (remise répartie)
+    if(!confirm('Émettre un avoir pour « '+(l.label||('Service '+(idx+1)))+' » ('+eur(amt)+', remise incluse) ?\nUn code avoir sera généré pour le client.'))return;
     const code='AV-'+Math.floor(10000+Math.random()*89999); const exp=new Date(Date.now()+62*24*36e5).toISOString();
     l.st='avoir'; l.avoirCode=code; l.refunded_at=new Date().toISOString(); l.avoir_exp=exp;
     try{ await sb.from('promo_codes').insert({code,amount:amt,kind:'avoir',avoir_no:((b.reference||code)+'-'+(idx+1)),expires_at:exp,status:'available',used_by:b.user_id}); }catch(e){}
