@@ -792,9 +792,6 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
           <div class="sum-total"><span data-i18n="sum_total">Total TTC</span><b id="s_total">€0.00</b></div>
           <div class="sum-actions">
             <button class="btn btn-gold" onclick="openPreview()" data-i18n="btn_preview">Preview Quote</button>
-            <button class="btn btn-ghost" onclick="downloadPDF('quote')" data-i18n="btn_pdfq">Download PDF Quote</button>
-            <button class="btn btn-ghost" onclick="downloadPDF('invoice')" data-i18n="btn_pdfi">Download PDF Invoice</button>
-            <button class="btn btn-gold" onclick="confirmRes()" data-i18n="btn_confirm">Confirm Reservation</button>
           </div>
           <p style="font-size:12px;color:var(--muted-2);margin-top:16px;text-align:center" data-i18n="sum_secure">🔒 Secure payment · No charge until confirmation</p>
         </div>
@@ -941,7 +938,6 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
     <div class="modal-body" id="modalBody"></div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closePreview()" data-i18n="pv_close">Close</button>
-      <button class="btn btn-ghost" onclick="downloadPDF('quote')" data-i18n="btn_pdfq">Download PDF Quote</button>
       <button class="btn btn-gold" onclick="sendQuoteRequest(this)" data-i18n="btn_sendq">Send my request</button>
     </div>
   </div>
@@ -1647,6 +1643,8 @@ function openPreview(){
   if(vat20>0) html+=`<div class="q-row"><span>${t("vat_short")} 20% ${t("vat_incl")}</span><b>${eur(vat20)}</b></div>`;
   html+=`<div class="q-row" style="border:none;margin-top:8px"><span style="font-size:16px;color:var(--gold-2)">${t("totalDue")}</span><b class="mono" style="font-size:22px;color:var(--gold-bright)">${eur(total)}</b></div>`;
   if(hasCustom) html+=`<p style="margin-top:14px;padding:12px 14px;border:1px solid rgba(52,211,153,.3);border-radius:10px;background:rgba(52,211,153,.07);color:#9fe9cd;font-size:12.5px">${t("custom_note")}</p>`;
+  const LMSG={fr:"Astuce : connectez-vous à votre compte pour cumuler des points de fidélité et bénéficier d'avantages.",en:"Tip: log in to your account to earn loyalty points and unlock benefits.",es:"Consejo: inicie sesión en su cuenta para acumular puntos de fidelidad y obtener ventajas.",it:"Suggerimento: accedi al tuo account per accumulare punti fedeltà e vantaggi.",pt:"Dica: inicie sessão na sua conta para acumular pontos de fidelidade e benefícios.",tr:"İpucu: sadakat puanı kazanmak ve avantajlardan yararlanmak için hesabınıza giriş yapın.",zh:"提示：登录您的账户即可累积忠诚积分并享受专属优惠。"};
+  html+=`<p style="margin-top:16px;font-size:11.5px;color:var(--muted-2);text-align:center;border-top:1px solid var(--line-soft);padding-top:12px">${LMSG[LANG]||LMSG.fr}</p>`;
   document.getElementById("modalBody").innerHTML=html;
   document.getElementById("modal").classList.add("open");
 }
