@@ -376,7 +376,26 @@ function cancelPolicy(ts){
   if(h>=2)  return {key:'avoir',label:'Avoir valable 2 mois (entre 24 h et 2 h avant)'};
   return {key:'none',label:'Aucun remboursement ni avoir (moins de 2 h avant ou départ passé)'};
 }
+function lineList(b){return (b&&b.details&&Array.isArray(b.details.lines))?b.details.lines:[];}
+function isMultiResa(b){return (b.type==='reservation'||b.type==='facture')&&lineList(b).length>1;}
+function lineTTC(b,l){if(l&&l.price!=null&&l.price!=='')return Number(l.price)||0;const n=lineList(b).length||1;return Math.round((Number(b.amount_ttc||0)/n)*100)/100;}
+function lineVehicle(l){if(l&&l.detail){return String(l.detail).split('·')[0].trim()||'—';}return '—';}
+function rowResaMulti(b,withCancel){
+  const ls=lineList(b);
+  const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">payée</span>':' <span class="st att" style="margin-left:6px">à payer</span>'):'';
+  let extra='';
+  if(withCancel){
+    if(b.details&&b.details.cancel&&b.details.cancel.requested&&b.status!=='cancelled') extra='<span class="sub2" style="color:var(--amber)">Demande envoyée</span>';
+    else if(!['cancelled','completed','refunded','avoir'].includes(b.status)) extra=`<button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">Annuler / remboursement</button>`;
+  }
+  const head=`<tr style="background:rgba(201,162,74,.04)"><td><div class="cli">${escapeHtml(b.service||('Réservation — '+ls.length+' services'))}${payTag}</div><div class="sub2">${ls.length} prestations · facture unique</div></td>
+    <td class="sub2">—</td><td class="sub2">—</td><td class="amt">${eur(b.amount_ttc)}</td><td>${statusBadgeFull(b)}</td>${withCancel?`<td>${extra}</td>`:''}</tr>`;
+  const rows=ls.map((l,i)=>`<tr><td style="padding-left:14px"><div class="cli" style="font-weight:600">↳ ${escapeHtml(l.label||('Service '+(i+1)))}</div><div class="sub2">${escapeHtml(l.detail||'')}</div></td>
+    <td>${escapeHtml(l.dt||'—')}</td><td>${escapeHtml(lineVehicle(l))}</td><td class="amt">${eur(lineTTC(b,l))}</td><td>${stBadge(l.st||b.status)}</td>${withCancel?'<td></td>':''}</tr>`).join('');
+  return head+rows;
+}
 function rowResa(b,withCancel){
+  if(isMultiResa(b)) return rowResaMulti(b,withCancel);
   let extra='';
   const ts=bkTime(b);
   if(withCancel){
