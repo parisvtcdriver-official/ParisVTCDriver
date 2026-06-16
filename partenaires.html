@@ -185,8 +185,8 @@ async function submitPartner(e){
     city:v('p_city'), volume:v('p_volume'), needs:needs, message:v('p_message')
   };
   try{
-    var res=await sb.from('partner_requests').insert(payload);
-    if(res.error) throw res.error;
+    var res=await sb.functions.invoke('request-quote',{body:{action:'partner-request',payload:payload}});
+    if(res.error||(res.data&&res.data.ok===false)) throw new Error((res.data&&res.data.error)||(res.error&&res.error.message)||'err');
     var lang=(localStorage.getItem('pvtc_lang')||'fr');
     var msg=SENT_MSG[lang]||SENT_MSG.fr;
     document.getElementById('partnerForm').innerHTML='<div style="text-align:center;padding:30px 10px"><div style="font-size:40px;margin-bottom:12px">✓</div><p style="color:var(--gold-2);font-size:16px;line-height:1.6">'+msg+'</p></div>';
