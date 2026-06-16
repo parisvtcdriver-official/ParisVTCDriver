@@ -234,6 +234,8 @@ nav.links a:hover{color:var(--txt);background:rgba(255,255,255,.04)}
 }
 .hero-card h3{font-size:13px;font-weight:600;letter-spacing:.04em;color:var(--gold-2);width:100%;margin:0}
 .hero-card .sub{display:none}
+.mini-stats{width:100%;display:grid;grid-template-columns:repeat(5,1fr);gap:14px 18px}
+@media(max-width:720px){.mini-stats{grid-template-columns:repeat(2,1fr)}}
 .mini-stat{display:flex;flex-direction:column-reverse;align-items:flex-start;gap:3px;padding:0;border:none}
 .mini-stat .k{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
 .mini-stat .k svg{width:16px;height:16px;color:var(--gold-2)}
@@ -609,11 +611,13 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
       <div class="hero-card">
         <h3 data-i18n="hc_title">Why ride with us</h3>
         <p class="sub" data-i18n="hc_sub">A standard of service trusted by executives and families alike.</p>
+        <div class="mini-stats">
         <div class="mini-stat"><span class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span data-i18n="hc1">On-time guarantee</span></span><span class="v">99.4%</span></div>
         <div class="mini-stat"><span class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5z"/></svg><span data-i18n="hc2">Vetted chauffeurs</span></span><span class="v">100%</span></div>
         <div class="mini-stat"><span class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg><span data-i18n="hc3">Journeys completed</span></span><span class="v">18,400+</span></div>
         <div class="mini-stat"><span class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4L12 16.8 5.7 21.4 8 14 2 9.4h7.6z"/></svg><span data-i18n="hc4">Average client rating</span></span><span class="v">4.9 / 5</span></div>
-        <div class="mini-stat" style="border-top:1px solid var(--line-soft);margin-top:4px;padding-top:12px"><span class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span data-i18n="hc5">Loyalty programme</span></span><span class="v" style="color:var(--gold-bright)">−5% → −20%</span></div>
+        <div class="mini-stat"><span class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span data-i18n="hc5">Loyalty programme</span></span><span class="v" style="color:var(--gold-bright)">−5% → −20%</span></div>
+        </div>
       </div>
     </div>
   </div>
