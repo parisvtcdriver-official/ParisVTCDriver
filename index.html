@@ -459,11 +459,11 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
   .grid-4,.trust-grid,.stats-strip,.foot-grid{grid-template-columns:1fr}
   .sec-pad{padding:64px 0}
   .hero-contact{gap:14px}
-  .hero{min-height:calc(100svh - 64px);padding:0}
-  .hero-inner{padding:26px 0 28px}
-  .hero-bg{overflow:hidden}
-  .hero-bg img{opacity:1;object-position:65% 100%;transform:scale(0.8);transform-origin:62% 100%}
-  .hero-bg::after{background:linear-gradient(180deg,rgba(7,10,18,.68) 0%,rgba(7,10,18,.36) 34%,rgba(7,10,18,.16) 58%,rgba(7,10,18,.6) 100%)}
+  .hero{flex-direction:column;align-items:stretch;min-height:0;padding:0}
+  .hero-inner{padding:22px 0 30px}
+  .hero-bg{position:relative;inset:auto;overflow:hidden}
+  .hero-bg img{width:100%;height:auto;object-fit:contain;opacity:1;transform:none}
+  .hero-bg::after{background:linear-gradient(180deg,transparent 72%,#070a12)}
   .hero-bg::before{background:none}
   .foot-bottom{flex-direction:column}
   .fares-wrap::after{opacity:1}
