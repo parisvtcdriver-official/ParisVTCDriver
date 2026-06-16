@@ -658,7 +658,7 @@ function renderClients(profs){
   el.innerHTML=profs.map(p=>{
     const L=loyalty(p.loyalty_points), s=clientStats(p.id);
     const act=p.id===ME.id?'<span class="sub2">vous</span>':`<button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteClient('${p.id}','${escapeHtml((p.full_name||p.email||'').replace(/'/g,''))}')">Supprimer</button>`;
-    return `<tr><td class="cli">${medal(medalFor(L.name))}${escapeHtml(p.full_name||'—')}</td>
+    return `<tr><td class="cli">${p.is_partner?'<img class="pbadge" src="partner-badge.png" alt="" title="Partenaire">':''}${medal(medalFor(L.name))}${escapeHtml(p.full_name||'—')}</td>
       <td>${escapeHtml(p.email||'')}<div class="sub2">${escapeHtml(p.phone||'')}</div></td>
       <td>${s.count}</td><td class="amt">${eur(s.total)}</td>
       <td>${s.last?new Date(s.last).toLocaleDateString('fr-FR'):'—'}</td>
@@ -689,7 +689,7 @@ function renderFidelity(profs){
   if(!profs.length){el.innerHTML='<tr><td colspan="6" class="empty">Aucun client.</td></tr>';return;}
   el.innerHTML=profs.map(p=>{
     const L=loyalty(p.loyalty_points), isMe=p.id===ME.id;
-    return `<tr><td class="cli">${medal(medalFor(L.name))}${escapeHtml(p.full_name||'—')}</td>
+    return `<tr><td class="cli">${p.is_partner?'<img class="pbadge" src="partner-badge.png" alt="" title="Partenaire">':''}${medal(medalFor(L.name))}${escapeHtml(p.full_name||'—')}</td>
       <td class="amt">${(p.loyalty_points||0).toLocaleString('fr-FR')}</td>
       <td><span class="lvl-tag">★ ${L.name}</span></td>
       <td>${L.off?'−'+L.off+' %':'—'}</td>
@@ -707,16 +707,80 @@ function renderPartners(){
   const list=PART_FILTER==='all'?PARTS:PARTS.filter(p=>p.status===PART_FILTER);
   const el=document.getElementById('allPart');
   if(!list.length){el.innerHTML='<div class="empty">Aucune demande.</div>';return;}
-  const stOpts=['new','in_review','accepted','declined'],stLbl={new:'Nouvelle',in_review:'En cours',accepted:'Acceptée',declined:'Refusée'};
+  const stLbl={new:'Nouvelle',in_review:'En cours',accepted:'Acceptée',declined:'Refusée'};
+  const stCls={new:'att',in_review:'att',accepted:'conf',declined:'ann'};
   el.innerHTML=list.map(p=>{
-    const sel=`<select class="mini" onchange="setPartnerStatus('${p.id}',this.value)">`+stOpts.map(s=>`<option value="${s}"${s===p.status?' selected':''}>${stLbl[s]}</option>`).join('')+`</select>`;
-    return `<div style="padding:16px 20px;border-bottom:1px solid var(--line-soft)"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><img class="pbadge" src="partner-badge.png" alt=""><b style="color:var(--txt)">${escapeHtml(p.company||'Société')}</b> <span class="sub2">${escapeHtml(p.sector||'')}</span><span style="margin-left:auto">${sel}</span></div>
+    const badge=`<span class="st ${stCls[p.status]||'att'}">${stLbl[p.status]||p.status}${p.status==='accepted'&&p.discount?(' · −'+p.discount+'%'):''}</span>`;
+    let act='';
+    if(p.status!=='accepted') act+=`<button class="btn-mini gold" onclick="acceptPartner('${p.id}')">Accepter (remise %)</button> `;
+    if(p.status!=='declined') act+=`<button class="btn-mini" onclick="declinePartner('${p.id}')">Refuser</button> `;
+    act+=`<button class="btn-mini" onclick="partnerPDF('${p.id}')">PDF</button> <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deletePartner('${p.id}')" title="Supprimer">✕</button>`;
+    return `<div style="padding:16px 20px;border-bottom:1px solid var(--line-soft)"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><img class="pbadge" src="partner-badge.png" alt=""><b style="color:var(--txt)">${escapeHtml(p.company||'Société')}</b> <span class="sub2">${escapeHtml(p.sector||'')}</span><span style="margin-left:auto">${badge}</span></div>
       <div class="sub2" style="margin-top:6px">${escapeHtml(p.contact_name||'')}${p.contact_role?' · '+escapeHtml(p.contact_role):''} — ${escapeHtml(p.email||'')}${p.phone?' · '+escapeHtml(p.phone):''}${p.city?' · '+escapeHtml(p.city):''}</div>
       ${p.volume?'<div class="sub2">Volume estimé : '+escapeHtml(p.volume)+'</div>':''}
       ${(p.needs&&p.needs.length)?'<div class="sub2">Besoins : '+p.needs.map(escapeHtml).join(', ')+'</div>':''}
       ${p.message?'<div style="margin-top:8px;color:var(--muted);font-size:13px">“'+escapeHtml(p.message)+'”</div>':''}
-      ${p.siret?'<div class="sub2" style="margin-top:6px">SIRET : '+escapeHtml(p.siret)+(p.website?' · '+escapeHtml(p.website):'')+'</div>':''}</div>`;
+      ${p.siret?'<div class="sub2" style="margin-top:6px">SIRET : '+escapeHtml(p.siret)+(p.website?' · '+escapeHtml(p.website):'')+'</div>':''}
+      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">${act}</div></div>`;
   }).join('');
+}
+async function acceptPartner(id){
+  const p=PARTS.find(x=>x.id===id); if(!p)return;
+  const v=prompt('Pourcentage de remise partenaire pour '+(p.company||'')+' (%) :', p.discount||10);
+  if(v===null)return;
+  const disc=parseFloat(String(v).replace(',','.')); if(isNaN(disc)||disc<=0||disc>100){toast('Pourcentage invalide');return;}
+  const {error}=await sb.from('partner_requests').update({status:'accepted',discount:disc,decided_at:new Date().toISOString()}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  if(p.email){ try{ await sb.from('profiles').update({partner_discount:disc,is_partner:true}).ilike('email',p.email); }catch(e){} }
+  toast('Partenariat accepté ✓ (−'+disc+'%)');
+  await refresh();
+  await emailPartnerDecision(p,true,disc);
+}
+async function declinePartner(id){
+  const p=PARTS.find(x=>x.id===id); if(!p)return;
+  if(!confirm('Refuser cette demande de partenariat ?'))return;
+  const {error}=await sb.from('partner_requests').update({status:'declined',decided_at:new Date().toISOString()}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Demande refusée'); await refresh(); await emailPartnerDecision(p,false,0);
+}
+async function deletePartner(id){
+  if(!confirm('Supprimer cette demande de partenariat ?'))return;
+  const {error}=await sb.from('partner_requests').delete().eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Supprimé ✓'); refresh();
+}
+async function emailPartnerDecision(p,accepted,disc){
+  if(!p||!p.email){toast('Pas d’e-mail client — réponse non envoyée');return;}
+  const name=p.contact_name||'';
+  let subject,html;
+  if(accepted){
+    subject='Votre partenariat ParisVTCDriver est accepté';
+    html=`<h2 style="color:#a07d2c">Partenariat accepté</h2><p>Bonjour ${escapeHtml(name)},</p><p>Nous avons le plaisir de vous accorder un partenariat pour <b>${escapeHtml(p.company||'')}</b>, avec une <b>remise de ${disc}%</b> sur nos prestations.</p><p><b>Important :</b> pour en bénéficier automatiquement, créez votre espace client sur www.parisvtcdriver.com en utilisant <b>la même adresse e-mail</b> que cette demande (${escapeHtml(p.email)}). La remise s'appliquera alors à vos réservations.</p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`;
+  }else{
+    subject='Votre demande de partenariat ParisVTCDriver';
+    html=`<h2 style="color:#a07d2c">Demande de partenariat</h2><p>Bonjour ${escapeHtml(name)},</p><p>Merci pour votre intérêt. Après étude, nous ne pouvons pas donner suite à votre demande pour le moment. N'hésitez pas à nous recontacter ultérieurement.</p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18</p>`;
+  }
+  try{
+    const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to:p.email,subject,html}});
+    if(error||(data&&data.ok===false))throw new Error((data&&data.error)||(error&&error.message)||'err');
+    toast('Réponse envoyée au partenaire ✓');
+  }catch(e){toast('Décision enregistrée, e-mail non envoyé : '+(e&&e.message?e.message:e));}
+}
+function partnerPDF(id){
+  const p=PARTS.find(x=>x.id===id); if(!p){toast('Introuvable');return;}
+  if(!window.jspdf){toast('PDF indisponible');return;}
+  const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:'pt',format:'a4'}); const W=595,gold=[201,162,74],dark=[20,28,46];
+  doc.setFillColor(7,10,18);doc.rect(0,0,W,110,'F');
+  doc.setTextColor(...gold);doc.setFont('helvetica','bold');doc.setFontSize(20);doc.text('ParisVTCDriver',40,52);
+  doc.setTextColor(150,160,180);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text('Demande de partenariat',40,72);
+  doc.text(p.created_at?new Date(p.created_at).toLocaleDateString('fr-FR'):'',W-40,52,{align:'right'});
+  let y=144;doc.setTextColor(...dark);doc.setFont('helvetica','bold');doc.setFontSize(14);doc.text(p.company||'Societe',40,y);y+=10;
+  doc.setDrawColor(220);doc.line(40,y,W-40,y);y+=22;
+  doc.setFontSize(10.5);
+  const rows=[['Secteur',p.sector],['Contact',(p.contact_name||'')+(p.contact_role?' ('+p.contact_role+')':'')],['E-mail',p.email],['Telephone',p.phone],['Ville',p.city],['Volume estime',p.volume],['SIRET',p.siret],['Site web',p.website],['Besoins',(p.needs||[]).join(', ')],['Statut',(p.status||'')+(p.discount?(' - remise '+p.discount+'%'):'')]];
+  rows.forEach(r=>{ if(!r[1])return; doc.setFont('helvetica','bold');doc.setTextColor(...dark);doc.text(r[0]+' :',40,y);doc.setFont('helvetica','normal');doc.setTextColor(60,70,90); const lines=doc.splitTextToSize(String(r[1]),W-200); lines.forEach((ln,i)=>doc.text(ln,180,y+i*14)); y+=14*Math.max(1,lines.length)+6; });
+  if(p.message){y+=8;doc.setFont('helvetica','bold');doc.setTextColor(...dark);doc.text('Message :',40,y);y+=16;doc.setFont('helvetica','normal');doc.setTextColor(60,70,90);doc.splitTextToSize(String(p.message),W-80).forEach(ln=>{doc.text(ln,40,y);y+=14;});}
+  doc.save('partenariat-'+String(p.company||'demande').replace(/[^a-zA-Z0-9]/g,'-')+'.pdf');
 }
 function renderVehSplit(resaList){
   const counts={}; resaList.forEach(b=>{const v=b.vehicle||'Autre';counts[v]=(counts[v]||0)+1;});
