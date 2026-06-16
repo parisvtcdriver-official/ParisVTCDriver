@@ -461,7 +461,7 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
   .hero-contact{gap:14px}
   .hero{min-height:calc(100svh - 64px);padding:0}
   .hero-inner{padding:26px 0 28px}
-  .hero-bg img{opacity:1;object-position:65% 50%}
+  .hero-bg img{opacity:1;object-position:65% 66%}
   .hero-bg::after{background:linear-gradient(180deg,rgba(7,10,18,.68) 0%,rgba(7,10,18,.36) 34%,rgba(7,10,18,.16) 58%,rgba(7,10,18,.6) 100%)}
   .hero-bg::before{background:none}
   .foot-bottom{flex-direction:column}
@@ -1679,7 +1679,7 @@ async function sendQuoteRequest(btn){
   const first=L[0]||{};
   const rt=(first.route||"").split("→").map(s=>s.trim());
   // libellé de remise (fidélité et/ou code promo)
-  let dl=[]; if(loyaltyDiscount()>0) dl.push("Fidélité −"+LOYALTY.off+"%"); if(currentDiscount()>0&&appliedCode) dl.push(appliedCode);
+  let dl=[]; if(loyaltyDiscount()>0) dl.push((LOYALTY.name||"Fidélité")+" −"+LOYALTY.off+"%"); if(currentDiscount()>0&&appliedCode) dl.push(appliedCode);
   const payload={
     reference:ref,
     client_name:cv("c_name"), client_email:email,
@@ -2091,10 +2091,12 @@ document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="
 (async()=>{ try{ if(typeof sb!=="undefined"&&sb){
   const {data:{session}}=await sb.auth.getSession();
   if(session){
-    const {data:p}=await sb.from("profiles").select("loyalty_points").eq("id",session.user.id).single();
+    const {data:p}=await sb.from("profiles").select("loyalty_points,partner_discount,is_partner").eq("id",session.user.id).single();
     const pts=(p&&p.loyalty_points)||0;
-    const off=pts>=5000?20:pts>=1000?15:pts>=500?10:pts>=100?5:0;
-    if(off>0){ LOYALTY={off,name:""}; recalc(); }
+    const loyOff=pts>=5000?20:pts>=1000?15:pts>=500?10:pts>=100?5:0;
+    const partOff=(p&&Number(p.partner_discount))||0;
+    const off=Math.max(loyOff,partOff);   // une seule remise : la plus avantageuse
+    if(off>0){ LOYALTY={off,name:(partOff>loyOff?"Partenaire":"Fidélité")}; recalc(); }
   }
 }}catch(e){} })();
 </script>
