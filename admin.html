@@ -369,15 +369,45 @@ function isCourseDone(b){return b.status==='completed' || keptAsAvoir(b);}      
 function firstLine(b){return b.details&&b.details.lines&&b.details.lines[0];}
 function bkRDV(b){if(b.date_time)return dateFR(b.date_time);const l=firstLine(b);return (l&&l.dt)||'—';}
 function bkVehicle(b){if(b.vehicle)return b.vehicle;const l=firstLine(b);if(l&&l.detail){return String(l.detail).split('·')[0].trim()||'—';}return '—';}
+/* ---- Réservations multi-services : une ligne = un service ---- */
+function lineList(b){return (b&&b.details&&Array.isArray(b.details.lines))?b.details.lines:[];}
+function isMultiResa(b){return (b.type==='reservation'||b.type==='facture')&&lineList(b).length>1;}
+function lineTTC(b,l){if(l&&l.price!=null&&l.price!=='')return Number(l.price)||0;const n=lineList(b).length||1;return Math.round((Number(b.amount_ttc||0)/n)*100)/100;}
+function lineHT(b,l){if(l&&l.ht!=null&&l.ht!=='')return Number(l.ht)||0;const t=lineTTC(b,l);return Math.round(t/1.10*100)/100;}
+function lineVehicle(l){if(l&&l.detail){return String(l.detail).split('·')[0].trim()||'—';}return '—';}
+function lineStatus(b,l){return (l&&l.st)||b.status;}
+function rollupStatus(b){const ls=lineList(b);if(!ls.length)return b.status;const sts=ls.map(l=>l.st||b.status);if(sts.every(s=>s==='completed'||s==='avoir'))return 'completed';if(sts.every(s=>s==='cancelled'||s==='refunded'))return 'cancelled';if(sts.some(s=>s==='pending'))return 'pending';return 'confirmed';}
+function stSelectLine(id,idx,cur){return `<select class="mini" onchange="setLineStatus('${id}',${idx},this.value)">`+STATUSES.map(s=>`<option value="${s}"${s===cur?' selected':''}>${STMAP[s][1]}</option>`).join('')+`</select>`;}
 
 function renderResaTable(elId,list,withSelect){
   const el=document.getElementById(elId);
   if(!list.length){el.innerHTML='<tr><td colspan="6" class="empty">Aucune réservation.</td></tr>';return;}
+  const wideVeh=(elId!=='dashResa');
   el.innerHTML=list.map(b=>{
     const typeTag=b.type!=='reservation'?` <span class="sub2">(${b.type})</span>`:'';
     const c=b.details&&b.details.cancel;
     const resolved=['cancelled','refunded','avoir'].includes(b.status);
     const cancelReq=(c&&c.requested&&!resolved);
+    // ----- Réservation multi-services éclatée (vue Réservations admin) -----
+    if(withSelect && isMultiResa(b)){
+      const ls=lineList(b);
+      const head=`<tr style="background:rgba(201,162,74,.05)"><td class="cli">${escapeHtml(bookingClient(b))}</td>
+        <td><b style="color:var(--gold-2)">${escapeHtml(b.service||('Réservation — '+ls.length+' services'))}${typeTag}</b><div class="sub2">${ls.length} prestations · facture unique${b.reference?' · '+escapeHtml(b.reference):''}</div></td>
+        <td class="sub2">—</td>`+(wideVeh?`<td class="sub2">—</td>`:'')+
+        `<td class="amt">${eur(b.amount_ttc)}</td>
+        <td>${statusBadgeFull(b)} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer toute la réservation">✕</button>${cancelReq?'<div class="sub2" style="color:var(--amber);margin-top:5px">⚠ Annulation demandée — '+escapeHtml(c.policy||'')+(c.reason?'<br>Motif : '+escapeHtml(c.reason):'')+'</div>':''}</td></tr>`;
+      const rows=ls.map((l,i)=>{
+        const st=lineStatus(b,l);
+        const note=(l.st==='avoir'&&l.avoirCode)?`<div class="sub2" style="color:var(--gold-2)">Avoir ${escapeHtml(l.avoirCode)}</div>`:(l.st==='refunded'?'<div class="sub2" style="color:var(--blue)">Remboursé</div>':'');
+        return `<tr><td class="sub2" style="padding-left:18px">↳</td>
+          <td><b style="color:var(--txt)">${escapeHtml(l.label||('Service '+(i+1)))}</b><div class="sub2">${escapeHtml(l.detail||'')}</div></td>
+          <td>${escapeHtml(l.dt||'—')}</td>`+(wideVeh?`<td>${escapeHtml(lineVehicle(l))}</td>`:'')+
+          `<td class="amt">${eur(lineTTC(b,l))}</td>
+          <td>${stSelectLine(b.id,i,st)}${note}</td></tr>`;
+      }).join('');
+      return head+rows;
+    }
+    // ----- Réservation simple -----
     let statusCell;
     if(withSelect){
       statusCell=stSelect(b.id,b.status)+` <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer">✕</button>`;
@@ -388,7 +418,7 @@ function renderResaTable(elId,list,withSelect){
     return `<tr><td class="cli">${escapeHtml(bookingClient(b))}</td>
       <td>${escapeHtml(b.service||'')}${typeTag}<div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
       <td>${bkRDV(b)}</td>`+
-      (elId==='dashResa'?'':`<td>${escapeHtml(bkVehicle(b))}</td>`)+
+      (wideVeh?`<td>${escapeHtml(bkVehicle(b))}</td>`:'')+
       `<td class="amt">${eur(b.amount_ttc)}</td>
       <td>${statusCell}</td></tr>`;
   }).join('');
@@ -542,6 +572,13 @@ async function buildInvoiceDoc(b,opts){
     doc.setFont(F,'normal');doc.text(String(l.priceLabel||''),W-48,y,{align:'right'});
     if(l.detail){y+=13;doc.setTextColor(120,130,150);doc.setFontSize(8.5);doc.splitTextToSize(String(l.detail),W-96).forEach((ln,i)=>{if(i)y+=12;doc.text(ln,48,y);});doc.setFontSize(9.5);}
     [['route','Trajet : '],['dt','RDV : '],['req','Demande : ']].forEach(([k,pfx])=>{ if(l[k]){doc.setTextColor(150,120,40);doc.splitTextToSize(pfx+l[k],W-96).forEach(ln=>{y+=12;doc.text(ln,48,y);});} });
+    if(l.st&&['cancelled','refunded','avoir'].includes(l.st)){
+      y+=12; doc.setFont(F,'bold'); doc.setFontSize(8.5);
+      if(l.st==='avoir'){ doc.setTextColor(...gold); doc.text('Avoir émis'+(l.avoirCode?(' · code '+l.avoirCode):'')+' — montant conservé en crédit',48,y); }
+      else if(l.st==='refunded'){ doc.setTextColor(...red); doc.text('Service remboursé — montant déduit du total',48,y); }
+      else { doc.setTextColor(...red); doc.text('Service annulé — montant déduit du total',48,y); }
+      doc.setFont(F,'normal'); doc.setFontSize(9.5);
+    }
     y+=20;
     if(y>730){doc.addPage();y=60;}
   });
@@ -558,6 +595,20 @@ async function buildInvoiceDoc(b,opts){
   doc.text('TVA',W-230,y);doc.text(eur(b.vat),W-40,y,{align:'right'});y+=18;
   doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
   doc.text('Total TTC',W-230,y);doc.text(eur(b.amount_ttc),W-40,y,{align:'right'});
+  // Ajustement par ligne (annulation / remboursement) — la facture reste unique
+  const _lns=(d.lines||[]); const _ttc=l=>(l.price!=null&&l.price!=='')?(Number(l.price)||0):Math.round((Number(b.amount_ttc||0)/(_lns.length||1))*100)/100;
+  const _ded=_lns.filter(l=>l.st==='cancelled'||l.st==='refunded').reduce((s,l)=>s+_ttc(l),0);
+  const _avo=_lns.filter(l=>l.st==='avoir').reduce((s,l)=>s+_ttc(l),0);
+  if(_ded>0.009){
+    y+=16;doc.setFont(F,'normal');doc.setTextColor(...red);doc.setFontSize(9.5);
+    doc.text('Annulé / remboursé',W-230,y);doc.text('−'+eur(_ded),W-40,y,{align:'right'});y+=16;
+    doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(11);
+    doc.text('Net facturé',W-230,y);doc.text(eur(Math.round((Number(b.amount_ttc||0)-_ded)*100)/100),W-40,y,{align:'right'});
+  }
+  if(_avo>0.009){
+    y+=16;doc.setFont(F,'normal');doc.setTextColor(...gold);doc.setFontSize(8.5);
+    doc.text('Dont avoir(s) émis : '+eur(_avo)+' (montant conservé en crédit)',W-230,y);doc.setFontSize(9.5);
+  }
   y+=40;doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
   if(cancel){
     doc.setFont(F,'bold');doc.setTextColor(...red);doc.setFontSize(9.5);
@@ -893,6 +944,27 @@ async function setStatus(id,status){
     toast(status==='completed'?'Course terminée ✓ (points crédités)':'Statut mis à jour ✓');
     refresh();
   }
+}
+/* ---- Statut d'UNE ligne de service (réservation multi-services) ---- */
+async function setLineStatus(id,idx,status){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  const d=b.details||{}; const ls=Array.isArray(d.lines)?d.lines:[]; const l=ls[idx]; if(!l)return;
+  if(status==='avoir'){
+    const amt=lineTTC(b,l);
+    if(!confirm('Émettre un avoir pour « '+(l.label||('Service '+(idx+1)))+' » ('+eur(amt)+') ?\nUn code avoir sera généré pour le client.'))return;
+    const code='AV-'+Math.floor(10000+Math.random()*89999); const exp=new Date(Date.now()+62*24*36e5).toISOString();
+    l.st='avoir'; l.avoirCode=code; l.refunded_at=new Date().toISOString(); l.avoir_exp=exp;
+    try{ await sb.from('promo_codes').insert({code,amount:amt,kind:'avoir',avoir_no:((b.reference||code)+'-'+(idx+1)),expires_at:exp,status:'available',used_by:b.user_id}); }catch(e){}
+  } else if(status==='refunded'){
+    if(!confirm('Marquer « '+(l.label||('Service '+(idx+1)))+' » comme remboursé ('+eur(lineTTC(b,l))+') ?'))return;
+    l.st='refunded'; l.refunded_at=new Date().toISOString();
+  } else {
+    l.st=status; if(status!=='cancelled'){ delete l.avoirCode; delete l.refunded_at; delete l.avoir_exp; }
+  }
+  d.lines=ls;
+  const {error}=await sb.from('bookings').update({status:rollupStatus(b),details:d}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Statut du service mis à jour ✓'); refresh();
 }
 async function processAvoirRedemption(b){
   // À la fin de course : consomme le code/avoir utilisé et reporte le solde restant.

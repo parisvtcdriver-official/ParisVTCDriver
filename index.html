@@ -1677,7 +1677,7 @@ async function sendQuoteRequest(btn){
   const {ttc,disc,tax,total}=computeTotals();
   const ref=peekRef();
   const L=sortedLines();
-  const lines=L.map(l=>({label:l.label,detail:l.detail,custom:!!l.custom,priceLabel:l.custom?t("on_quote"):eur(l.price),route:l.route||"",dt:l.dt||"",req:l.req||""}));
+  const lines=L.map(l=>({label:l.label,detail:l.detail,custom:!!l.custom,price:l.custom?null:l.price,ht:l.custom?null:l.ht,vat:l.custom?null:l.vat,priceLabel:l.custom?t("on_quote"):eur(l.price),route:l.route||"",dt:l.dt||"",req:l.req||""}));
   const first=L[0]||{};
   const rt=(first.route||"").split("→").map(s=>s.trim());
   // libellé de remise (fidélité et/ou code promo)

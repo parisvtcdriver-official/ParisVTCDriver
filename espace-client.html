@@ -485,6 +485,13 @@ async function buildInvoiceDoc(b,opts){
     doc.setFont(F,'normal');doc.text(String(l.priceLabel||''),W-48,y,{align:'right'});
     if(l.detail){y+=13;doc.setTextColor(120,130,150);doc.setFontSize(8.5);doc.splitTextToSize(String(l.detail),W-96).forEach((ln,i)=>{if(i)y+=12;doc.text(ln,48,y);});doc.setFontSize(9.5);}
     [['route','Trajet : '],['dt','RDV : '],['req','Demande : ']].forEach(([k,pfx])=>{ if(l[k]){doc.setTextColor(150,120,40);doc.splitTextToSize(pfx+l[k],W-96).forEach(ln=>{y+=12;doc.text(ln,48,y);});} });
+    if(l.st&&['cancelled','refunded','avoir'].includes(l.st)){
+      y+=12; doc.setFont(F,'bold'); doc.setFontSize(8.5);
+      if(l.st==='avoir'){ doc.setTextColor(...gold); doc.text('Avoir émis'+(l.avoirCode?(' · code '+l.avoirCode):'')+' — montant conservé en crédit',48,y); }
+      else if(l.st==='refunded'){ doc.setTextColor(...red); doc.text('Service remboursé — montant déduit du total',48,y); }
+      else { doc.setTextColor(...red); doc.text('Service annulé — montant déduit du total',48,y); }
+      doc.setFont(F,'normal'); doc.setFontSize(9.5);
+    }
     y+=20;
     if(y>730){doc.addPage();y=60;}
   });
@@ -501,6 +508,19 @@ async function buildInvoiceDoc(b,opts){
   doc.text('TVA',W-230,y);doc.text(eur(b.vat),W-40,y,{align:'right'});y+=18;
   doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
   doc.text('Total TTC',W-230,y);doc.text(eur(b.amount_ttc),W-40,y,{align:'right'});
+  const _lns=(d.lines||[]); const _ttc=l=>(l.price!=null&&l.price!=='')?(Number(l.price)||0):Math.round((Number(b.amount_ttc||0)/(_lns.length||1))*100)/100;
+  const _ded=_lns.filter(l=>l.st==='cancelled'||l.st==='refunded').reduce((s,l)=>s+_ttc(l),0);
+  const _avo=_lns.filter(l=>l.st==='avoir').reduce((s,l)=>s+_ttc(l),0);
+  if(_ded>0.009){
+    y+=16;doc.setFont(F,'normal');doc.setTextColor(...red);doc.setFontSize(9.5);
+    doc.text('Annulé / remboursé',W-230,y);doc.text('−'+eur(_ded),W-40,y,{align:'right'});y+=16;
+    doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(11);
+    doc.text('Net facturé',W-230,y);doc.text(eur(Math.round((Number(b.amount_ttc||0)-_ded)*100)/100),W-40,y,{align:'right'});
+  }
+  if(_avo>0.009){
+    y+=16;doc.setFont(F,'normal');doc.setTextColor(...gold);doc.setFontSize(8.5);
+    doc.text('Dont avoir(s) émis : '+eur(_avo)+' (montant conservé en crédit)',W-230,y);doc.setFontSize(9.5);
+  }
   y+=40;doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
   if(cancel){
     doc.setFont(F,'bold');doc.setTextColor(...red);doc.setFontSize(9.5);doc.text('Réservation annulée',40,y);y+=14;
