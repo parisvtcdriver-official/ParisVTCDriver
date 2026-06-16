@@ -100,6 +100,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
     <div class="nav-i" data-v="fact"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg> Devis &amp; factures</div>
     <div class="nav-i" data-v="avoir"><svg viewBox="0 0 24 24" stroke-width="1.7"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h4"/></svg> Mes avoirs</div>
     <div class="nav-i" data-v="fid"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z"/></svg> Fidélité</div>
+    <div class="nav-i" id="navPartner" data-v="partner" style="display:none"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M3 7h18v13H3z"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/></svg> Partenariat</div>
     <div class="nav-i" data-v="prof"><svg viewBox="0 0 24 24" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg> Mon profil</div>
     <div class="side-foot"><div class="av" id="sfAv">··</div><div><b id="sfName" style="color:var(--txt);font-size:13px">…</b><div style="font-size:11px;color:var(--muted-2)">Client</div></div>
       <a onclick="signOut()" title="Déconnexion" style="margin-left:auto;width:32px;height:32px;border-radius:8px;border:1px solid var(--line-soft);display:grid;place-items:center;color:var(--muted-2);cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a></div>
@@ -161,6 +162,24 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
         <div class="lvl-grid" id="lvlGrid"></div>
       </div>
       <div class="note-box"><b style="color:var(--gold-2)">Maintien des niveaux :</b> votre niveau est conservé 2 mois après votre dernière réservation terminée. Sans nouvelle réservation, vous perdez un seul niveau (points ramenés au minimum du niveau inférieur), et ainsi de suite.</div>
+    </section>
+
+    <!-- PARTENARIAT -->
+    <section class="view" id="partner">
+      <div class="top"><div><h1>Suivi partenariat</h1><div class="sub">Vos courses du mois et votre objectif</div></div></div>
+      <div class="card" style="padding:24px 26px;margin-bottom:20px;background:linear-gradient(135deg,rgba(201,162,74,.12),rgba(201,162,74,.03));border-color:var(--line)">
+        <div style="display:flex;align-items:center;gap:26px;flex-wrap:wrap">
+          <div><div style="color:var(--muted-2);font-size:12.5px">Courses terminées ce mois</div><div class="mono" id="pkDone" style="font-size:38px;font-weight:700;color:var(--gold-bright);line-height:1">0</div><div id="pkMonth" style="font-size:12px;color:var(--muted);margin-top:4px"></div></div>
+          <div><div style="color:var(--muted-2);font-size:12.5px">Objectif estimé</div><div class="mono" id="pkGoal" style="font-size:24px;font-weight:700;color:var(--txt);line-height:1.4">—</div></div>
+          <div><div style="color:var(--muted-2);font-size:12.5px">Remise partenaire</div><div class="mono" id="pkDisc" style="font-size:24px;font-weight:700;color:var(--gold-2);line-height:1.4">—</div></div>
+        </div>
+        <div style="margin-top:18px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted-2)"><span id="pkCur">—</span><span id="pkNext">—</span></div><div class="prog"><div class="fill" id="pkFill" style="width:0%"></div></div><div style="font-size:12px;color:var(--muted)" id="pkHint"></div></div>
+      </div>
+      <div class="card" style="padding:22px 24px">
+        <h2 style="font-size:14px;margin-bottom:8px">Demander un nouveau pourcentage</h2>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px">Lorsque vos courses terminées dans le mois dépassent votre objectif de plus de 50 %, vous pouvez demander une révision de votre remise. L'administrateur reçoit votre demande par e-mail et dans son espace.</p>
+        <div id="pkAction"></div>
+      </div>
     </section>
 
     <!-- PROFIL -->
@@ -238,6 +257,62 @@ async function load(){
   let avoirCodes=[];
   try{ const {data:ac}=await sb.from('promo_codes').select('*').eq('kind','avoir').eq('used_by',PROFILE.id).eq('status','available'); avoirCodes=ac||[]; }catch(e){}
   renderAvoirs(avoirCodes);
+
+  renderPartner();
+}
+function isDone(b){return b.status==='completed' || b.status==='avoir' || (b.status==='cancelled'&&b.details&&b.details.cancel&&b.details.cancel.outcome==='avoir');}
+function partnerMonthDone(){
+  const now=new Date(),y=now.getFullYear(),m=now.getMonth();
+  return (ALLBK||[]).filter(b=>{
+    if(!isDone(b))return false;
+    if(!(b.type==='reservation'||b.type==='facture'))return false;
+    const d=b.date_time?new Date(b.date_time):(b.created_at?new Date(b.created_at):null);
+    return d&&d.getFullYear()===y&&d.getMonth()===m;
+  }).length;
+}
+function renderPartner(){
+  if(!PROFILE||!PROFILE.is_partner)return;
+  document.getElementById('navPartner').style.display='';
+  const goal=Number(PROFILE.partner_goal)||0;
+  const disc=Number(PROFILE.partner_discount)||0;
+  const done=partnerMonthDone();
+  const monthName=new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  document.getElementById('pkDone').textContent=done;
+  document.getElementById('pkMonth').textContent=monthName;
+  document.getElementById('pkGoal').textContent=goal>0?(goal+' courses / mois'):'—';
+  document.getElementById('pkDisc').textContent=disc>0?('−'+disc+'%'):'—';
+  const threshold=goal>0?Math.ceil(goal*1.5):0;
+  const pct=goal>0?Math.min(100,Math.round(done/goal*100)):0;
+  document.getElementById('pkFill').style.width=pct+'%';
+  document.getElementById('pkCur').textContent=done+' réalisées';
+  document.getElementById('pkNext').textContent=goal>0?('objectif '+goal):'objectif non fixé';
+  const hint=document.getElementById('pkHint');
+  const act=document.getElementById('pkAction');
+  if(goal<=0){
+    hint.textContent='Votre objectif sera fixé par l’administrateur lors de la validation du partenariat.';
+    act.innerHTML='<span class="sub2">Disponible une fois votre objectif fixé.</span>';
+    return;
+  }
+  const eligible=done>=threshold;
+  if(done>=threshold){ hint.textContent='Objectif dépassé de plus de 50 % ('+done+' / seuil '+threshold+') — vous pouvez demander un nouveau pourcentage.'; }
+  else { hint.textContent='Atteignez '+threshold+' courses ce mois (objectif +50 %) pour pouvoir demander une révision.'; }
+  if(PROFILE.partner_bonus_at){
+    act.innerHTML='<span class="st att">Demande en cours</span> <span class="sub2" style="margin-left:8px">Envoyée le '+new Date(PROFILE.partner_bonus_at).toLocaleDateString('fr-FR')+'. En attente de réponse de l’administrateur.</span>';
+  } else if(eligible){
+    act.innerHTML='<button class="btn btn-gold btn-sm" onclick="requestBonus()">Demander un nouveau pourcentage</button>';
+  } else {
+    act.innerHTML='<button class="btn btn-ghost btn-sm" disabled style="opacity:.5;cursor:not-allowed">Demander un nouveau pourcentage</button>';
+  }
+}
+async function requestBonus(){
+  const goal=Number(PROFILE.partner_goal)||0, done=partnerMonthDone();
+  if(!confirm('Demander une révision de votre remise partenaire à l’administrateur ?\n\nCourses ce mois : '+done+' · objectif : '+goal))return;
+  try{
+    const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'partner-bonus-request',done:done,goal:goal}});
+    if(error||(data&&data.ok===false)) throw new Error((data&&data.error)||(error&&error.message)||'err');
+    PROFILE.partner_bonus_at=new Date().toISOString();
+    toast('Demande envoyée ✓'); renderPartner();
+  }catch(err){ toast('Erreur : '+(err.message||err)); }
 }
 function renderAvoirs(codes){
   const el=document.getElementById('avoirList'); if(!el)return;

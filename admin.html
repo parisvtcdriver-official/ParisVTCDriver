@@ -703,6 +703,9 @@ function renderPartChips(){
   const defs=[['all','Toutes'],['new','À traiter'],['in_review','En cours'],['accepted','Acceptées'],['declined','Refusées']];
   document.getElementById('partChips').innerHTML=defs.map(d=>`<button class="chip${PART_FILTER===d[0]?' on':''}" onclick="PART_FILTER='${d[0]}';renderPartChips();renderPartners();">${d[1]} (${counts[d[0]]||0})</button>`).join('');
 }
+function parseGoal(txt){const m=String(txt||'').match(/\d+/g);return m?Math.max.apply(null,m.map(Number)):0;}
+function profByEmail(email){if(!email)return null;const e=email.toLowerCase();return Object.values(PROFILES).find(x=>x.email&&x.email.toLowerCase()===e)||null;}
+function partnerMonthDone(uid){const now=new Date(),y=now.getFullYear(),mo=now.getMonth();return BOOKINGS.filter(b=>{if(b.user_id!==uid)return false;if(!isCourseDone(b))return false;if(!(b.type==='reservation'||b.type==='facture'))return false;const d=b.date_time?new Date(b.date_time):(b.created_at?new Date(b.created_at):null);return d&&d.getFullYear()===y&&d.getMonth()===mo;}).length;}
 function renderPartners(){
   const list=PART_FILTER==='all'?PARTS:PARTS.filter(p=>p.status===PART_FILTER);
   const el=document.getElementById('allPart');
@@ -715,9 +718,29 @@ function renderPartners(){
     if(p.status!=='accepted') act+=`<button class="btn-mini gold" onclick="acceptPartner('${p.id}')">Accepter (remise %)</button> `;
     if(p.status!=='declined') act+=`<button class="btn-mini" onclick="declinePartner('${p.id}')">Refuser</button> `;
     act+=`<button class="btn-mini" onclick="partnerPDF('${p.id}')">PDF</button> <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deletePartner('${p.id}')" title="Supprimer">✕</button>`;
+    let suivi='';
+    if(p.status==='accepted'){
+      const prof=profByEmail(p.email);
+      const goal=parseGoal(p.volume);
+      const done=prof?partnerMonthDone(prof.id):0;
+      const pending=!!(prof&&prof.partner_bonus_at);
+      const pct=goal>0?Math.min(100,Math.round(done/goal*100)):0;
+      const over=goal>0&&done>=Math.ceil(goal*1.5);
+      suivi=`<div style="margin-top:10px;padding:11px 13px;border:1px solid ${pending?'rgba(201,162,74,.55)':'var(--line-soft)'};border-radius:10px;background:rgba(201,162,74,.05)">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px">
+          <b style="color:var(--gold-2)">Suivi du mois</b>
+          <span class="sub2">Courses terminées : <b style="color:var(--txt)">${done}</b> · objectif estimé : <b style="color:var(--txt)">${goal||'—'}</b>${over?' <span style="color:var(--gold-2)">(+50 % atteint)</span>':''}</span>
+          ${pending?'<span class="st att" style="margin-left:auto">⚑ Demande de nouveau %</span>':''}
+        </div>
+        ${goal>0?`<div style="margin-top:8px;height:7px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--gold),var(--gold-2))"></div></div>`:''}
+        ${!prof?'<div class="sub2" style="margin-top:6px;color:var(--red)">Aucun compte client lié à cet e-mail (le partenaire doit créer son compte avec '+escapeHtml(p.email||'')+').</div>':''}
+        ${pending?'<div class="sub2" style="margin-top:6px">Demande reçue le '+new Date(prof.partner_bonus_at).toLocaleDateString('fr-FR')+' — ajustez le pourcentage via « Accepter (remise %) ».</div>':''}
+      </div>`;
+    }
     return `<div style="padding:16px 20px;border-bottom:1px solid var(--line-soft)"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><img class="pbadge" src="partner-badge.png" alt=""><b style="color:var(--txt)">${escapeHtml(p.company||'Société')}</b> <span class="sub2">${escapeHtml(p.sector||'')}</span><span style="margin-left:auto">${badge}</span></div>
       <div class="sub2" style="margin-top:6px">${escapeHtml(p.contact_name||'')}${p.contact_role?' · '+escapeHtml(p.contact_role):''} — ${escapeHtml(p.email||'')}${p.phone?' · '+escapeHtml(p.phone):''}${p.city?' · '+escapeHtml(p.city):''}</div>
       ${p.volume?'<div class="sub2">Volume estimé : '+escapeHtml(p.volume)+'</div>':''}
+      ${suivi}
       ${(p.needs&&p.needs.length)?'<div class="sub2">Besoins : '+p.needs.map(escapeHtml).join(', ')+'</div>':''}
       ${p.message?'<div style="margin-top:8px;color:var(--muted);font-size:13px">“'+escapeHtml(p.message)+'”</div>':''}
       ${p.siret?'<div class="sub2" style="margin-top:6px">SIRET : '+escapeHtml(p.siret)+(p.website?' · '+escapeHtml(p.website):'')+'</div>':''}
@@ -731,7 +754,10 @@ async function acceptPartner(id){
   const disc=parseFloat(String(v).replace(',','.')); if(isNaN(disc)||disc<=0||disc>100){toast('Pourcentage invalide');return;}
   const {error}=await sb.from('partner_requests').update({status:'accepted',discount:disc,decided_at:new Date().toISOString()}).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
-  if(p.email){ try{ await sb.from('profiles').update({partner_discount:disc,is_partner:true}).ilike('email',p.email); }catch(e){} }
+  if(p.email){ try{
+      let r=await sb.from('profiles').update({partner_discount:disc,is_partner:true,partner_goal:parseGoal(p.volume),partner_bonus_at:null}).ilike('email',p.email);
+      if(r.error&&/partner_goal|partner_bonus_at/.test(r.error.message||'')){ await sb.from('profiles').update({partner_discount:disc,is_partner:true}).ilike('email',p.email); }
+    }catch(e){} }
   toast('Partenariat accepté ✓ (−'+disc+'%)');
   await refresh();
   await emailPartnerDecision(p,true,disc);
@@ -744,10 +770,13 @@ async function declinePartner(id){
   toast('Demande refusée'); await refresh(); await emailPartnerDecision(p,false,0);
 }
 async function deletePartner(id){
-  if(!confirm('Supprimer cette demande de partenariat ?'))return;
+  const p=PARTS.find(x=>x.id===id); if(!p)return;
+  if(!confirm('Annuler ce partenariat ?\n\nLe client garde son compte et ses points de fidélité, mais perd la remise partenaire et n\'apparaîtra plus ici.'))return;
+  // retirer la remise partenaire du compte (sans toucher aux points ni au compte)
+  if(p.email){ try{ await sb.from('profiles').update({partner_discount:0,is_partner:false}).ilike('email',p.email); }catch(e){} }
   const {error}=await sb.from('partner_requests').delete().eq('id',id);
-  if(error){toast('Erreur : '+error.message);return;}
-  toast('Supprimé ✓'); refresh();
+  if(error){toast('Erreur : '+error.message+' — exécute supabase-partenaires.sql (politique de suppression).');return;}
+  toast('Partenariat annulé ✓'); refresh();
 }
 async function emailPartnerDecision(p,accepted,disc){
   if(!p||!p.email){toast('Pas d’e-mail client — réponse non envoyée');return;}
@@ -889,7 +918,8 @@ async function setPartnerDiscount(id,cur){
   const v=prompt('Remise partenaire de ce client (% — 0 pour retirer) :',cur);
   if(v===null)return;
   const d=parseFloat(String(v).replace(',','.')); if(isNaN(d)||d<0||d>100){toast('Valeur invalide');return;}
-  const {error}=await sb.from('profiles').update({partner_discount:d,is_partner:d>0}).eq('id',id);
+  let {error}=await sb.from('profiles').update({partner_discount:d,is_partner:d>0,partner_bonus_at:null}).eq('id',id);
+  if(error&&/partner_bonus_at|partner_goal/.test(error.message||'')){({error}=await sb.from('profiles').update({partner_discount:d,is_partner:d>0}).eq('id',id));}
   if(error){toast('Erreur : '+error.message);return;}
   toast(d>0?('Remise partenaire : −'+d+'% ✓'):'Statut partenaire retiré ✓'); refresh();
 }
