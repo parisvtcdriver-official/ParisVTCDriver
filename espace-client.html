@@ -201,7 +201,7 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-init.js"></script>
+<script src="supabase-init.js?v=2"></script>
 <script>
 function show(v){document.querySelectorAll('.nav-i').forEach(x=>x.classList.toggle('active',x.dataset.v===v));document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.id===v));window.scrollTo(0,0);document.querySelector('.side').classList.remove('open');}
 document.querySelectorAll('.nav-i').forEach(n=>n.addEventListener('click',()=>show(n.dataset.v)));
