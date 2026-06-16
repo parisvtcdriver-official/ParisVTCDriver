@@ -692,9 +692,9 @@ function renderFidelity(profs){
     return `<tr><td class="cli">${p.is_partner?'<img class="pbadge" src="partner-badge.png" alt="" title="Partenaire">':''}${medal(medalFor(L.name))}${escapeHtml(p.full_name||'—')}</td>
       <td class="amt">${(p.loyalty_points||0).toLocaleString('fr-FR')}</td>
       <td><span class="lvl-tag">★ ${L.name}</span></td>
-      <td>${L.off?'−'+L.off+' %':'—'}</td>
+      <td>${L.off?'−'+L.off+' %':'—'}${Number(p.partner_discount)>0?'<div class="sub2" style="color:var(--gold-2)">Partenaire −'+p.partner_discount+'%</div>':''}</td>
       <td><span class="tagrole ${p.role}">${p.role}</span></td>
-      <td><button class="btn-mini" onclick="editPoints('${p.id}',${p.loyalty_points||0})">Ajuster pts</button> ${isMe?'<span class="sub2">vous</span>':'<button class="btn-mini" onclick="toggleRole(\''+p.id+'\',\''+p.role+'\')">'+(p.role==='admin'?'Rétrograder':'Admin')+'</button>'}</td></tr>`;
+      <td><button class="btn-mini" onclick="editPoints('${p.id}',${p.loyalty_points||0})">Ajuster pts</button> <button class="btn-mini" onclick="setPartnerDiscount('${p.id}',${Number(p.partner_discount)||0})">Partenaire %</button> ${isMe?'<span class="sub2">vous</span>':'<button class="btn-mini" onclick="toggleRole(\''+p.id+'\',\''+p.role+'\')">'+(p.role==='admin'?'Rétrograder':'Admin')+'</button>'}</td></tr>`;
   }).join('');
 }
 function renderPartChips(){
@@ -885,6 +885,14 @@ async function processAvoirRedemption(b){
 }
 async function setPartnerStatus(id,status){const{error}=await sb.from('partner_requests').update({status}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Demande mise à jour ✓');refresh();}
 async function editPoints(id,cur){const v=prompt('Points de fidélité :',cur);if(v===null)return;const n=parseInt(v,10);if(isNaN(n)||n<0){toast('Valeur invalide');return;}let{error}=await sb.from('profiles').update({loyalty_points:n,loyalty_decay_at:new Date().toISOString()}).eq('id',id);if(error&&/loyalty_decay_at/.test(error.message||'')){({error}=await sb.from('profiles').update({loyalty_points:n}).eq('id',id));}if(error){toast('Erreur : '+error.message);return;}toast('Points mis à jour ✓');refresh();}
+async function setPartnerDiscount(id,cur){
+  const v=prompt('Remise partenaire de ce client (% — 0 pour retirer) :',cur);
+  if(v===null)return;
+  const d=parseFloat(String(v).replace(',','.')); if(isNaN(d)||d<0||d>100){toast('Valeur invalide');return;}
+  const {error}=await sb.from('profiles').update({partner_discount:d,is_partner:d>0}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast(d>0?('Remise partenaire : −'+d+'% ✓'):'Statut partenaire retiré ✓'); refresh();
+}
 async function toggleRole(id,role){const next=role==='admin'?'client':'admin';if(!confirm('Changer le rôle en « '+next+' » ?'))return;const{error}=await sb.from('profiles').update({role:next}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Rôle mis à jour ✓');refresh();}
 
 load();

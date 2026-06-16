@@ -1654,7 +1654,7 @@ function openPreview(){
     rows+=`<tr><td><b style="color:var(--txt)">${l.label}</b><div style="color:var(--muted-2);font-size:11.5px;margin-top:2px">${l.detail}</div>${rv}${rt}${rqd}</td><td class="num">${ht}</td><td class="num">${vt}</td><td class="num">${va}</td><td class="num">${pr}</td></tr>`;});
   html+=`<table class="q-table"><thead><tr><th>${t("service")}</th><th class="num">${t("ht_lbl")}</th><th class="num">${t("vat_short")}</th><th class="num">${t("vat_amt")}</th><th class="num">${t("price")}</th></tr></thead><tbody>${rows}</tbody></table>`;
   html+=`<div class="q-row"><span>${t("sum_subtotal")}</span><b>${eur(ttc)}</b></div>
-    <div class="q-row"><span>${t("sum_disc")}${disc>0&&appliedCode?` <span style="color:var(--muted-2)">(${appliedCode})</span>`:""}</span><b>−${eur(disc)}</b></div>
+    ${(()=>{let dp=[];if(loyaltyDiscount()>0)dp.push((LOYALTY.name||"Fidélité")+" −"+LOYALTY.off+"%");if(currentDiscount()>0&&appliedCode)dp.push((/^AV-/i.test(appliedCode)?"avoir ":"code ")+appliedCode);const lbl=dp.length?` <span style="color:var(--muted-2)">(${dp.join(" + ")})</span>`:"";return `<div class="q-row"><span>${t("sum_disc")}${lbl}</span><b>−${eur(disc)}</b></div>`;})()}
     <div class="q-row"><span>${t("sum_ht")}</span><b>${eur(Math.round((total-tax)*100)/100)}</b></div>`;
   if(vat10>0) html+=`<div class="q-row"><span>${t("vat_short")} 10% ${t("vat_incl")}</span><b>${eur(vat10)}</b></div>`;
   if(vat20>0) html+=`<div class="q-row"><span>${t("vat_short")} 20% ${t("vat_incl")}</span><b>${eur(vat20)}</b></div>`;
