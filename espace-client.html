@@ -270,8 +270,9 @@ function partnerMonthDone(){
     return d&&d.getFullYear()===y&&d.getMonth()===m;
   }).length;
 }
+function isPartnerClient(){return !!(PROFILE&&(PROFILE.is_partner||Number(PROFILE.partner_discount)>0));}
 function renderPartner(){
-  if(!PROFILE||!PROFILE.is_partner)return;
+  if(!isPartnerClient())return;
   document.getElementById('navPartner').style.display='';
   const goal=Number(PROFILE.partner_goal)||0;
   const disc=Number(PROFILE.partner_discount)||0;
