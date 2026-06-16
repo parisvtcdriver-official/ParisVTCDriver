@@ -18,7 +18,7 @@ async function getProfile(){
   if(!s) return null;
   const { data, error } = await sb
     .from("profiles")
-    .select("id,email,full_name,phone,role,loyalty_points,created_at")
+    .select("*")
     .eq("id", s.user.id)
     .single();
   if(error){ console.warn("profile", error.message); return null; }
