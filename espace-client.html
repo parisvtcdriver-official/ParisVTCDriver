@@ -431,7 +431,7 @@ function renderReservations(list){
   // les courses terminées / annulées / remboursées / avoir (ou archivées) quittent « Mes réservations »
   // et restent consultables dans « Devis & factures »
   const TERM=['completed','cancelled','refunded','avoir'];
-  const resa=list.filter(b=>(b.type==='reservation'||b.type==='facture') && !TERM.includes(b.status) && !(b.details&&b.details.archived));
+  const resa=list.filter(b=>(b.type==='reservation'||b.type==='facture') && !TERM.includes(b.status));
   const all=document.getElementById('allResa');
   const home=document.getElementById('homeResa');
   if(!resa.length){ all.innerHTML='<tr><td colspan="6" class="empty">Aucune réservation pour le moment.</td></tr>'; home.innerHTML='<tr><td colspan="5" class="empty">Aucune réservation pour le moment.</td></tr>'; }
@@ -451,10 +451,14 @@ function renderReservations(list){
   } else { nw.innerHTML=''; }
 }
 function renderDocs(list){
-  const cutoff=Date.now()-62*24*36e5; // factures conservées 2 mois max
-  const docs=list.filter(b=>(b.type==='devis'||b.type==='facture') && !(b.details&&b.details.archived) && (!b.created_at || new Date(b.created_at).getTime()>=cutoff));
+  const cutoff=Date.now()-62*24*36e5; // factures conservées 2 mois… mais on garde toujours les 5 plus récentes
+  // l'archivage côté admin n'affecte PAS l'espace client : tous les documents du client restent visibles ici
+  const dt=b=>b.created_at?new Date(b.created_at).getTime():0;
+  const all=list.filter(b=>b.type==='devis'||b.type==='facture').sort((a,b)=>dt(b)-dt(a));
+  const keep5=new Set(all.slice(0,5).map(b=>b.id));   // toujours visibles : les 5 derniers documents
+  const docs=all.filter(b=>keep5.has(b.id) || dt(b)>=cutoff || !b.created_at);
   const el=document.getElementById('allDocs');
-  if(!docs.length){ el.innerHTML='<tr><td colspan="6" class="empty">Aucun document récent.<br>Les factures sont conservées 2 mois.</td></tr>'; return; }
+  if(!docs.length){ el.innerHTML='<tr><td colspan="6" class="empty">Aucun document pour le moment.</td></tr>'; return; }
   el.innerHTML=docs.map(b=>{
     let badge;
     if(b.type==='facture') badge=(['cancelled','refunded'].includes(b.status))?statusBadgeFull(b):(b.pay_status==='paid'?'<span class="st conf">Facture payée</span>':'<span class="st att">À payer</span>');
