@@ -463,7 +463,7 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
   .hero{min-height:calc(100svh - 64px);padding:0}
   .hero-inner{padding:60px 28px}
   .hero-bg{overflow:hidden;background:#070a12}
-  .hero-bg img{width:100%;height:100%;opacity:1;object-fit:cover;object-position:66% center;transform:none}
+  .hero-bg img{width:100%;height:100%;opacity:1;object-fit:cover;object-position:66% 50%;transform:scale(1.12);transform-origin:center}
   .hero-bg::after{background:linear-gradient(180deg,rgba(7,10,18,.62) 0%,rgba(7,10,18,.32) 36%,rgba(7,10,18,.18) 60%,rgba(7,10,18,.55) 100%)}
   .hero-bg::before{background:none}
   .foot-bottom{flex-direction:column}
@@ -1548,8 +1548,9 @@ function addPack(data){
       <button class="si-remove" title="${t("remove")}" onclick="removePack(${id})"><svg viewBox="0 0 24 24" width="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-9 0v14h10V6"/></svg></button></div>
     <div class="si-addr">
       <div style="position:relative;grid-column:1/-1"><label class="label" data-l="pickup">${t("pickup")}</label>
-        <input id="addr-pickup-p${id}" autocomplete="off" placeholder="${t("addr_ph")}" oninput="svcAddr(${id},'pickup',this.value,'pack')" onfocus="svcAddr(${id},'pickup',this.value,'pack')">
-        <div id="sug-pickup-p${id}" class="addr-sug"></div></div>
+        <input id="addr-pickup-p${id}" autocomplete="off" placeholder="${LANG==='fr'?'Adresse de départ à Paris ou en Île-de-France…':'Departure address in Paris / Île-de-France…'}" oninput="svcAddr(${id},'pickup',this.value,'pack')" onfocus="svcAddr(${id},'pickup',this.value,'pack')">
+        <div id="sug-pickup-p${id}" class="addr-sug"></div>
+        <div style="font-size:11.5px;color:var(--muted-2);margin-top:5px">${LANG==='fr'?'Départ uniquement à Paris ou en Île-de-France (75, 77, 78, 91, 92, 93, 94, 95).':'Departure in Paris / Île-de-France only (75, 77, 78, 91, 92, 93, 94, 95).'}</div></div>
     </div>
     <div class="si-grid">
       <div><label class="label" data-l="pack_type">${t("pack_type")}</label>
@@ -1680,6 +1681,15 @@ async function sendQuoteRequest(btn){
   const cv=id=>document.getElementById(id).value.trim();
   const email=cv("c_email");
   if(!email){toast(LANG==="fr"?"Entrez votre e-mail pour recevoir le devis.":"Enter your email to receive the quote.");return;}
+  // Packs : adresse de prise en charge obligatoire, en Île-de-France (75/77/78/91/92/93/94/95)
+  const idfRe=/\b(75|77|78|91|92|93|94|95)\d{3}\b/;
+  for(const pk of packs){
+    const pu=(pk.pickup||"").trim();
+    if(!pu){ toast(LANG==="fr"?"Indiquez l'adresse de prise en charge du pack (Paris / Île-de-France).":"Enter the pack pick-up address (Paris / Île-de-France)."); return; }
+    if(!(idfRe.test(pu)||/paris|[îi]le-de-france/i.test(pu))){
+      toast(LANG==="fr"?"L'adresse de départ des packs doit être à Paris ou en Île-de-France.":"Pack departure address must be in Paris or the Île-de-France region."); return;
+    }
+  }
   if(typeof sb==="undefined"){toast(LANG==="fr"?"Service indisponible, réessayez.":"Service unavailable, retry.");return;}
   const {ttc,disc,tax,total}=computeTotals();
   const ref=peekRef();
@@ -2111,7 +2121,13 @@ document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="
 (async()=>{ try{ if(typeof sb!=="undefined"&&sb){
   const {data:{session}}=await sb.auth.getSession();
   if(session){
-    const {data:p}=await sb.from("profiles").select("loyalty_points,partner_discount,is_partner").eq("id",session.user.id).single();
+    const {data:p}=await sb.from("profiles").select("full_name,phone,loyalty_points,partner_discount,is_partner").eq("id",session.user.id).single();
+    // Pré-remplir les coordonnées du client connecté (sans écraser une saisie en cours)
+    const setIf=(id,val)=>{const el=document.getElementById(id);if(el&&val&&!el.value.trim())el.value=val;};
+    setIf("c_name", p&&p.full_name);
+    setIf("c_email", session.user.email);
+    if(p&&p.phone){const el=document.getElementById("c_phone"); if(el&&!el.value.trim()) el.value=String(p.phone).replace(/^(\+\d{1,3}\s*|0)/,"");}
+    try{saveForm();}catch(e){}
     const pts=(p&&p.loyalty_points)||0;
     const loyOff=pts>=5000?20:pts>=1000?15:pts>=500?10:pts>=100?5:0;
     const partOff=(p&&Number(p.partner_discount))||0;
