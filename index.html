@@ -160,7 +160,7 @@ header.nav.scrolled .nav-inner{height:64px}
 .logo b{font-size:18px;transition:color .25s}
 .logo:hover b{color:var(--gold-2)}
 .logo b span{color:var(--gold-2)}
-.logo small{display:block;font-size:10px;letter-spacing:.28em;color:var(--muted-2);text-transform:uppercase;font-weight:500}
+.logo small{display:block;font-size:6.6px;letter-spacing:.28em;color:var(--muted-2);text-transform:uppercase;font-weight:500}
 nav.links{display:flex;gap:6px;margin-left:auto}
 nav.links a{
   padding:9px 15px;border-radius:10px;font-size:14.5px;color:var(--muted);font-weight:500;
@@ -211,7 +211,7 @@ nav.links a:hover{color:var(--txt);background:rgba(255,255,255,.04)}
 }
 .hero-bg::before{content:"";position:absolute;inset:0;z-index:1;
   background:linear-gradient(180deg,rgba(7,10,18,.6),transparent 30%,transparent 70%,#070a12);}
-.hero-inner{position:relative;z-index:2;width:100%;padding:60px 0}
+.hero-inner{position:relative;z-index:2;width:100%;padding:60px 28px}
 .hero-grid{display:grid;grid-template-columns:1fr;gap:34px;align-items:start;max-width:760px}
 .hero h1{font-size:clamp(38px,6vw,72px);font-weight:700;line-height:1;letter-spacing:-.03em;margin:22px 0}
 .hero h1 em{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;color:var(--gold-2)}
@@ -443,14 +443,16 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
   .stats-strip{grid-template-columns:repeat(2,1fr);gap:30px}
 }
 .mob-only{display:none}
-@media(max-width:720px){
-  .wrap{padding:0 5px}
+@media(max-width:992px){
   nav.links{display:none}
   nav.links.open{display:flex;flex-direction:column;gap:2px;position:absolute;top:100%;left:0;right:0;margin:0;padding:10px 18px 16px;background:var(--navy);border-top:1px solid var(--line-soft);box-shadow:0 24px 40px -22px rgba(0,0,0,.7);max-height:calc(100svh - 64px);overflow-y:auto;-webkit-overflow-scrolling:touch}
   nav.links.open a{padding:13px 12px;border-radius:10px;font-size:15px}
   .menu-toggle{display:grid;place-items:center}
   .acct{display:none!important}
   nav.links.open .mob-only{display:flex}
+}
+@media(max-width:720px){
+  .wrap{padding:0 5px}
   .nav-inner{height:64px;gap:10px}
   .nav-actions{gap:8px;margin-left:auto}
   .nav-actions .btn-gold{padding:10px 14px;font-size:13.5px}
@@ -460,7 +462,7 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
   .sec-pad{padding:64px 0}
   .hero-contact{gap:14px}
   .hero{min-height:calc(100svh - 64px);padding:0}
-  .hero-inner{padding:26px 0 28px}
+  .hero-inner{padding:60px 28px}
   .hero-bg{overflow:hidden}
   .hero-bg img{width:100%;height:100%;opacity:1;object-fit:cover;object-position:66% center;transform:none}
   .hero-bg::after{background:linear-gradient(180deg,rgba(7,10,18,.62) 0%,rgba(7,10,18,.32) 36%,rgba(7,10,18,.18) 60%,rgba(7,10,18,.55) 100%)}
@@ -474,7 +476,7 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
 }
 @media(max-width:480px){
   .logo small{display:none}
-  .logo b{font-size:16px}
+  .logo b{display:none}
   .logo .mark{width:38px;height:38px}
   .nav-actions .btn-gold{padding:9px 12px}
   h2.title{font-size:25px}
@@ -484,7 +486,7 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
 /* Téléphone en paysage : hero plein écran + cadrage voiture/Tour Eiffel */
 @media(orientation:landscape) and (max-height:600px){
   .hero{min-height:100svh}
-  .hero-inner{padding:74px 0 24px}
+  .hero-inner{padding:60px 28px}
   .hero-bg{overflow:hidden}
   .hero-bg img{object-fit:cover;object-position:center 56%;transform:scale(1.5);transform-origin:center 56%}
   .hero-bg::after{background:linear-gradient(90deg,#070a12 4%,rgba(7,10,18,.7) 38%,rgba(7,10,18,.2) 70%,rgba(7,10,18,.35))}
@@ -506,7 +508,6 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
 .rev-badge:hover{border-color:var(--gold);background:rgba(201,162,74,.16)}
 .rev-badge b{font-family:'Space Grotesk';color:var(--gold-bright)}
 .rev-badge small{color:var(--muted);font-weight:500;font-size:11.5px}
-@media(max-width:1100px){.rev-badge{display:none}}
 </style>
 </head>
 <body>
@@ -528,7 +529,6 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
       <a href="connexion.html" class="mob-only" data-i18n="nav_account">My account</a>
     </nav>
     <div class="nav-actions">
-      <a href="#reviews" class="rev-badge" title="Avis vérifiés · GetYourGuide & Viator">★ <b>4.9</b> <small data-i18n="rv_eyebrow">Avis vérifiés</small></a>
       <a href="connexion.html" class="acct" title="Mon espace" aria-label="Mon espace" style="width:40px;height:40px;border:1px solid var(--line-soft);border-radius:10px;display:grid;place-items:center;color:var(--gold-2);flex:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:19px;height:19px"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></a>
       <div class="lang">
         <button data-lang="fr" class="active" onclick="setLang('fr')">FR</button>
@@ -603,6 +603,7 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
   <div class="hero-inner wrap">
     <div class="hero-grid">
       <div>
+        <div style="margin-bottom:16px"><a href="#reviews" class="rev-badge" title="Avis vérifiés · GetYourGuide & Viator">★ <b>4.9</b> <small data-i18n="rv_eyebrow">Avis vérifiés</small></a></div>
         <span class="eyebrow" data-i18n="hero_eyebrow">Executive Travel · Paris &amp; France</span>
         <h1 data-i18n="hero_h1">Luxury Chauffeur<br>Services <em>Across Paris</em><br>&amp; France</h1>
         <p class="lead" data-i18n="hero_lead">Discreet, punctual and impeccably presented private chauffeurs for airport transfers, business travel and bespoke journeys throughout France.</p>

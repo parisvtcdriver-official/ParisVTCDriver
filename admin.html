@@ -641,8 +641,12 @@ async function buildInvoiceDoc(b,opts){
     if(_ded>0.009){ doc.setFont(F,'normal');doc.setFontSize(9.5);doc.setTextColor(...red);doc.text('Remboursé / annulé',W-230,y);doc.text('−'+eur(_ded),W-40,y,{align:'right'});y+=16; }
     doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(11);
     const _net2=Math.round((Number(b.amount_ttc||0)-_ded)*100)/100;   // encaissé = payé − remboursements (l'avoir reste acquis)
-    doc.text('Net facturé',W-230,y);doc.text(eur(_net2),W-40,y,{align:'right'});y+=14;
-    if(_avo>0.009){ doc.setFont(F,'normal');doc.setFontSize(8.5);doc.setTextColor(...gold);doc.text('dont avoir émis (crédit client, 2 mois) : '+eur(_avo),W-230,y);doc.setFontSize(9.5); }
+    doc.text('Net facturé',W-230,y);doc.text(eur(_net2),W-40,y,{align:'right'});y+=15;
+    if(_avo>0.009){
+      doc.setFont(F,'normal');doc.setFontSize(9.5);doc.setTextColor(...gold);
+      doc.text('Dont avoir(s) émis',W-230,y);doc.text(eur(_avo),W-40,y,{align:'right'});y+=11;
+      doc.setFontSize(7.5);doc.setTextColor(160,148,95);doc.text('Crédit client · valable 2 mois',W-230,y);doc.setFontSize(9.5);
+    }
   }
   y+=40;doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
   if(cancel){
@@ -991,7 +995,7 @@ async function setLineStatus(id,idx,status){
     l.st='avoir'; l.avoirCode=code; l.refunded_at=new Date().toISOString(); l.avoir_exp=exp;
     try{ await sb.from('promo_codes').insert({code,amount:amt,kind:'avoir',avoir_no:((b.reference||code)+'-'+(idx+1)),expires_at:exp,status:'available',used_by:b.user_id}); }catch(e){}
   } else if(status==='refunded'){
-    if(!confirm('Marquer « '+(l.label||('Service '+(idx+1)))+' » comme remboursé ('+eur(lineTTC(b,l))+') ?'))return;
+    if(!confirm('Marquer « '+(l.label||('Service '+(idx+1)))+' » comme remboursé ('+eur(netLineTTC(b,l))+', remise incluse) ?'))return;
     l.st='refunded'; l.refunded_at=new Date().toISOString();
   } else {
     l.st=status; if(status!=='cancelled'){ delete l.avoirCode; delete l.refunded_at; delete l.avoir_exp; }
