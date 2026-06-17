@@ -150,7 +150,8 @@ select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:
 
     <!-- FACTURES -->
     <section class="view" id="fact">
-      <div class="top"><div><h1>Devis &amp; Factures</h1><div class="sub">Documents émis aux clients</div></div></div>
+      <div class="top"><div><h1>Devis &amp; Factures</h1><div class="sub">Documents émis aux clients</div></div>
+        <button class="btn-mini" style="margin-left:auto" id="archToggle" onclick="toggleArchived()">Afficher les archivées</button></div>
       <div class="card"><div class="scroll"><table>
         <thead><tr><th>N°</th><th>Client</th><th>Date</th><th>HT</th><th>TVA</th><th>TTC</th><th>Type</th><th>PDF</th></tr></thead>
         <tbody id="allDocs"></tbody>
@@ -505,8 +506,9 @@ function renderResaChips(){
   const defs=[['all','Toutes'],['pending','En attente'],['confirmed','Confirmées'],['cancelled','Annulées']];
   document.getElementById('resaChips').innerHTML=defs.map(d=>`<button class="chip${RESA_FILTER===d[0]?' on':''}" onclick="RESA_FILTER='${d[0]}';renderResaChips();renderResa();">${d[1]} (${counts[d[0]]||0})</button>`).join('');
 }
+function isArchived(b){return !!(b&&b.details&&b.details.archived);}
 function renderResa(){
-  let list=BOOKINGS.filter(b=>b.status!=='completed');   // terminée → masquée des réservations, conservée dans Devis & factures
+  let list=BOOKINGS.filter(b=>b.status!=='completed' && !isArchived(b));   // terminée/archivée → masquée des réservations, conservée dans Devis & factures
   if(RESA_FILTER!=='all') list=list.filter(b=>b.status===RESA_FILTER);
   list=list.slice().sort((a,b)=>(bkSortTime(a)||0)-(bkSortTime(b)||0)); // tri par date de rendez-vous (chronologique)
   renderResaTable('allResa',list,true);
@@ -543,24 +545,46 @@ function renderBars(elId,yr,dt,paid){
   const max=Math.max(...sums,1);
   document.getElementById(elId).innerHTML=sums.map((v,i)=>`<div class="bar"><div class="b" style="height:${Math.round(v/max*100)}%" title="${eur(v)}"></div><small>${MONTHS[i]}</small></div>`).join('');
 }
+let SHOW_ARCHIVED=false;
+function toggleArchived(){SHOW_ARCHIVED=!SHOW_ARCHIVED;const b=document.getElementById('archToggle');if(b)b.textContent=SHOW_ARCHIVED?'Masquer les archivées':'Afficher les archivées';renderDocs();}
 function renderDocs(){
-  const docs=BOOKINGS.filter(b=>b.type==='devis'||b.type==='facture');
+  const docs=BOOKINGS.filter(b=>(b.type==='devis'||b.type==='facture') && (SHOW_ARCHIVED || !isArchived(b)));
   const el=document.getElementById('allDocs');
-  if(!docs.length){el.innerHTML='<tr><td colspan="8" class="empty">Aucun document.</td></tr>';return;}
+  if(!docs.length){el.innerHTML='<tr><td colspan="8" class="empty">'+(SHOW_ARCHIVED?'Aucune archive.':'Aucun document.')+'</td></tr>';return;}
   el.innerHTML=docs.map(b=>{
+    const arch=isArchived(b);
     let typeCell;
     if(b.type==='devis') typeCell='<span class="st att">Devis</span>';
     else if(['cancelled','refunded'].includes(b.status)) typeCell=statusBadgeFull(b);
     else if(b.status==='avoir') typeCell='<span class="st conf">Facture payée</span> <span class="sub2" style="color:var(--gold-2)">· avoir</span>';
     else typeCell=(b.pay_status==='paid')?'<span class="st conf">Facture payée</span>':'<span class="st att">Facture à payer</span>';
-    let act=`<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer ce document">✕</button>`;
+    if(arch) typeCell+=' <span class="sub2" style="color:var(--muted-2)">· archivé</span>';
+    const archBtn=arch
+      ?`<button class="btn-mini" onclick="unarchiveBooking('${b.id}')">Désarchiver</button>`
+      :`<button class="btn-mini" onclick="archiveBooking('${b.id}')" title="Archiver (masqué des listes, points et compteur du client conservés)">Archiver</button>`;
+    let act=`<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> ${archBtn} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer définitivement (réduit le compteur de courses)">✕</button>`;
     if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
     else if(b.type==='facture'&&b.pay_status!=='paid') act=`<button class="btn-mini gold" onclick="validatePayment('${b.id}')">Valider paiement</button> `+act;
-    return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(bookingClient(b))}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td>${eur(b.amount_ht)}</td><td>${eur(b.vat)}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${typeCell}</td><td>${act}</td></tr>`;
+    return `<tr${arch?' style="opacity:.6"':''}><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(bookingClient(b))}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td>${eur(b.amount_ht)}</td><td>${eur(b.vat)}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${typeCell}</td><td>${act}</td></tr>`;
   }).join('');
 }
+async function archiveBooking(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  if(!confirm('Archiver ce document ?\n\nIl sera masqué des listes, mais conservé en base : les points de fidélité et le nombre de courses du client restent inchangés.'))return;
+  const d=Object.assign({},b.details||{},{archived:true});
+  const {error}=await sb.from('bookings').update({details:d}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Document archivé ✓'); refresh();
+}
+async function unarchiveBooking(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  const d=Object.assign({},b.details||{}); delete d.archived;
+  const {error}=await sb.from('bookings').update({details:d}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Document désarchivé ✓'); refresh();
+}
 async function deleteBooking(id){
-  if(!confirm('Supprimer définitivement ce document/réservation ? Action irréversible.'))return;
+  if(!confirm('Supprimer DÉFINITIVEMENT ce document/réservation ?\n\nAction irréversible — cela réduit le compteur de courses du client. Pour seulement le masquer en conservant les points/compteur, utilisez « Archiver ».'))return;
   const {error}=await sb.from('bookings').delete().eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
   toast('Supprimé ✓'); refresh();

@@ -428,8 +428,10 @@ async function requestCancel(id){
   load();
 }
 function renderReservations(list){
-  // les courses terminées quittent « Mes réservations » et restent dans « Devis & factures »
-  const resa=list.filter(b=>(b.type==='reservation'||b.type==='facture') && b.status!=='completed');
+  // les courses terminées / annulées / remboursées / avoir (ou archivées) quittent « Mes réservations »
+  // et restent consultables dans « Devis & factures »
+  const TERM=['completed','cancelled','refunded','avoir'];
+  const resa=list.filter(b=>(b.type==='reservation'||b.type==='facture') && !TERM.includes(b.status) && !(b.details&&b.details.archived));
   const all=document.getElementById('allResa');
   const home=document.getElementById('homeResa');
   if(!resa.length){ all.innerHTML='<tr><td colspan="6" class="empty">Aucune réservation pour le moment.</td></tr>'; home.innerHTML='<tr><td colspan="5" class="empty">Aucune réservation pour le moment.</td></tr>'; }
@@ -450,7 +452,7 @@ function renderReservations(list){
 }
 function renderDocs(list){
   const cutoff=Date.now()-62*24*36e5; // factures conservées 2 mois max
-  const docs=list.filter(b=>(b.type==='devis'||b.type==='facture') && (!b.created_at || new Date(b.created_at).getTime()>=cutoff));
+  const docs=list.filter(b=>(b.type==='devis'||b.type==='facture') && !(b.details&&b.details.archived) && (!b.created_at || new Date(b.created_at).getTime()>=cutoff));
   const el=document.getElementById('allDocs');
   if(!docs.length){ el.innerHTML='<tr><td colspan="6" class="empty">Aucun document récent.<br>Les factures sont conservées 2 mois.</td></tr>'; return; }
   el.innerHTML=docs.map(b=>{
