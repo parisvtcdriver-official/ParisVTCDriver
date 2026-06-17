@@ -264,7 +264,7 @@ async function load(){
   renderReservations(list);
   renderDocs(list);
   let avoirCodes=[];
-  try{ const {data:ac}=await sb.from('promo_codes').select('*').eq('kind','avoir').eq('used_by',PROFILE.id).eq('status','available'); avoirCodes=ac||[]; }catch(e){}
+  try{ const {data:ac}=await sb.from('promo_codes').select('*').eq('kind','avoir').eq('used_by',PROFILE.id).in('status',['available','pending']); avoirCodes=ac||[]; }catch(e){}
   renderAvoirs(avoirCodes);
 
   renderPartner();
@@ -330,12 +330,13 @@ function renderAvoirs(codes){
   if(!valid.length){ el.innerHTML='<div class="card"><div class="empty">Aucun avoir disponible pour le moment.<br>En cas d’annulation éligible, votre avoir apparaîtra ici.</div></div>'; return; }
   el.innerHTML='<div class="grid2">'+valid.map(c=>{
     const fin=c.expires_at?new Date(c.expires_at):null;
+    const pending=c.status==='pending';
     return `<div class="avoir">
       <div style="color:var(--muted-2);font-size:12.5px">Avoir · ${escapeHtml(c.avoir_no||'')}</div>
       <div class="v">${eur(c.amount)}</div>
       <div class="x">Code : <b style="color:var(--gold-2)">${escapeHtml(c.code)}</b>${fin?(' · valable jusqu’au '+fin.toLocaleDateString('fr-FR')):''}</div>
-      <div style="margin-top:10px"><span class="st conf">Disponible</span></div>
-      <div class="sub2" style="margin-top:8px">Saisissez ce code dans « Code de réduction » au moment de réserver.</div>
+      <div style="margin-top:10px">${pending?'<span class="st att">En cours</span>':'<span class="st conf">Disponible</span>'}</div>
+      <div class="sub2" style="margin-top:8px">${pending?'Réservé sur une demande en cours. Il redeviendra disponible si la réservation est annulée ou remboursée.':'Saisissez ce code dans « Code de réduction » au moment de réserver.'}</div>
     </div>`;
   }).join('')+'</div>';
 }

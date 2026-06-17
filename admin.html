@@ -446,6 +446,7 @@ async function validateCancel(id){
   const d=b.details||{}; if(d.cancel) d.cancel.handled=true;
   const {error}=await sb.from('bookings').update({status:'cancelled',details:d}).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
+  await releaseAppliedCode(b);   // le code utilisé redevient disponible
   toast('Annulation validée ✓'); refresh();
 }
 function statusBadgeFull(b){
@@ -464,6 +465,7 @@ async function refundBooking(id){
   const d=b.details||{}; if(!d.cancel)d.cancel={}; d.cancel.refunded=true; d.cancel.outcome=isAvoir?'avoir':'refund'; d.cancel.refunded_at=new Date().toISOString();
   const {error}=await sb.from('bookings').update({details:d}).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
+  await releaseAppliedCode(b);   // le code utilisé redevient disponible
   toast(isAvoir?'Avoir émis ✓':'Remboursement validé ✓');
   await refresh();
   await emailCancellation(BOOKINGS.find(x=>x.id===id), isAvoir);
@@ -935,7 +937,7 @@ function renderVehSplit(resaList){
 function renderPromo(){
   const el=document.getElementById('allPromo');
   if(!PROMOS.length){el.innerHTML='<tr><td colspan="7" class="empty">Aucun code. Cliquez sur « + Générer des codes ».</td></tr>';return;}
-  const lbl={available:['conf','Disponible'],used:['term','Utilisé'],disabled:['ann','Désactivé']};
+  const lbl={available:['conf','Disponible'],pending:['att','En cours'],used:['term','Utilisé'],disabled:['ann','Désactivé']};
   el.innerHTML=PROMOS.map(p=>{
     const expired = p.expires_at && new Date(p.expires_at) < new Date();
     let s = lbl[p.status]||['att',p.status];
@@ -996,6 +998,7 @@ async function setStatus(id,status){
   const {error}=await sb.from('bookings').update(upd).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
   if(status==='completed' && b && b.details && b.details.applied_code){ await processAvoirRedemption(b); }
+  if(['cancelled','refunded','avoir'].includes(status)){ await releaseAppliedCode(b); }   // le code utilisé redevient disponible
   if(isRefund){
     toast(status==='avoir'?'Avoir émis ✓ (code généré)':'Remboursement validé ✓');
     await refresh();
@@ -1031,7 +1034,7 @@ async function processAvoirRedemption(b){
   try{
     const code=b.details.applied_code; if(!code)return;
     const {data:row}=await sb.from('promo_codes').select('*').eq('code',code).maybeSingle();
-    if(!row || row.status!=='available') return;
+    if(!row || (row.status!=='available' && row.status!=='pending')) return;
     await sb.from('promo_codes').update({status:'used',used_by:b.user_id||row.used_by,used_at:new Date().toISOString()}).eq('id',row.id);
     if(row.kind==='avoir'){
       const used=Number(b.details.applied_code_used)|| Math.min(Number(row.amount)||0, Number(b.amount_ttc)||0);
@@ -1042,6 +1045,15 @@ async function processAvoirRedemption(b){
         toast('Solde d’avoir reporté : '+eur(remainder)+' ('+newCode+')');
       }
     }
+  }catch(e){}
+}
+async function releaseAppliedCode(b){
+  // Annulation / remboursement : le code « en cours » (ou déjà consommé) redevient disponible.
+  try{
+    const code=b&&b.details&&b.details.applied_code; if(!code)return;
+    const {data:row}=await sb.from('promo_codes').select('id,status').eq('code',code).maybeSingle();
+    if(!row || (row.status!=='pending' && row.status!=='used')) return;
+    await sb.from('promo_codes').update({status:'available',used_at:null}).eq('id',row.id);
   }catch(e){}
 }
 async function setPartnerStatus(id,status){const{error}=await sb.from('partner_requests').update({status}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Demande mise à jour ✓');refresh();}
