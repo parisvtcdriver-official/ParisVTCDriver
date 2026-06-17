@@ -191,7 +191,15 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
           <div class="field"><label>Téléphone</label><input id="pPhone"></div>
           <div class="field"><label>E-mail</label><input id="pEmail" disabled></div>
           <div class="field"><label>Membre depuis</label><input id="pSince" disabled></div>
+          <div class="field"><label>Société (facultatif)</label><input id="pCompany"></div>
+          <div class="field"><label>Adresse (n° et rue)</label><input id="pAddress" placeholder="12 Avenue Montaigne"></div>
+          <div class="field"><label>Code postal</label><input id="pZip" placeholder="75008"></div>
+          <div class="field"><label>Ville</label><input id="pCity" placeholder="Paris"></div>
+          <div class="field"><label>Pays</label><input id="pCountry" placeholder="France"></div>
+          <div class="field"><label>SIREN (pro, facultatif)</label><input id="pSiren"></div>
+          <div class="field"><label>TVA intracom. (pro, facultatif)</label><input id="pVat"></div>
         </div>
+        <div style="font-size:12.5px;color:var(--muted-2);margin:4px 0 10px">Ces informations préremplissent automatiquement vos prochaines demandes de devis.</div>
         <button class="btn btn-gold btn-sm" style="margin-top:6px" onclick="saveProfile()">Enregistrer</button>
       </div>
     </section>
@@ -245,6 +253,7 @@ async function load(){
   document.getElementById('pPhone').value = PROFILE.phone||'';
   document.getElementById('pEmail').value = PROFILE.email||'';
   document.getElementById('pSince').value = PROFILE.created_at? new Date(PROFILE.created_at).toLocaleDateString('fr-FR'):'';
+  [['pCompany','company'],['pAddress','address'],['pZip','zip'],['pCity','city'],['pCountry','country'],['pSiren','siren'],['pVat','vat']].forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.value=PROFILE[k]||'';});
 
   renderLoyalty(PROFILE.loyalty_points);
 
@@ -580,11 +589,17 @@ async function buildInvoiceDoc(b,opts){
 }
 
 async function saveProfile(){
-  const full_name=document.getElementById('pName').value.trim();
-  const phone=document.getElementById('pPhone').value.trim();
-  const { error } = await sb.from('profiles').update({ full_name, phone }).eq('id', PROFILE.id);
+  const g=id=>{const el=document.getElementById(id);return el?el.value.trim():'';};
+  const full_name=g('pName'), phone=g('pPhone');
+  const extra={company:g('pCompany'),address:g('pAddress'),zip:g('pZip'),city:g('pCity'),country:g('pCountry'),siren:g('pSiren'),vat:g('pVat')};
+  let { error } = await sb.from('profiles').update(Object.assign({full_name,phone},extra)).eq('id', PROFILE.id);
+  if(error && /company|address|zip|city|country|siren|vat/.test(error.message||'')){
+    // colonnes pas encore créées : on enregistre au moins nom + téléphone
+    ({ error } = await sb.from('profiles').update({ full_name, phone }).eq('id', PROFILE.id));
+    if(!error) toast('Nom et téléphone enregistrés. Exécutez supabase-profil-coordonnees.sql pour mémoriser l’adresse.');
+  }
   if(error){ toast('Erreur : '+error.message); return; }
-  PROFILE.full_name=full_name; PROFILE.phone=phone;
+  PROFILE.full_name=full_name; PROFILE.phone=phone; Object.assign(PROFILE,extra);
   document.getElementById('sfName').textContent=full_name;
   document.getElementById('sfAv').textContent=initials(full_name);
   document.getElementById('hello').textContent='Bonjour '+(full_name.split(' ')[0]||'')+' 👋';

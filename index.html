@@ -2121,12 +2121,22 @@ document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="
 (async()=>{ try{ if(typeof sb!=="undefined"&&sb){
   const {data:{session}}=await sb.auth.getSession();
   if(session){
-    const {data:p}=await sb.from("profiles").select("full_name,phone,loyalty_points,partner_discount,is_partner").eq("id",session.user.id).single();
+    const {data:p}=await sb.from("profiles").select("*").eq("id",session.user.id).single();
     // Pré-remplir les coordonnées du client connecté (sans écraser une saisie en cours)
     const setIf=(id,val)=>{const el=document.getElementById(id);if(el&&val&&!el.value.trim())el.value=val;};
     setIf("c_name", p&&p.full_name);
     setIf("c_email", session.user.email);
     if(p&&p.phone){const el=document.getElementById("c_phone"); if(el&&!el.value.trim()) el.value=String(p.phone).replace(/^(\+\d{1,3}\s*|0)/,"");}
+    setIf("c_company", p&&p.company);
+    setIf("c_addr", p&&p.address);
+    setIf("c_zip", p&&p.zip);
+    setIf("c_city", p&&p.city);
+    setIf("c_country", p&&p.country);
+    if(p&&(p.siren||p.vat)){
+      const pro=document.getElementById("c_pro"); const pf=document.getElementById("proFields");
+      if(pro&&!pro.checked){pro.checked=true; if(pf)pf.style.display="grid";}
+      setIf("c_siren", p.siren); setIf("c_vat", p.vat);
+    }
     try{saveForm();}catch(e){}
     const pts=(p&&p.loyalty_points)||0;
     const loyOff=pts>=5000?20:pts>=1000?15:pts>=500?10:pts>=100?5:0;
