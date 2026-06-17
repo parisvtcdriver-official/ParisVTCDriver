@@ -418,7 +418,8 @@ async function requestCancel(id){
   load();
 }
 function renderReservations(list){
-  const resa=list.filter(b=>b.type==='reservation'||b.type==='facture');
+  // les courses terminées quittent « Mes réservations » et restent dans « Devis & factures »
+  const resa=list.filter(b=>(b.type==='reservation'||b.type==='facture') && b.status!=='completed');
   const all=document.getElementById('allResa');
   const home=document.getElementById('homeResa');
   if(!resa.length){ all.innerHTML='<tr><td colspan="6" class="empty">Aucune réservation pour le moment.</td></tr>'; home.innerHTML='<tr><td colspan="5" class="empty">Aucune réservation pour le moment.</td></tr>'; }

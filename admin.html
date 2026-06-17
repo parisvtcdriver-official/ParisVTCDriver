@@ -496,13 +496,16 @@ async function emailCancellation(b,isAvoir){
   }catch(e){toast('Statut mis à jour, e-mail non envoyé : '+(e&&e.message?e.message:e));}
 }
 function renderResaChips(){
-  const counts={all:BOOKINGS.length,pending:0,confirmed:0,completed:0,cancelled:0};
-  BOOKINGS.forEach(b=>counts[b.status]++);
-  const defs=[['all','Toutes'],['pending','En attente'],['confirmed','Confirmées'],['completed','Terminées'],['cancelled','Annulées']];
+  // les courses « terminées » quittent les réservations (elles restent dans Devis & factures)
+  const act=BOOKINGS.filter(b=>b.status!=='completed');
+  const counts={all:act.length,pending:0,confirmed:0,cancelled:0};
+  act.forEach(b=>{if(counts[b.status]!==undefined)counts[b.status]++;});
+  const defs=[['all','Toutes'],['pending','En attente'],['confirmed','Confirmées'],['cancelled','Annulées']];
   document.getElementById('resaChips').innerHTML=defs.map(d=>`<button class="chip${RESA_FILTER===d[0]?' on':''}" onclick="RESA_FILTER='${d[0]}';renderResaChips();renderResa();">${d[1]} (${counts[d[0]]||0})</button>`).join('');
 }
 function renderResa(){
-  let list=RESA_FILTER==='all'?BOOKINGS:BOOKINGS.filter(b=>b.status===RESA_FILTER);
+  let list=BOOKINGS.filter(b=>b.status!=='completed');   // terminée → masquée des réservations, conservée dans Devis & factures
+  if(RESA_FILTER!=='all') list=list.filter(b=>b.status===RESA_FILTER);
   list=list.slice().sort((a,b)=>(bkSortTime(a)||0)-(bkSortTime(b)||0)); // tri par date de rendez-vous (chronologique)
   renderResaTable('allResa',list,true);
 }
