@@ -610,6 +610,17 @@ async function buildInvoiceDoc(b,opts){
     doc.setFont(F,'normal');doc.text(String(l.priceLabel||''),W-48,y,{align:'right'});
     if(l.detail){y+=13;doc.setTextColor(120,130,150);doc.setFontSize(8.5);doc.splitTextToSize(String(l.detail),W-96).forEach((ln,i)=>{if(i)y+=12;doc.text(ln,48,y);});doc.setFontSize(9.5);}
     [['route','Trajet : '],['dt','RDV : '],['req','Demande : ']].forEach(([k,pfx])=>{ if(l[k]){doc.setTextColor(150,120,40);doc.splitTextToSize(pfx+l[k],W-96).forEach(ln=>{y+=12;doc.text(ln,48,y);});} });
+    if(!l.custom){
+      var _t=(l.price!=null&&l.price!=='')?Number(l.price):parseFloat(String(l.priceLabel||'').replace(/[^0-9.,]/g,'').replace(',','.'));
+      if(isFinite(_t)&&_t>0){
+        var _r=(l.vat!=null&&l.vat!=='')?Number(l.vat):(Number(b.amount_ht)>0?Math.round((Number(b.amount_ttc)/Number(b.amount_ht)-1)*100):10); if(!_r)_r=10;
+        var _h=(l.ht!=null&&l.ht!=='')?Number(l.ht):Math.round(_t/(1+_r/100)*100)/100;
+        var _v=Math.round((_t-_h)*100)/100;
+        y+=12; doc.setTextColor(110,120,140); doc.setFontSize(8.5);
+        doc.text('HT '+eur(_h)+'   ·   TVA '+_r+'% : '+eur(_v)+'   ·   TTC '+eur(_t),48,y);
+        doc.setFontSize(9.5);
+      }
+    }
     if(l.st&&['cancelled','refunded','avoir'].includes(l.st)){
       y+=12; doc.setFont(F,'bold'); doc.setFontSize(8.5);
       if(l.st==='avoir'){ doc.setTextColor(...gold); doc.text('Avoir émis'+(l.avoirCode?(' · code '+l.avoirCode):'')+' — '+eur(_net(l))+' conservés en crédit (remise incluse)',48,y); }
