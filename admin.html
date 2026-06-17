@@ -723,18 +723,50 @@ async function docPDF(id){
 }
 
 /* ---------- Circuit devis → facture → paiement ---------- */
+function askLinePrice(l,idx){
+  const v=prompt('Prix TTC pour « '+(l.label||('Service '+(idx+1)))+' » (€) :','');
+  if(v===null) return null;                       // annulation
+  const ttc=parseFloat(String(v).replace(',','.'));
+  if(isNaN(ttc)||ttc<0){toast('Montant invalide');return undefined;}
+  return ttc;
+}
 async function proposePrice(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
-  const v=prompt('Prix TTC à proposer pour ce devis (€) :', b.amount_ttc||'');
-  if(v===null)return;
-  const ttc=parseFloat(String(v).replace(',','.'));
-  if(isNaN(ttc)||ttc<=0){toast('Montant invalide');return;}
-  const ht=Math.round(ttc/1.10*100)/100, vat=Math.round((ttc-ht)*100)/100;
-  const d=b.details||{};
-  if(Array.isArray(d.lines)){const i=d.lines.findIndex(l=>l.custom); if(i>=0){d.lines[i].priceLabel=eur(ttc);d.lines[i].custom=false;}}
-  const {error}=await sb.from('bookings').update({amount_ht:ht,vat,amount_ttc:ttc,details:d}).eq('id',id);
+  const d=b.details||{}; const lines=Array.isArray(d.lines)?d.lines:[];
+  const customIdx=lines.map((l,i)=>l.custom?i:-1).filter(i=>i>=0);
+  if(customIdx.length){
+    // Devis sur-mesure : on fixe le prix de CHAQUE prestation sur-mesure
+    for(const i of customIdx){
+      const ttc=askLinePrice(lines[i],i);
+      if(ttc===null) return;            // l'admin a annulé
+      if(ttc===undefined) return;       // montant invalide
+      const rate=10;                    // transport = 10% (modifiable plus tard si besoin)
+      lines[i].price=ttc; lines[i].ht=Math.round(ttc/(1+rate/100)*100)/100; lines[i].vat=rate; lines[i].priceLabel=eur(ttc); lines[i].custom=false;
+    }
+  } else {
+    // Aucune ligne sur-mesure : prix global classique
+    const v=prompt('Prix TTC à proposer pour ce devis (€) :', b.amount_ttc||'');
+    if(v===null)return;
+    const ttc=parseFloat(String(v).replace(',','.'));
+    if(isNaN(ttc)||ttc<=0){toast('Montant invalide');return;}
+    const ht=Math.round(ttc/1.10*100)/100, vat=Math.round((ttc-ht)*100)/100;
+    const {error}=await sb.from('bookings').update({amount_ht:ht,vat,amount_ttc:ttc}).eq('id',id);
+    if(error){toast('Erreur : '+error.message);return;}
+    toast('Prix enregistré ✓ '+eur(ttc)); refresh(); return;
+  }
+  // Recalcul cohérent des totaux à partir de TOUTES les lignes
+  const origSub=Number(d.subtotal)||0, origDisc=Number(d.discount)||0;
+  const newSub=Math.round(lines.reduce((s,l)=>s+(Number(l.price)||0),0)*100)/100;
+  const disc=origSub>0?Math.round(newSub*(origDisc/origSub)*100)/100:origDisc;
+  const newTTC=Math.round((newSub-disc)*100)/100;
+  const ratio=newSub>0?newTTC/newSub:1;
+  let ht=0,vat=0;
+  lines.forEach(l=>{const g=Number(l.price)||0;const net=g*ratio;const r=Number(l.vat)||10;const h=net/(1+r/100);ht+=h;vat+=net-h;});
+  ht=Math.round(ht*100)/100; vat=Math.round(vat*100)/100;
+  d.subtotal=newSub; d.discount=disc; d.lines=lines;
+  const {error}=await sb.from('bookings').update({amount_ht:ht,vat,amount_ttc:newTTC,details:d}).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
-  toast('Prix enregistré ✓ '+eur(ttc)); refresh();
+  toast('Prix enregistrés ✓ Total TTC '+eur(newTTC)); refresh();
 }
 async function acceptDevis(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
