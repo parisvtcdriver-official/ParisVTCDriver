@@ -2088,7 +2088,18 @@ window.addEventListener("pagehide",saveForm);
 
 /* ---------------- INIT ---------------- */
 if("scrollRestoration" in history) history.scrollRestoration="manual";   // open at the top, not where the browser left off
-if(!location.hash) window.scrollTo(0,0);
+(function(){
+  // On n'honore #booking (défilement vers le formulaire) que si l'on ARRIVE depuis une autre page du site
+  // (ex. « Réserver ce pack »). Au rechargement direct ou au lancement, on ouvre en haut et on retire le #booking périmé.
+  var navEntry=(performance.getEntriesByType&&performance.getEntriesByType('navigation')[0]);
+  var navType=navEntry?navEntry.type:'navigate';
+  var fromSite=document.referrer&&document.referrer.indexOf(location.host)!==-1;
+  var keepBooking=(location.hash==='#booking')&&navType!=='reload'&&fromSite;
+  if(!keepBooking){
+    if(location.hash){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}
+    window.scrollTo(0,0);
+  }
+})();
 renderFleet();renderTrust();renderTesti();renderFares();
 loadForm();   // restore an in-progress booking only if it's recent (kept while visiting pack pages); a fresh visit starts empty
 setLang(LANG);
