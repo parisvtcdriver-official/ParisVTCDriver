@@ -1638,8 +1638,21 @@ function lineForSvc(s,i){
   const detail=`${PL(v.name)}${sl?` · ${sl}`:""} · ${s.pax} pax${st.perH?` · ${s.hours}h`:""}`;
   return {label:`${t("service")} #${i+1} — ${PL(st.r)}`,detail,route,dt:fmtRDV(s.date),price:svcPrice(s),ht:htv,vat:cust?null:Math.round(vatRate(s)*100),custom:cust};
 }
+function packIdfOk(){
+  // Packs : adresse de départ obligatoire, à Paris ou en Île-de-France (75/77/78/91/92/93/94/95)
+  const idfRe=/\b(75|77|78|91|92|93|94|95)\d{3}\b/;
+  for(const pk of packs){
+    const pu=(pk.pickup||"").trim();
+    if(!pu){ toast(LANG==="fr"?"Indiquez l'adresse de départ du pack (Paris / Île-de-France).":"Enter the pack departure address (Paris / Île-de-France)."); return false; }
+    if(!(idfRe.test(pu)||/paris|[îi]le-de-france/i.test(pu))){
+      toast(LANG==="fr"?"L'adresse de départ des packs doit être à Paris ou en Île-de-France.":"Pack departure address must be in Paris or the Île-de-France region."); return false;
+    }
+  }
+  return true;
+}
 function openPreview(){
   if(!services.length&&!packs.length){toast(t("noServices"));return;}
+  if(!packIdfOk())return;
   const {ttc,disc,tax,vat10,vat20,total}=computeTotals();
   const cv=id=>document.getElementById(id).value.trim();
   const name=cv("c_name")||t("noName");
@@ -1681,15 +1694,7 @@ async function sendQuoteRequest(btn){
   const cv=id=>document.getElementById(id).value.trim();
   const email=cv("c_email");
   if(!email){toast(LANG==="fr"?"Entrez votre e-mail pour recevoir le devis.":"Enter your email to receive the quote.");return;}
-  // Packs : adresse de prise en charge obligatoire, en Île-de-France (75/77/78/91/92/93/94/95)
-  const idfRe=/\b(75|77|78|91|92|93|94|95)\d{3}\b/;
-  for(const pk of packs){
-    const pu=(pk.pickup||"").trim();
-    if(!pu){ toast(LANG==="fr"?"Indiquez l'adresse de prise en charge du pack (Paris / Île-de-France).":"Enter the pack pick-up address (Paris / Île-de-France)."); return; }
-    if(!(idfRe.test(pu)||/paris|[îi]le-de-france/i.test(pu))){
-      toast(LANG==="fr"?"L'adresse de départ des packs doit être à Paris ou en Île-de-France.":"Pack departure address must be in Paris or the Île-de-France region."); return;
-    }
-  }
+  if(!packIdfOk())return;
   if(typeof sb==="undefined"){toast(LANG==="fr"?"Service indisponible, réessayez.":"Service unavailable, retry.");return;}
   const {ttc,disc,tax,total}=computeTotals();
   const ref=peekRef();
