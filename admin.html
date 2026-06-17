@@ -577,7 +577,7 @@ async function buildInvoiceDoc(b,opts){
   doc.setFillColor(7,10,18);doc.rect(0,0,W,134,'F');
   doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(22);doc.text('ParisVTCDriver',40,58);
   doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(8.5);
-  doc.text("Chauffeur privé · +33 7 49 19 83 18 · ParisVTCdriver@gmail.com",40,74);
+  doc.text("Premium Chauffeur Services · +33 7 49 19 83 18 · ParisVTCdriver@gmail.com",40,74);
   doc.text("Siège : 38 Av. des Combattants de l'Afrique du Nord, 93420 Villepinte",40,87);
   doc.text("SIRET 934505702 · TVA intracom. FR32934505702",40,100);
   doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(15);
@@ -597,52 +597,57 @@ async function buildInvoiceDoc(b,opts){
   if(d.client_phone)cl.push(d.client_phone);
   cl.forEach((line,i)=>doc.text(String(line),40,y+15+i*13));
   y=y+15+cl.length*13+18;
-  doc.setFillColor(245,242,234);doc.rect(40,y,W-80,22,'F');
-  doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(9);
-  doc.text('Prestation',48,y+15);doc.text('Prix',W-48,y+15,{align:'right'});
-  y+=34;
-  // montant net réellement payé par ligne (remise globale répartie au prorata)
+  // ----- valeurs par ligne + tableau colonnes SERVICE | HT | TVA | PRIX TTC -----
   const _lns=(d.lines||[]); const _sub=Number(d.subtotal)||0; const _tot=Number(b.amount_ttc)||0; const _ratio=_sub>0?_tot/_sub:1;
   const _net=l=>(l.price!=null&&l.price!=='')?Math.round((Number(l.price)||0)*_ratio*100)/100:Math.round((_tot/(_lns.length||1))*100)/100;
-  (d.lines||[]).forEach(l=>{
+  const _docRate=Number(b.amount_ht)>0?Math.round((Number(b.amount_ttc)/Number(b.amount_ht)-1)*100):10;
+  function _lv(l){var ttc=(l.price!=null&&l.price!=='')?Number(l.price):parseFloat(String(l.priceLabel||'').replace(/[^0-9.,]/g,'').replace(',','.'));if(!isFinite(ttc))ttc=0;var rate=(l.vat!=null&&l.vat!=='')?Number(l.vat):(_docRate||10);if(!rate)rate=10;var ht=(l.ht!=null&&l.ht!=='')?Number(l.ht):Math.round(ttc/(1+rate/100)*100)/100;return{ttc:ttc,rate:rate,ht:ht,vat:Math.round((ttc-ht)*100)/100,custom:!!l.custom};}
+  const xPrice=W-48, xVat=W-128, xHt=W-205, detW=xHt-14-48;
+  doc.setFillColor(20,28,46);doc.rect(40,y,W-80,24,'F');
+  doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(8.5);
+  doc.text('SERVICE',48,y+16);doc.text('HT',xHt,y+16,{align:'right'});doc.text('TVA',xVat,y+16,{align:'right'});doc.text('PRIX TTC',xPrice,y+16,{align:'right'});
+  y+=42;
+  _lns.forEach(function(l){
+    var v=_lv(l);
     doc.setFont(F,'bold');doc.setTextColor(30,38,56);doc.setFontSize(9.5);
-    doc.splitTextToSize(String(l.label||''),W-180).forEach((ln,i)=>{if(i)y+=13;doc.text(ln,48,y);});
-    doc.setFont(F,'normal');doc.text(String(l.priceLabel||''),W-48,y,{align:'right'});
-    if(l.detail){y+=13;doc.setTextColor(120,130,150);doc.setFontSize(8.5);doc.splitTextToSize(String(l.detail),W-96).forEach((ln,i)=>{if(i)y+=12;doc.text(ln,48,y);});doc.setFontSize(9.5);}
-    [['route','Trajet : '],['dt','RDV : '],['req','Demande : ']].forEach(([k,pfx])=>{ if(l[k]){doc.setTextColor(150,120,40);doc.splitTextToSize(pfx+l[k],W-96).forEach(ln=>{y+=12;doc.text(ln,48,y);});} });
-    if(!l.custom){
-      var _t=(l.price!=null&&l.price!=='')?Number(l.price):parseFloat(String(l.priceLabel||'').replace(/[^0-9.,]/g,'').replace(',','.'));
-      if(isFinite(_t)&&_t>0){
-        var _r=(l.vat!=null&&l.vat!=='')?Number(l.vat):(Number(b.amount_ht)>0?Math.round((Number(b.amount_ttc)/Number(b.amount_ht)-1)*100):10); if(!_r)_r=10;
-        var _h=(l.ht!=null&&l.ht!=='')?Number(l.ht):Math.round(_t/(1+_r/100)*100)/100;
-        var _v=Math.round((_t-_h)*100)/100;
-        y+=12; doc.setTextColor(110,120,140); doc.setFontSize(8.5);
-        doc.text('HT '+eur(_h)+'   ·   TVA '+_r+'% : '+eur(_v)+'   ·   TTC '+eur(_t),48,y);
-        doc.setFontSize(9.5);
-      }
+    var lab=doc.splitTextToSize(String(l.label||''),detW); var yTop=y; lab.forEach(function(ln,i){if(i)y+=13;doc.text(ln,48,y);});
+    if(l.custom){
+      doc.setFont(F,'normal');doc.setTextColor(110,160,120);doc.setFontSize(9);doc.text('Sur devis',xPrice,yTop,{align:'right'});
+      doc.setTextColor(150,160,175);doc.text('—',xHt,yTop,{align:'right'});doc.text('—',xVat,yTop,{align:'right'});
+    } else {
+      doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(9.5);doc.text(eur(v.ttc),xPrice,yTop,{align:'right'});
+      doc.setFont(F,'normal');doc.setTextColor(95,105,125);doc.setFontSize(8.5);doc.text(eur(v.ht),xHt,yTop,{align:'right'});doc.text(v.rate+'%',xVat,yTop,{align:'right'});
     }
-    if(l.st&&['cancelled','refunded','avoir'].includes(l.st)){
-      y+=12; doc.setFont(F,'bold'); doc.setFontSize(8.5);
-      if(l.st==='avoir'){ doc.setTextColor(...gold); doc.text('Avoir émis'+(l.avoirCode?(' · code '+l.avoirCode):'')+' — '+eur(_net(l))+' conservés en crédit (remise incluse)',48,y); }
-      else if(l.st==='refunded'){ doc.setTextColor(...red); doc.text('Service remboursé — −'+eur(_net(l))+' (remise incluse)',48,y); }
-      else { doc.setTextColor(...red); doc.text('Service annulé — −'+eur(_net(l))+' (remise incluse)',48,y); }
-      doc.setFont(F,'normal'); doc.setFontSize(9.5);
+    if(l.detail){y+=13;doc.setFont(F,'normal');doc.setTextColor(120,130,150);doc.setFontSize(8.5);doc.splitTextToSize(String(l.detail),detW).forEach(function(ln,i){if(i)y+=12;doc.text(ln,48,y);});}
+    [['route','Trajet : '],['dt','RDV : '],['req','Demande : ']].forEach(function(kp){var k=kp[0],pfx=kp[1];if(l[k]){doc.setTextColor(150,120,40);doc.setFontSize(8.5);doc.splitTextToSize(pfx+l[k],detW).forEach(function(ln){y+=12;doc.text(ln,48,y);});}});
+    if(l.st&&['cancelled','refunded','avoir'].indexOf(l.st)>=0){
+      y+=12;doc.setFont(F,'bold');doc.setFontSize(8.5);
+      if(l.st==='avoir'){doc.setTextColor(...gold);doc.text('Avoir émis'+(l.avoirCode?(' · code '+l.avoirCode):'')+' — '+eur(_net(l))+' conservés en crédit (remise incluse)',48,y);}
+      else if(l.st==='refunded'){doc.setTextColor(...red);doc.text('Service remboursé — −'+eur(_net(l))+' (remise incluse)',48,y);}
+      else{doc.setTextColor(...red);doc.text('Service annulé — −'+eur(_net(l))+' (remise incluse)',48,y);}
+      doc.setFont(F,'normal');doc.setFontSize(9.5);
     }
-    y+=20;
-    if(y>730){doc.addPage();y=60;}
+    y+=18;doc.setDrawColor(228,231,238);doc.line(40,y-8,W-40,y-8);
+    if(y>720){doc.addPage();y=60;}
   });
-  y+=6;doc.setDrawColor(220);doc.line(W-230,y,W-40,y);y+=16;
+  // ----- Totaux : TVA répartie par taux -----
+  var _g={}; _lns.forEach(function(l){if(l.custom)return;var v=_lv(l);_g[v.rate]=(_g[v.rate]||0)+v.ttc;});
+  var _vat10=0,_vat20=0;
+  Object.keys(_g).forEach(function(rt){var net=_g[rt]*_ratio;var ht=net/(1+Number(rt)/100);var va=net-ht;if(String(rt)==='20')_vat20+=va;else _vat10+=va;});
+  _vat10=Math.round(_vat10*100)/100;_vat20=Math.round(_vat20*100)/100;
+  y+=8;doc.setDrawColor(220);doc.line(W-230,y,W-40,y);y+=16;
   doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
+  doc.text('Sous-total',W-230,y);doc.text(eur(_sub||b.amount_ttc),W-40,y,{align:'right'});y+=15;
   if(Number(d.discount)>0){
-    doc.text('Sous-total',W-230,y);doc.text(eur(d.subtotal),W-40,y,{align:'right'});y+=15;
-    doc.setTextColor(40,160,110);
-    doc.text('Remise',W-230,y);doc.text('−'+eur(d.discount),W-40,y,{align:'right'});y+=12;
+    doc.setTextColor(40,160,110);doc.text('Remise',W-230,y);doc.text('−'+eur(d.discount),W-40,y,{align:'right'});y+=12;
     if(d.discount_label){doc.setFontSize(8);doc.text(String(d.discount_label),W-230,y);doc.setFontSize(9.5);y+=12;}
     doc.setTextColor(60,70,90);
   }
   doc.text('Total HT',W-230,y);doc.text(eur(b.amount_ht),W-40,y,{align:'right'});y+=15;
-  doc.text('TVA',W-230,y);doc.text(eur(b.vat),W-40,y,{align:'right'});y+=18;
-  doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
+  if(_vat10>0.009){doc.text('TVA 10% incluse',W-230,y);doc.text(eur(_vat10),W-40,y,{align:'right'});y+=15;}
+  if(_vat20>0.009){doc.text('TVA 20% incluse',W-230,y);doc.text(eur(_vat20),W-40,y,{align:'right'});y+=15;}
+  if(_vat10<=0.009&&_vat20<=0.009){doc.text('TVA',W-230,y);doc.text(eur(b.vat),W-40,y,{align:'right'});y+=15;}
+  y+=3;doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
   doc.text('Total TTC',W-230,y);doc.text(eur(b.amount_ttc),W-40,y,{align:'right'});
   // Ajustement par ligne (montants NETS = remise répartie) — la facture reste unique
   const _ded=_lns.filter(l=>l.st==='cancelled'||l.st==='refunded').reduce((s,l)=>s+_net(l),0);
@@ -670,11 +675,13 @@ async function buildInvoiceDoc(b,opts){
     else{doc.text('Annulation enregistrée.',40,y);}
   } else {
     doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);
-    doc.text(paid?'Paiement reçu — merci.':'Règlement par virement bancaire',40,y);y+=14;
+    doc.text(paid?'Paiement reçu — merci.':'Coordonnées bancaires — règlement par virement',40,y);y+=14;
     doc.setFont(F,'normal');doc.setTextColor(60,70,90);
-    doc.text('Bénéficiaire : PARISVTCDRIVER · BIC : QNTOFRP1XXX',40,y);y+=13;
-    doc.text('IBAN : FR7616958000014883777337715',40,y);
+    doc.text('Bénéficiaire : PARISVTCDRIVER',40,y);y+=13;
+    doc.text('IBAN FR76 1695 8000 0148 8377 7337 715   ·   BIC QNTOFRP1XXX',40,y);
   }
+  doc.setFont(F,'normal');doc.setTextColor(150,158,172);doc.setFontSize(7.5);
+  doc.text('Prix TTC garantis · SIRET 934505702 · TVA intracom. FR32934505702 · Disponible 24/7 · Merci de votre confiance.',W/2,815,{align:'center'});
   return doc;
 }
 async function docPDF(id){
