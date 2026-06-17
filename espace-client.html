@@ -499,7 +499,7 @@ async function buildInvoiceDoc(b,opts){
   const _net=l=>(l.price!=null&&l.price!=='')?Math.round((Number(l.price)||0)*_ratio*100)/100:Math.round((_tot/(_lns.length||1))*100)/100;
   const _docRate=Number(b.amount_ht)>0?Math.round((Number(b.amount_ttc)/Number(b.amount_ht)-1)*100):10;
   function _lv(l){var ttc=(l.price!=null&&l.price!=='')?Number(l.price):parseFloat(String(l.priceLabel||'').replace(/[^0-9.,]/g,'').replace(',','.'));if(!isFinite(ttc))ttc=0;var rate=(l.vat!=null&&l.vat!=='')?Number(l.vat):(_docRate||10);if(!rate)rate=10;var ht=(l.ht!=null&&l.ht!=='')?Number(l.ht):Math.round(ttc/(1+rate/100)*100)/100;return{ttc:ttc,rate:rate,ht:ht,vat:Math.round((ttc-ht)*100)/100,custom:!!l.custom};}
-  const xPrice=W-48, xVat=W-128, xHt=W-205, detW=xHt-14-48;
+  const xPrice=W-48, xVat=W-118, xHt=W-185, detW=W-245-48;   // HT aligné sur « Sous-total » ; description plus étroite
   doc.setFillColor(20,28,46);doc.rect(40,y,W-80,24,'F');
   doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(8.5);
   doc.text('SERVICE',48,y+16);doc.text('HT',xHt,y+16,{align:'right'});doc.text('TVA',xVat,y+16,{align:'right'});doc.text('PRIX TTC',xPrice,y+16,{align:'right'});
