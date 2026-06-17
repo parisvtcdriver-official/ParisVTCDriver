@@ -1760,7 +1760,7 @@ async function sendQuoteRequest(btn){
     subtotal: ttc, discount: disc, discount_label: dl.join(" + "),
     applied_code: appliedCode||"", applied_code_used: appliedCode?Math.min(appliedVal,ttc):0,
     amount_ht: Math.round((total-tax)*100)/100, vat: tax, amount_ttc: total,
-    total_label: eur(total), lines
+    total_label: eur(total), lang: LANG, lines
   };
   const old=btn?btn.textContent:"";
   if(btn){btn.disabled=true;btn.textContent="…";}
