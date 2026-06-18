@@ -204,6 +204,7 @@ nav.links a:hover{color:var(--txt);background:rgba(255,255,255,.04)}
 /* ---------- HERO ---------- */
 .hero{position:relative;overflow:hidden;min-height:100dvh;display:flex;align-items:center}
 .hero-bg{position:absolute;inset:0;z-index:0}
+.hero-bg picture{position:absolute;inset:0;display:block;width:100%;height:100%}
 .hero-bg img{width:100%;height:100%;object-fit:cover;opacity:.92}
 .hero-bg::after{content:"";position:absolute;inset:0;
   background:linear-gradient(90deg,#070a12 8%, rgba(7,10,18,.78) 42%, rgba(7,10,18,.25) 75%, rgba(7,10,18,.55));
@@ -461,10 +462,11 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
   .grid-4,.trust-grid,.stats-strip,.foot-grid{grid-template-columns:1fr}
   .sec-pad{padding:64px 0}
   .hero-contact{gap:14px}
-  .hero{min-height:calc(100svh - 64px);padding:0}
-  .hero-inner{padding:60px 28px}
+  .hero{min-height:100svh;padding:0;margin-top:-64px}   /* la photo occupe tout l'écran */
+  header.nav, header.nav.scrolled{background:rgba(7,10,18,.9)}   /* nav très sombre (légère transparence) au-dessus de la photo */
+  .hero-inner{padding:96px 28px 40px}
   .hero-bg{overflow:hidden;background:#070a12}
-  .hero-bg img{width:100%;height:100%;opacity:1;object-fit:cover;object-position:66% 50%;transform:scale(1.12);transform-origin:center}
+  .hero-bg img{width:100%;height:100%;opacity:1;object-fit:cover;object-position:center 50%;transform:none}
   .hero-bg::after{background:linear-gradient(180deg,rgba(7,10,18,.62) 0%,rgba(7,10,18,.32) 36%,rgba(7,10,18,.18) 60%,rgba(7,10,18,.55) 100%)}
   .hero-bg::before{background:none}
   .foot-bottom{flex-direction:column}
@@ -553,8 +555,11 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
 <!-- ================= HERO ================= -->
 <section class="hero" id="top">
   <div class="hero-bg">
-    <img src="hero.jpg" alt="Berline noire ParisVTCDriver devant la Tour Eiffel au coucher du soleil" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
-    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:none" role="img" aria-label="Chauffeur privé devant la Tour Eiffel à Paris">
+    <picture>
+      <source media="(max-width:720px)" srcset="hero-mobile.jpg">
+      <img src="hero.jpg" alt="Berline noire ParisVTCDriver devant la Tour Eiffel au coucher du soleil" onerror="this.closest('picture').style.display='none';document.getElementById('heroFallback').style.display='block'">
+    </picture>
+    <svg id="heroFallback" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:none" role="img" aria-label="Chauffeur privé devant la Tour Eiffel à Paris">
       <defs>
         <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color="#1a2748"/><stop offset=".45" stop-color="#5b4a66"/><stop offset=".72" stop-color="#c8895f"/><stop offset="1" stop-color="#e7b97f"/>
