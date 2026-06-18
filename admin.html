@@ -429,6 +429,8 @@ function renderResaTable(elId,list,withSelect){
     if(withSelect){
       statusCell=stSelect(b.id,b.status)+` <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer">✕</button>`;
       if(cancelReq) statusCell+=`<div class="sub2" style="color:var(--amber);margin-top:5px">⚠ Annulation demandée — ${escapeHtml(c.policy||'')}${c.reason?'<br>Motif : '+escapeHtml(c.reason):''}<br>→ choisir « Annulée », « Remboursé » ou « Avoir émis »</div>`;
+      const mr=b.details&&b.details.mod_request;
+      if(mr) statusCell+=`<div class="sub2" style="color:var(--amber);margin-top:6px;padding-top:6px;border-top:1px solid var(--line-soft)">✎ Modification demandée (&lt;24 h)<br>Trajet : ${escapeHtml(mr.route||'—')}<br>Date : ${escapeHtml(mr.dt||'—')}<div style="margin-top:6px"><button class="btn-mini gold" onclick="acceptModif('${b.id}')">Accepter</button> <button class="btn-mini" onclick="declineModif('${b.id}')">Refuser</button></div></div>`;
     } else {
       statusCell=statusBadgeFull(b)+(cancelReq?' <span class="sub2" style="color:var(--amber)">⚠ annul.</span>':'');
     }
@@ -439,6 +441,32 @@ function renderResaTable(elId,list,withSelect){
       `<td class="amt">${eur(b.amount_ttc)}</td>
       <td>${statusCell}</td></tr>`;
   }).join('');
+}
+function clientMailOf(b){return (b.details&&b.details.client_email)||(b.user_id&&PROFILES[b.user_id]&&PROFILES[b.user_id].email)||'';}
+async function acceptModif(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b||!b.details||!b.details.mod_request)return;
+  const mr=b.details.mod_request;
+  if(!confirm('Accepter cette modification ?\n\nTrajet : '+(mr.route||'—')+'\nDate : '+(mr.dt||'—')))return;
+  const d=Object.assign({},b.details);
+  if(d.lines&&d.lines[0]){ if(mr.route)d.lines[0].route=mr.route; if(mr.dt)d.lines[0].dt=mr.dt; }
+  delete d.mod_request;
+  const upd={details:d};
+  if(mr.pickup)upd.pickup=mr.pickup; if(mr.dropoff)upd.dropoff=mr.dropoff; if(mr.date_time)upd.date_time=new Date(mr.date_time).toISOString();
+  const {error}=await sb.from('bookings').update(upd).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  const to=clientMailOf(b);
+  if(to){ try{ await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject:'Votre modification est confirmée — '+(b.reference||''),html:`<h2 style="color:#a07d2c">Modification confirmée</h2><p>Bonjour,</p><p>Votre demande de modification a été acceptée. Votre devis/facture n° ${b.reference||''} est mis à jour (même numéro).</p><p><b>Trajet :</b> ${mr.route||'—'}<br><b>Date :</b> ${mr.dt||'—'}</p><p style="color:#888;font-size:12px">ParisVTCDriver · +33 7 49 19 83 18</p>`}}); }catch(e){} }
+  toast('Modification acceptée ✓'); refresh();
+}
+async function declineModif(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b||!b.details||!b.details.mod_request)return;
+  if(!confirm('Refuser cette demande de modification ? Un e-mail sera envoyé au client.'))return;
+  const d=Object.assign({},b.details); delete d.mod_request;
+  const {error}=await sb.from('bookings').update({details:d}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  const to=clientMailOf(b);
+  if(to){ try{ await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject:'Votre demande de modification — '+(b.reference||''),html:`<h2 style="color:#a07d2c">Demande non retenue</h2><p>Bonjour,</p><p>Nous sommes navrés : votre demande de modification (course à moins de 24 h) n'a pas pu être acceptée. Votre réservation reste inchangée. N'hésitez pas à nous appeler au +33 7 49 19 83 18 pour trouver ensemble une solution.</p><p style="color:#888;font-size:12px">ParisVTCDriver</p>`}}); }catch(e){} }
+  toast('Modification refusée ✓ (e-mail envoyé)'); refresh();
 }
 async function validateCancel(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b)return;

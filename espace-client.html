@@ -211,6 +211,20 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
     </section>
   </main>
 </div>
+<div id="modModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(3,6,12,.78);align-items:center;justify-content:center;padding:20px">
+  <div style="width:100%;max-width:440px;background:linear-gradient(165deg,#121d33,#0e1626);border:1px solid var(--line);border-radius:18px;padding:24px 26px;box-shadow:0 40px 90px -30px rgba(0,0,0,.8)">
+    <h2 id="modTitle" style="font-size:18px;margin-bottom:4px">Modifier ma réservation</h2>
+    <div id="modSub" class="sub2" style="margin-bottom:16px;line-height:1.5"></div>
+    <div class="field" style="margin-bottom:12px"><label id="modLpick" style="display:block;font-size:12px;color:var(--muted-2);margin-bottom:6px">Prise en charge</label><input id="modPickup" style="width:100%;background:rgba(7,11,20,.75);border:1px solid var(--line-soft);color:var(--txt);font-family:inherit;font-size:14px;border-radius:10px;padding:11px 13px"></div>
+    <div class="field" style="margin-bottom:12px"><label id="modLdrop" style="display:block;font-size:12px;color:var(--muted-2);margin-bottom:6px">Destination</label><input id="modDropoff" style="width:100%;background:rgba(7,11,20,.75);border:1px solid var(--line-soft);color:var(--txt);font-family:inherit;font-size:14px;border-radius:10px;padding:11px 13px"></div>
+    <div class="field" style="margin-bottom:6px"><label id="modLdate" style="display:block;font-size:12px;color:var(--muted-2);margin-bottom:6px">Date & heure</label><input id="modDate" type="datetime-local" style="width:100%;background:rgba(7,11,20,.75);border:1px solid var(--line-soft);color:var(--txt);font-family:inherit;font-size:14px;border-radius:10px;padding:11px 13px"></div>
+    <div id="modMsg" style="color:var(--amber);font-size:12.5px;min-height:16px;margin:8px 0;line-height:1.4"></div>
+    <div style="display:flex;gap:10px;margin-top:6px">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeMod()" id="modCancelBtn">Annuler</button>
+      <button class="btn btn-gold btn-sm" style="flex:1" onclick="saveModif()" id="modSaveBtn">Enregistrer</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -291,6 +305,8 @@ const T={
  paid:{fr:"payée",en:"paid",es:"pagada",it:"pagata",pt:"paga",tr:"ödendi",zh:"已付"},
  topay:{fr:"à payer",en:"to pay",es:"a pagar",it:"da pagare",pt:"a pagar",tr:"ödenecek",zh:"待付"},
  btn_cancel:{fr:"Annuler / remboursement",en:"Cancel / refund",es:"Cancelar / reembolso",it:"Annulla / rimborso",pt:"Cancelar / reembolso",tr:"İptal / iade",zh:"取消/退款"},
+ btn_modify:{fr:"Modifier",en:"Edit",es:"Modificar",it:"Modifica",pt:"Modificar",tr:"Düzenle",zh:"修改"},
+ mod_pending:{fr:"Modification en attente",en:"Edit pending",es:"Modificación pendiente",it:"Modifica in attesa",pt:"Modificação pendente",tr:"Düzenleme bekliyor",zh:"修改待处理"},
  req_sent:{fr:"Demande envoyée",en:"Request sent",es:"Solicitud enviada",it:"Richiesta inviata",pt:"Pedido enviado",tr:"Talep gönderildi",zh:"请求已发送"},
  next_course:{fr:"Votre prochaine course",en:"Your next ride",es:"Su próximo trayecto",it:"La tua prossima corsa",pt:"A sua próxima viagem",tr:"Sonraki yolculuğunuz",zh:"您的下一趟行程"},
  pax:{fr:"passager(s)",en:"passenger(s)",es:"pasajero(s)",it:"passeggero/i",pt:"passageiro(s)",tr:"yolcu",zh:"位乘客"},
@@ -539,8 +555,9 @@ function rowResaMulti(b,withCancel){
   const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">'+t('paid')+'</span>':' <span class="st att" style="margin-left:6px">'+t('topay')+'</span>'):'';
   let extra='';
   if(withCancel){
-    if(b.details&&b.details.cancel&&b.details.cancel.requested&&b.status!=='cancelled') extra='<span class="sub2" style="color:var(--amber)">'+t('req_sent')+'</span>';
-    else if(!['cancelled','completed','refunded','avoir'].includes(b.status)) extra=`<button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">${t('btn_cancel')}</button>`;
+    if(b.details&&b.details.mod_request) extra='<span class="sub2" style="color:var(--amber)">'+t('mod_pending')+'</span>';
+    else if(b.details&&b.details.cancel&&b.details.cancel.requested&&b.status!=='cancelled') extra='<span class="sub2" style="color:var(--amber)">'+t('req_sent')+'</span>';
+    else if(!['cancelled','completed','refunded','avoir'].includes(b.status)) extra=`<button class="btn btn-ghost btn-sm" style="margin-right:6px" onclick="modifyResa('${b.id}')">${t('btn_modify')}</button><button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">${t('btn_cancel')}</button>`;
   }
   const head=`<tr style="background:rgba(201,162,74,.04)"><td><div class="cli">${escapeHtml(b.service||('Réservation — '+ls.length+' services'))}${payTag}</div><div class="sub2">${ls.length} prestations · facture unique</div></td>
     <td class="sub2">—</td><td class="sub2">—</td><td class="amt">${eur(b.amount_ttc)}</td><td>${statusBadgeFull(b)}</td>${withCancel?`<td>${extra}</td>`:''}</tr>`;
@@ -553,8 +570,9 @@ function rowResa(b,withCancel){
   let extra='';
   const ts=bkTime(b);
   if(withCancel){
-    if(b.details&&b.details.cancel&&b.details.cancel.requested&&b.status!=='cancelled') extra='<span class="sub2" style="color:var(--amber)">'+t('req_sent')+'</span>';
-    else if(!['cancelled','completed','refunded','avoir'].includes(b.status)) extra=`<button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">${t('btn_cancel')}</button>`;
+    if(b.details&&b.details.mod_request) extra='<span class="sub2" style="color:var(--amber)">'+t('mod_pending')+'</span>';
+    else if(b.details&&b.details.cancel&&b.details.cancel.requested&&b.status!=='cancelled') extra='<span class="sub2" style="color:var(--amber)">'+t('req_sent')+'</span>';
+    else if(!['cancelled','completed','refunded','avoir'].includes(b.status)) extra=`<button class="btn btn-ghost btn-sm" style="margin-right:6px" onclick="modifyResa('${b.id}')">${t('btn_modify')}</button><button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">${t('btn_cancel')}</button>`;
   }
   const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">'+t('paid')+'</span>':' <span class="st att" style="margin-left:6px">'+t('topay')+'</span>'):'';
   return `<tr><td><div class="cli">${escapeHtml(b.service||b.type)}${payTag}</div><div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
@@ -777,6 +795,63 @@ async function buildInvoiceDoc(b,opts){
   return doc;
 }
 
+/* ---- Modification de réservation par le client ---- */
+let MODID=null;
+const MM={
+  title:{fr:"Modifier ma réservation",en:"Edit my booking",es:"Modificar mi reserva",it:"Modifica la prenotazione",pt:"Modificar a reserva",tr:"Rezervasyonu düzenle",zh:"修改我的预订"},
+  pick:{fr:"Prise en charge",en:"Pick-up",es:"Recogida",it:"Presa",pt:"Recolha",tr:"Alış",zh:"上车地点"},
+  drop:{fr:"Destination",en:"Drop-off",es:"Destino",it:"Destinazione",pt:"Destino",tr:"Varış",zh:"目的地"},
+  date:{fr:"Date & heure",en:"Date & time",es:"Fecha y hora",it:"Data e ora",pt:"Data e hora",tr:"Tarih ve saat",zh:"日期和时间"},
+  cancel:{fr:"Annuler",en:"Cancel",es:"Cancelar",it:"Annulla",pt:"Cancelar",tr:"İptal",zh:"取消"},
+  save:{fr:"Enregistrer",en:"Save",es:"Guardar",it:"Salva",pt:"Guardar",tr:"Kaydet",zh:"保存"},
+  subNow:{fr:"Plus de 24 h avant la course : la modification est appliquée immédiatement (lieux dans le même département uniquement). Votre devis/facture est mis à jour.",en:"More than 24 h before the ride: the change is applied immediately (locations within the same department only). Your quote/invoice is updated.",es:"Más de 24 h antes: el cambio se aplica de inmediato (lugares en el mismo departamento). Su presupuesto/factura se actualiza.",it:"Più di 24 h prima: la modifica è applicata subito (luoghi nello stesso dipartimento). Il preventivo/fattura è aggiornato.",pt:"Mais de 24 h antes: alteração aplicada de imediato (locais no mesmo departamento). O orçamento/fatura é atualizado.",tr:"Yolculuğa 24 saatten fazla varsa değişiklik hemen uygulanır (aynı il içinde). Teklif/fatura güncellenir.",zh:"距行程超过24小时：修改立即生效（地点须在同一省）。报价/发票将更新。"},
+  subReq:{fr:"Moins de 24 h avant la course : votre demande sera transmise à l'administrateur, qui la confirmera ou non.",en:"Less than 24 h before the ride: your request is sent to the administrator for approval.",es:"Menos de 24 h antes: su solicitud se envía al administrador para su aprobación.",it:"Meno di 24 h prima: la richiesta è inviata all'amministratore per l'approvazione.",pt:"Menos de 24 h antes: o pedido é enviado ao administrador para aprovação.",tr:"24 saatten az kaldı: talebiniz onay için yöneticiye iletilir.",zh:"距行程不足24小时：您的请求将提交管理员审批。"},
+  deptP:{fr:"Le nouveau lieu de prise en charge doit être dans le même département.",en:"The new pick-up must be in the same department.",es:"La nueva recogida debe estar en el mismo departamento.",it:"La nuova presa deve essere nello stesso dipartimento.",pt:"A nova recolha deve ser no mesmo departamento.",tr:"Yeni alış aynı ilde olmalı.",zh:"新上车地点须在同一省。"},
+  deptD:{fr:"La nouvelle destination doit être dans le même département.",en:"The new destination must be in the same department.",es:"El nuevo destino debe estar en el mismo departamento.",it:"La nuova destinazione deve essere nello stesso dipartimento.",pt:"O novo destino deve ser no mesmo departamento.",tr:"Yeni varış aynı ilde olmalı.",zh:"新目的地须在同一省。"},
+  okNow:{fr:"Réservation modifiée ✓",en:"Booking updated ✓",es:"Reserva modificada ✓",it:"Prenotazione modificata ✓",pt:"Reserva modificada ✓",tr:"Rezervasyon güncellendi ✓",zh:"预订已修改 ✓"},
+  okReq:{fr:"Demande de modification envoyée ✓",en:"Edit request sent ✓",es:"Solicitud de modificación enviada ✓",it:"Richiesta di modifica inviata ✓",pt:"Pedido de modificação enviado ✓",tr:"Düzenleme talebi gönderildi ✓",zh:"修改请求已发送 ✓"},
+};
+const mm=k=>(MM[k]&&(MM[k][LANG]||MM[k].fr))||k;
+function toDTLocal(ts){ if(!ts)return ''; const d=new Date(ts); const p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes()); }
+function modifyResa(id){
+  const b=ALLBK.find(x=>x.id===id); if(!b)return; MODID=id;
+  document.getElementById('modTitle').textContent=mm('title');
+  document.getElementById('modLpick').textContent=mm('pick');
+  document.getElementById('modLdrop').textContent=mm('drop');
+  document.getElementById('modLdate').textContent=mm('date');
+  document.getElementById('modCancelBtn').textContent=mm('cancel');
+  document.getElementById('modSaveBtn').textContent=mm('save');
+  const line0=b.details&&b.details.lines&&b.details.lines[0];
+  document.getElementById('modPickup').value=b.pickup||(line0&&(line0.route||'').split('→')[0].trim())||'';
+  document.getElementById('modDropoff').value=b.dropoff||(line0&&((line0.route||'').split('→')[1]||'').trim())||'';
+  const ts=b.date_time?new Date(b.date_time).getTime():(line0?parseRDV(line0.dt):null);
+  document.getElementById('modDate').value=toDTLocal(ts);
+  const hrs=ts?(ts-Date.now())/36e5:999;
+  document.getElementById('modSub').textContent = hrs>=24 ? mm('subNow') : mm('subReq');
+  document.getElementById('modMsg').textContent='';
+  document.getElementById('modSaveBtn').disabled=false;
+  document.getElementById('modModal').style.display='flex';
+}
+function closeMod(){document.getElementById('modModal').style.display='none';MODID=null;}
+async function saveModif(){
+  const b=ALLBK.find(x=>x.id===MODID); if(!b)return;
+  const pickup=document.getElementById('modPickup').value.trim();
+  const dropoff=document.getElementById('modDropoff').value.trim();
+  const dtv=document.getElementById('modDate').value;
+  const dep=s=>{const m=String(s||'').match(/\b(\d{2})\d{3}\b/);return m?m[1]:null;};
+  const line0=b.details&&b.details.lines&&b.details.lines[0];
+  const oldP=b.pickup||(line0&&(line0.route||'').split('→')[0])||'';
+  const oldD=b.dropoff||(line0&&(line0.route||'').split('→')[1])||'';
+  const msg=document.getElementById('modMsg');
+  if(pickup&&dep(oldP)&&dep(pickup)&&dep(pickup)!==dep(oldP)){ msg.textContent=mm('deptP'); return; }
+  if(dropoff&&dep(oldD)&&dep(dropoff)&&dep(dropoff)!==dep(oldD)){ msg.textContent=mm('deptD'); return; }
+  const btn=document.getElementById('modSaveBtn'); btn.disabled=true;
+  try{
+    const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'modify-booking',booking_id:MODID,pickup,dropoff,date_time:dtv||''}});
+    if(error||(data&&data.ok===false)) throw new Error((data&&data.error)||(error&&error.message)||'err');
+    closeMod(); toast(data.applied? mm('okNow') : mm('okReq')); load();
+  }catch(e){ msg.textContent=(e.message||e); btn.disabled=false; }
+}
 async function saveProfile(){
   const g=id=>{const el=document.getElementById(id);return el?el.value.trim():'';};
   const full_name=g('pName'), phone=g('pPhone');
