@@ -88,119 +88,125 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 .mtoggle{display:none}
 @media(max-width:760px){.lvl-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:1080px){.app{grid-template-columns:1fr}.side{position:fixed;z-index:40;top:0;bottom:0;left:0;width:248px;transform:translateX(-100%);transition:.25s;background:linear-gradient(180deg,#0e1a33,#070b15);box-shadow:0 0 60px rgba(0,0,0,.75)}.side.open{transform:none}.main{padding-top:64px}.grid2{grid-template-columns:1fr}.next{flex-wrap:wrap}.next .right{margin-left:0;text-align:left}.mtoggle{display:grid;place-items:center;position:fixed;top:12px;left:12px;z-index:45;width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:var(--navy);color:var(--txt);cursor:pointer}}
+.lang button{background:rgba(255,255,255,.05);border:1px solid var(--line-soft);color:var(--muted-2);border-radius:7px;padding:4px 7px;font-size:11px;font-weight:600;cursor:pointer;transition:.15s}
+.lang button:hover{color:var(--txt);border-color:var(--gold)}
+.lang button.active{background:var(--gold);color:#1a1205;border-color:var(--gold)}
 </style>
 </head>
 <body>
 <button class="mtoggle" onclick="document.querySelector('.side').classList.toggle('open')">☰</button>
 <div class="app">
   <aside class="side">
-    <div class="brand"><div class="mk"><img src="logo.png" alt="ParisVTCDriver"></div><div><b>Paris<span>VTC</span>Driver</b><small>Espace client</small></div></div>
-    <div class="nav-i active" data-v="home"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg> Accueil</div>
-    <div class="nav-i" data-v="resa"><svg viewBox="0 0 24 24" stroke-width="1.7"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg> Mes réservations</div>
-    <div class="nav-i" data-v="fact"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg> Devis &amp; factures</div>
-    <div class="nav-i" data-v="avoir"><svg viewBox="0 0 24 24" stroke-width="1.7"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h4"/></svg> Mes avoirs</div>
-    <div class="nav-i" data-v="fid"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z"/></svg> Fidélité</div>
-    <div class="nav-i" id="navPartner" data-v="partner" style="display:none"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M3 7h18v13H3z"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/></svg> Partenariat</div>
-    <div class="nav-i" data-v="prof"><svg viewBox="0 0 24 24" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg> Mon profil</div>
-    <div class="side-foot"><div class="av" id="sfAv">··</div><div><b id="sfName" style="color:var(--txt);font-size:13px">…</b><div style="font-size:11px;color:var(--muted-2)">Client</div></div>
+    <div class="brand"><div class="mk"><img src="logo.png" alt="ParisVTCDriver"></div><div><b>Paris<span>VTC</span>Driver</b><small data-i18n="space">Espace client</small></div></div>
+    <div class="lang" style="display:flex;flex-wrap:wrap;gap:4px;margin:0 14px 14px">
+      <button data-l="fr" onclick="setLang('fr')">FR</button><button data-l="en" onclick="setLang('en')">EN</button><button data-l="es" onclick="setLang('es')">ES</button><button data-l="it" onclick="setLang('it')">IT</button><button data-l="pt" onclick="setLang('pt')">PT</button><button data-l="tr" onclick="setLang('tr')">TR</button><button data-l="zh" onclick="setLang('zh')">中文</button>
+    </div>
+    <div class="nav-i active" data-v="home"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg> <span data-i18n="nav_home">Accueil</span></div>
+    <div class="nav-i" data-v="resa"><svg viewBox="0 0 24 24" stroke-width="1.7"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg> <span data-i18n="nav_resa">Mes réservations</span></div>
+    <div class="nav-i" data-v="fact"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg> <span data-i18n="nav_fact">Devis &amp; factures</span></div>
+    <div class="nav-i" data-v="avoir"><svg viewBox="0 0 24 24" stroke-width="1.7"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h4"/></svg> <span data-i18n="nav_avoir">Mes avoirs</span></div>
+    <div class="nav-i" data-v="fid"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z"/></svg> <span data-i18n="nav_fid">Fidélité</span></div>
+    <div class="nav-i" id="navPartner" data-v="partner" style="display:none"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M3 7h18v13H3z"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/></svg> <span data-i18n="nav_partner">Partenariat</span></div>
+    <div class="nav-i" data-v="prof"><svg viewBox="0 0 24 24" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg> <span data-i18n="nav_prof">Mon profil</span></div>
+    <div class="side-foot"><div class="av" id="sfAv">··</div><div><b id="sfName" style="color:var(--txt);font-size:13px">…</b><div style="font-size:11px;color:var(--muted-2)" data-i18n="client">Client</div></div>
       <a onclick="signOut()" title="Déconnexion" style="margin-left:auto;width:32px;height:32px;border-radius:8px;border:1px solid var(--line-soft);display:grid;place-items:center;color:var(--muted-2);cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a></div>
   </aside>
 
   <main class="main">
     <!-- HOME -->
     <section class="view show" id="home">
-      <div class="top"><div><h1 id="hello">Bonjour 👋</h1><div class="sub">Bienvenue dans votre espace ParisVTCDriver</div></div>
-        <a class="btn btn-gold" style="margin-left:auto" href="index.html#booking">+ Nouvelle réservation</a></div>
+      <div class="top"><div><h1 id="hello">Bonjour 👋</h1><div class="sub" data-i18n="welcome">Bienvenue dans votre espace ParisVTCDriver</div></div>
+        <a class="btn btn-gold" style="margin-left:auto" href="index.html#booking" data-i18n="newresa">+ Nouvelle réservation</a></div>
       <div id="nextWrap"></div>
       <div class="card" style="margin-bottom:22px;padding:20px 24px;display:flex;align-items:center;gap:22px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(201,162,74,.12),rgba(201,162,74,.03));border-color:var(--line)">
-        <div style="flex:none"><div style="color:var(--muted-2);font-size:12.5px">Programme fidélité</div><div style="display:flex;align-items:center;gap:10px;margin-top:4px"><span class="mono" id="hPts" style="font-size:26px;font-weight:700;color:var(--gold-bright)">0 pts</span><span class="lvl-badge" id="hBadge">Membre</span></div></div>
+        <div style="flex:none"><div style="color:var(--muted-2);font-size:12.5px" data-i18n="loyprog">Programme fidélité</div><div style="display:flex;align-items:center;gap:10px;margin-top:4px"><span class="mono" id="hPts" style="font-size:26px;font-weight:700;color:var(--gold-bright)">0 pts</span><span class="lvl-badge" id="hBadge">Membre</span></div></div>
         <div style="flex:1;min-width:200px"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted-2)"><span id="hCur">—</span><span id="hNext">—</span></div><div class="prog"><div class="fill" id="hFill" style="width:0%"></div></div><div style="font-size:11.5px;color:var(--muted)" id="hHint"></div></div>
-        <button class="btn btn-ghost btn-sm" data-go="fid" style="margin-left:auto">Voir mon programme</button>
+        <button class="btn btn-ghost btn-sm" data-go="fid" style="margin-left:auto" data-i18n="seeprog">Voir mon programme</button>
       </div>
-      <div class="card"><div class="card-h"><h2>Mes dernières réservations</h2><span class="link" data-go="resa">Tout voir</span></div>
+      <div class="card"><div class="card-h"><h2 data-i18n="lastresa">Mes dernières réservations</h2><span class="link" data-go="resa" data-i18n="seeall">Tout voir</span></div>
         <table><tbody id="homeResa"></tbody></table>
       </div>
     </section>
 
     <!-- RESERVATIONS -->
     <section class="view" id="resa">
-      <div class="top"><div><h1>Mes réservations</h1><div class="sub">Suivi de vos courses</div></div>
-        <a class="btn btn-gold" style="margin-left:auto" href="index.html#booking">+ Nouvelle réservation</a></div>
+      <div class="top"><div><h1 data-i18n="nav_resa">Mes réservations</h1><div class="sub" data-i18n="resa_sub">Suivi de vos courses</div></div>
+        <a class="btn btn-gold" style="margin-left:auto" href="index.html#booking" data-i18n="newresa">+ Nouvelle réservation</a></div>
       <div class="card"><table>
-        <thead><tr><th>Réservation</th><th>Rendez-vous</th><th>Véhicule</th><th>Montant</th><th>Statut</th><th></th></tr></thead>
+        <thead><tr><th data-i18n="th_resa">Réservation</th><th data-i18n="th_rdv">Rendez-vous</th><th data-i18n="th_veh">Véhicule</th><th data-i18n="th_amount">Montant</th><th data-i18n="th_status">Statut</th><th></th></tr></thead>
         <tbody id="allResa"></tbody>
       </table></div>
-      <div class="note-box">Pour demander une annulation et le remboursement, cliquez sur <b style="color:var(--gold-2)">« Annuler / remboursement »</b> en face de la réservation concernée. La condition applicable s'affiche selon le délai. Conditions : plus de 24 h avant → remboursement intégral ; entre 24 h et 2 h → avoir valable 2 mois ; moins de 2 h ou non-présentation → aucun remboursement.</div>
+      <div class="note-box" data-i18n="resa_note">Pour demander une annulation et le remboursement, cliquez sur « Annuler / remboursement » en face de la réservation concernée. La condition applicable s'affiche selon le délai. Conditions : plus de 24 h avant → remboursement intégral ; entre 24 h et 2 h → avoir valable 2 mois ; moins de 2 h ou non-présentation → aucun remboursement.</div>
     </section>
 
     <!-- FACTURES -->
     <section class="view" id="fact">
-      <div class="top"><div><h1>Devis &amp; factures</h1><div class="sub">Vos documents</div></div></div>
+      <div class="top"><div><h1 data-i18n="nav_fact">Devis &amp; factures</h1><div class="sub" data-i18n="fact_sub">Vos documents</div></div></div>
       <div class="card"><table>
-        <thead><tr><th>N°</th><th>Objet</th><th>Date</th><th>TTC</th><th>Type</th><th>PDF</th></tr></thead>
+        <thead><tr><th data-i18n="th_num">N°</th><th data-i18n="th_obj">Objet</th><th data-i18n="th_date">Date</th><th data-i18n="th_ttc">TTC</th><th data-i18n="th_type">Type</th><th data-i18n="th_pdf">PDF</th></tr></thead>
         <tbody id="allDocs"></tbody>
       </table></div>
     </section>
 
     <!-- AVOIRS -->
     <section class="view" id="avoir">
-      <div class="top"><div><h1>Mes avoirs</h1><div class="sub">Montants à valoir sur vos prochaines réservations</div></div></div>
+      <div class="top"><div><h1 data-i18n="nav_avoir">Mes avoirs</h1><div class="sub" data-i18n="avoir_sub">Montants à valoir sur vos prochaines réservations</div></div></div>
       <div id="avoirList"></div>
     </section>
 
     <!-- FIDELITE -->
     <section class="view" id="fid">
-      <div class="top"><div><h1>Programme de fidélité</h1><div class="sub">1 € dépensé = 1 point · cumulables sur vos courses</div></div></div>
+      <div class="top"><div><h1 data-i18n="fid_title">Programme de fidélité</h1><div class="sub" data-i18n="fid_sub">1 € dépensé = 1 point · cumulables sur vos courses</div></div></div>
       <div class="card" style="padding:26px;margin-bottom:20px;background:linear-gradient(135deg,rgba(201,162,74,.14),rgba(201,162,74,.03));border-color:var(--line)">
         <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
-          <div><div style="color:var(--muted-2);font-size:12.5px">Vos points</div><div class="mono" id="fPts" style="font-size:38px;font-weight:700;color:var(--gold-bright);line-height:1">0</div></div>
-          <div style="margin-left:6px"><span class="lvl-badge" id="fBadge" style="font-size:13px;padding:7px 14px">Membre</span><div style="font-size:12px;color:var(--muted);margin-top:8px">Réduction appliquée automatiquement à vos prochaines réservations, sur les prestations d'au moins 60 €.</div></div>
+          <div><div style="color:var(--muted-2);font-size:12.5px" data-i18n="yourpts">Vos points</div><div class="mono" id="fPts" style="font-size:38px;font-weight:700;color:var(--gold-bright);line-height:1">0</div></div>
+          <div style="margin-left:6px"><span class="lvl-badge" id="fBadge" style="font-size:13px;padding:7px 14px">Membre</span><div style="font-size:12px;color:var(--muted);margin-top:8px" data-i18n="fid_note">Réduction appliquée automatiquement à vos prochaines réservations, sur les prestations d'au moins 60 €.</div></div>
         </div>
         <div style="margin-top:18px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted-2)"><span id="fCur">—</span><span id="fNext">—</span></div><div class="prog"><div class="fill" id="fFill" style="width:0%"></div></div><div style="font-size:12px;color:var(--muted)" id="fHint"></div></div>
       </div>
-      <div class="card" style="padding:22px"><h2 style="font-size:14px;margin-bottom:14px">Les niveaux</h2>
+      <div class="card" style="padding:22px"><h2 style="font-size:14px;margin-bottom:14px" data-i18n="levels">Les niveaux</h2>
         <div class="lvl-grid" id="lvlGrid"></div>
       </div>
-      <div class="note-box"><b style="color:var(--gold-2)">Maintien des niveaux :</b> votre niveau est conservé 2 mois après votre dernière réservation terminée. Sans nouvelle réservation, vous perdez un seul niveau (points ramenés au minimum du niveau inférieur), et ainsi de suite.</div>
+      <div class="note-box" data-i18n="levelkeep">Maintien des niveaux : votre niveau est conservé 2 mois après votre dernière réservation terminée. Sans nouvelle réservation, vous perdez un seul niveau (points ramenés au minimum du niveau inférieur), et ainsi de suite.</div>
     </section>
 
     <!-- PARTENARIAT -->
     <section class="view" id="partner">
-      <div class="top"><div><h1>Suivi partenariat</h1><div class="sub">Vos courses du mois et votre objectif</div></div></div>
+      <div class="top"><div><h1 data-i18n="pk_title">Suivi partenariat</h1><div class="sub" data-i18n="pk_sub">Vos courses du mois et votre objectif</div></div></div>
       <div class="card" style="padding:24px 26px;margin-bottom:20px;background:linear-gradient(135deg,rgba(201,162,74,.12),rgba(201,162,74,.03));border-color:var(--line)">
         <div style="display:flex;align-items:center;gap:26px;flex-wrap:wrap">
-          <div><div style="color:var(--muted-2);font-size:12.5px">Courses terminées ce mois</div><div class="mono" id="pkDone" style="font-size:38px;font-weight:700;color:var(--gold-bright);line-height:1">0</div><div id="pkMonth" style="font-size:12px;color:var(--muted);margin-top:4px"></div></div>
-          <div><div style="color:var(--muted-2);font-size:12.5px">Objectif estimé</div><div class="mono" id="pkGoal" style="font-size:24px;font-weight:700;color:var(--txt);line-height:1.4">—</div></div>
-          <div><div style="color:var(--muted-2);font-size:12.5px">Remise partenaire</div><div class="mono" id="pkDisc" style="font-size:24px;font-weight:700;color:var(--gold-2);line-height:1.4">—</div></div>
+          <div><div style="color:var(--muted-2);font-size:12.5px" data-i18n="pk_done">Courses terminées ce mois</div><div class="mono" id="pkDone" style="font-size:38px;font-weight:700;color:var(--gold-bright);line-height:1">0</div><div id="pkMonth" style="font-size:12px;color:var(--muted);margin-top:4px"></div></div>
+          <div><div style="color:var(--muted-2);font-size:12.5px" data-i18n="pk_goal">Objectif estimé</div><div class="mono" id="pkGoal" style="font-size:24px;font-weight:700;color:var(--txt);line-height:1.4">—</div></div>
+          <div><div style="color:var(--muted-2);font-size:12.5px" data-i18n="pk_disc">Remise partenaire</div><div class="mono" id="pkDisc" style="font-size:24px;font-weight:700;color:var(--gold-2);line-height:1.4">—</div></div>
         </div>
         <div style="margin-top:18px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted-2)"><span id="pkCur">—</span><span id="pkNext">—</span></div><div class="prog"><div class="fill" id="pkFill" style="width:0%"></div></div><div style="font-size:12px;color:var(--muted)" id="pkHint"></div></div>
       </div>
       <div class="card" style="padding:22px 24px">
-        <h2 style="font-size:14px;margin-bottom:8px">Demander un nouveau pourcentage</h2>
-        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px">Lorsque vos courses terminées dans le mois dépassent votre objectif de plus de 50 %, vous pouvez demander une révision de votre remise. L'administrateur reçoit votre demande par e-mail et dans son espace.</p>
+        <h2 style="font-size:14px;margin-bottom:8px" data-i18n="pk_ask">Demander un nouveau pourcentage</h2>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px" data-i18n="pk_ask_note">Lorsque vos courses terminées dans le mois dépassent votre objectif de plus de 50 %, vous pouvez demander une révision de votre remise. L'administrateur reçoit votre demande par e-mail et dans son espace.</p>
         <div id="pkAction"></div>
       </div>
     </section>
 
     <!-- PROFIL -->
     <section class="view" id="prof">
-      <div class="top"><div><h1>Mon profil</h1><div class="sub">Vos informations sont reprises dans vos réservations</div></div></div>
+      <div class="top"><div><h1 data-i18n="nav_prof">Mon profil</h1><div class="sub" data-i18n="prof_sub">Vos informations sont reprises dans vos réservations</div></div></div>
       <div class="card" style="padding:24px 26px">
         <div class="grid2">
-          <div class="field"><label>Nom complet</label><input id="pName"></div>
-          <div class="field"><label>Téléphone</label><input id="pPhone"></div>
-          <div class="field"><label>E-mail</label><input id="pEmail" disabled></div>
-          <div class="field"><label>Membre depuis</label><input id="pSince" disabled></div>
-          <div class="field"><label>Société (facultatif)</label><input id="pCompany"></div>
-          <div class="field"><label>Adresse (n° et rue)</label><input id="pAddress" placeholder="12 Avenue Montaigne"></div>
-          <div class="field"><label>Code postal</label><input id="pZip" placeholder="75008"></div>
-          <div class="field"><label>Ville</label><input id="pCity" placeholder="Paris"></div>
-          <div class="field"><label>Pays</label><input id="pCountry" placeholder="France"></div>
-          <div class="field"><label>SIREN (pro, facultatif)</label><input id="pSiren"></div>
-          <div class="field"><label>TVA intracom. (pro, facultatif)</label><input id="pVat"></div>
+          <div class="field"><label data-i18n="l_name">Nom complet</label><input id="pName"></div>
+          <div class="field"><label data-i18n="l_phone">Téléphone</label><input id="pPhone"></div>
+          <div class="field"><label data-i18n="l_email">E-mail</label><input id="pEmail" disabled></div>
+          <div class="field"><label data-i18n="l_since">Membre depuis</label><input id="pSince" disabled></div>
+          <div class="field"><label data-i18n="l_company">Société (facultatif)</label><input id="pCompany"></div>
+          <div class="field"><label data-i18n="l_addr">Adresse (n° et rue)</label><input id="pAddress" placeholder="12 Avenue Montaigne"></div>
+          <div class="field"><label data-i18n="l_zip">Code postal</label><input id="pZip" placeholder="75008"></div>
+          <div class="field"><label data-i18n="l_city">Ville</label><input id="pCity" placeholder="Paris"></div>
+          <div class="field"><label data-i18n="l_country">Pays</label><input id="pCountry" placeholder="France"></div>
+          <div class="field"><label data-i18n="l_siren">SIREN (pro, facultatif)</label><input id="pSiren"></div>
+          <div class="field"><label data-i18n="l_vat">TVA intracom. (pro, facultatif)</label><input id="pVat"></div>
         </div>
-        <div style="font-size:12.5px;color:var(--muted-2);margin:4px 0 10px">Ces informations préremplissent automatiquement vos prochaines demandes de devis.</div>
-        <button class="btn btn-gold btn-sm" style="margin-top:6px" onclick="saveProfile()">Enregistrer</button>
+        <div style="font-size:12.5px;color:var(--muted-2);margin:4px 0 10px" data-i18n="prof_note">Ces informations préremplissent automatiquement vos prochaines demandes de devis.</div>
+        <button class="btn btn-gold btn-sm" style="margin-top:6px" onclick="saveProfile()" data-i18n="save">Enregistrer</button>
       </div>
     </section>
   </main>
@@ -211,6 +217,128 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-init.js?v=2"></script>
 <script>
+/* ===================== I18N (7 langues) ===================== */
+const T={
+ nav_home:{fr:"Accueil",en:"Home",es:"Inicio",it:"Home",pt:"Início",tr:"Ana sayfa",zh:"主页"},
+ nav_resa:{fr:"Mes réservations",en:"My bookings",es:"Mis reservas",it:"Le mie prenotazioni",pt:"As minhas reservas",tr:"Rezervasyonlarım",zh:"我的预订"},
+ nav_fact:{fr:"Devis & factures",en:"Quotes & invoices",es:"Presupuestos y facturas",it:"Preventivi e fatture",pt:"Orçamentos e faturas",tr:"Teklifler ve faturalar",zh:"报价与发票"},
+ nav_avoir:{fr:"Mes avoirs",en:"My credit notes",es:"Mis vales",it:"I miei buoni",pt:"Os meus créditos",tr:"Alacaklarım",zh:"我的credit"},
+ nav_fid:{fr:"Fidélité",en:"Loyalty",es:"Fidelidad",it:"Fedeltà",pt:"Fidelidade",tr:"Sadakat",zh:"会员积分"},
+ nav_partner:{fr:"Partenariat",en:"Partnership",es:"Colaboración",it:"Partnership",pt:"Parceria",tr:"İş ortaklığı",zh:"合作"},
+ nav_prof:{fr:"Mon profil",en:"My profile",es:"Mi perfil",it:"Il mio profilo",pt:"O meu perfil",tr:"Profilim",zh:"我的资料"},
+ space:{fr:"Espace client",en:"Client area",es:"Área cliente",it:"Area cliente",pt:"Área cliente",tr:"Müşteri alanı",zh:"客户专区"},
+ client:{fr:"Client",en:"Client",es:"Cliente",it:"Cliente",pt:"Cliente",tr:"Müşteri",zh:"客户"},
+ hello:{fr:"Bonjour",en:"Hello",es:"Hola",it:"Ciao",pt:"Olá",tr:"Merhaba",zh:"您好"},
+ welcome:{fr:"Bienvenue dans votre espace ParisVTCDriver",en:"Welcome to your ParisVTCDriver area",es:"Bienvenido a su área ParisVTCDriver",it:"Benvenuto nella tua area ParisVTCDriver",pt:"Bem-vindo à sua área ParisVTCDriver",tr:"ParisVTCDriver alanınıza hoş geldiniz",zh:"欢迎来到您的 ParisVTCDriver 专区"},
+ newresa:{fr:"+ Nouvelle réservation",en:"+ New booking",es:"+ Nueva reserva",it:"+ Nuova prenotazione",pt:"+ Nova reserva",tr:"+ Yeni rezervasyon",zh:"+ 新预订"},
+ loyprog:{fr:"Programme fidélité",en:"Loyalty programme",es:"Programa de fidelidad",it:"Programma fedeltà",pt:"Programa de fidelidade",tr:"Sadakat programı",zh:"会员计划"},
+ seeprog:{fr:"Voir mon programme",en:"View my programme",es:"Ver mi programa",it:"Vedi il mio programma",pt:"Ver o meu programa",tr:"Programımı gör",zh:"查看我的计划"},
+ lastresa:{fr:"Mes dernières réservations",en:"My latest bookings",es:"Mis últimas reservas",it:"Le mie ultime prenotazioni",pt:"As minhas últimas reservas",tr:"Son rezervasyonlarım",zh:"我最近的预订"},
+ seeall:{fr:"Tout voir",en:"See all",es:"Ver todo",it:"Vedi tutto",pt:"Ver tudo",tr:"Tümünü gör",zh:"查看全部"},
+ resa_sub:{fr:"Suivi de vos courses",en:"Track your rides",es:"Seguimiento de sus trayectos",it:"Monitoraggio delle tue corse",pt:"Acompanhe as suas viagens",tr:"Yolculuklarınızı takip edin",zh:"行程跟踪"},
+ th_resa:{fr:"Réservation",en:"Booking",es:"Reserva",it:"Prenotazione",pt:"Reserva",tr:"Rezervasyon",zh:"预订"},
+ th_rdv:{fr:"Rendez-vous",en:"Appointment",es:"Cita",it:"Appuntamento",pt:"Encontro",tr:"Randevu",zh:"预约时间"},
+ th_veh:{fr:"Véhicule",en:"Vehicle",es:"Vehículo",it:"Veicolo",pt:"Veículo",tr:"Araç",zh:"车辆"},
+ th_amount:{fr:"Montant",en:"Amount",es:"Importe",it:"Importo",pt:"Montante",tr:"Tutar",zh:"金额"},
+ th_status:{fr:"Statut",en:"Status",es:"Estado",it:"Stato",pt:"Estado",tr:"Durum",zh:"状态"},
+ resa_note:{fr:"Pour demander une annulation et le remboursement, cliquez sur « Annuler / remboursement » en face de la réservation. Conditions : plus de 24 h avant → remboursement intégral ; entre 24 h et 2 h → avoir valable 2 mois ; moins de 2 h ou non-présentation → aucun remboursement.",en:"To request a cancellation and refund, click “Cancel / refund” next to the booking. Terms: more than 24 h before → full refund; between 24 h and 2 h → credit note valid 2 months; less than 2 h or no-show → no refund.",es:"Para solicitar una cancelación y reembolso, haga clic en «Cancelar / reembolso» junto a la reserva. Condiciones: más de 24 h antes → reembolso íntegro; entre 24 h y 2 h → vale válido 2 meses; menos de 2 h o no presentación → sin reembolso.",it:"Per richiedere un annullamento e il rimborso, clicca su «Annulla / rimborso» accanto alla prenotazione. Condizioni: oltre 24 h prima → rimborso totale; tra 24 h e 2 h → buono valido 2 mesi; meno di 2 h o mancata presentazione → nessun rimborso.",pt:"Para pedir um cancelamento e reembolso, clique em «Cancelar / reembolso» junto à reserva. Condições: mais de 24 h antes → reembolso integral; entre 24 h e 2 h → crédito válido 2 meses; menos de 2 h ou não comparência → sem reembolso.",tr:"İptal ve iade talep etmek için rezervasyonun yanındaki «İptal / iade» düğmesine tıklayın. Koşullar: 24 saatten fazla önce → tam iade; 24-2 saat arası → 2 ay geçerli alacak; 2 saatten az veya gelmeme → iade yok.",zh:"如需取消和退款，请点击预订旁的「取消/退款」。条件：提前24小时以上→全额退款；24至2小时之间→2个月内有效的credit；少于2小时或未出现→不退款。"},
+ fact_sub:{fr:"Vos documents",en:"Your documents",es:"Sus documentos",it:"I tuoi documenti",pt:"Os seus documentos",tr:"Belgeleriniz",zh:"您的文件"},
+ th_num:{fr:"N°",en:"No.",es:"N.º",it:"N.",pt:"N.º",tr:"No.",zh:"编号"},
+ th_obj:{fr:"Objet",en:"Subject",es:"Asunto",it:"Oggetto",pt:"Assunto",tr:"Konu",zh:"项目"},
+ th_date:{fr:"Date",en:"Date",es:"Fecha",it:"Data",pt:"Data",tr:"Tarih",zh:"日期"},
+ th_ttc:{fr:"TTC",en:"Incl. VAT",es:"IVA incl.",it:"IVA incl.",pt:"c/ IVA",tr:"KDV dahil",zh:"含税"},
+ th_type:{fr:"Type",en:"Type",es:"Tipo",it:"Tipo",pt:"Tipo",tr:"Tür",zh:"类型"},
+ th_pdf:{fr:"PDF",en:"PDF",es:"PDF",it:"PDF",pt:"PDF",tr:"PDF",zh:"PDF"},
+ avoir_sub:{fr:"Montants à valoir sur vos prochaines réservations",en:"Amounts to use on your next bookings",es:"Importes a usar en sus próximas reservas",it:"Importi da usare sulle prossime prenotazioni",pt:"Montantes a usar nas próximas reservas",tr:"Sonraki rezervasyonlarınızda kullanılacak tutarlar",zh:"可用于下次预订的金额"},
+ fid_title:{fr:"Programme de fidélité",en:"Loyalty programme",es:"Programa de fidelidad",it:"Programma fedeltà",pt:"Programa de fidelidade",tr:"Sadakat programı",zh:"会员积分计划"},
+ fid_sub:{fr:"1 € dépensé = 1 point · cumulables sur vos courses",en:"€1 spent = 1 point · earned on your rides",es:"1 € gastado = 1 punto · acumulables en sus trayectos",it:"1 € speso = 1 punto · accumulabili sulle corse",pt:"1 € gasto = 1 ponto · acumuláveis nas viagens",tr:"1 € harcama = 1 puan · yolculuklarınızda biriktirin",zh:"每消费1欧元=1积分 · 行程累积"},
+ yourpts:{fr:"Vos points",en:"Your points",es:"Sus puntos",it:"I tuoi punti",pt:"Os seus pontos",tr:"Puanlarınız",zh:"您的积分"},
+ fid_note:{fr:"Réduction appliquée automatiquement à vos prochaines réservations, sur les prestations d'au moins 60 €.",en:"Discount applied automatically to your next bookings, on services of at least €60.",es:"Descuento aplicado automáticamente a sus próximas reservas, en servicios de al menos 60 €.",it:"Sconto applicato automaticamente alle prossime prenotazioni, sui servizi di almeno 60 €.",pt:"Desconto aplicado automaticamente às próximas reservas, em serviços de pelo menos 60 €.",tr:"İndirim, en az 60 € hizmetlerde sonraki rezervasyonlarınıza otomatik uygulanır.",zh:"折扣自动应用于您下次预订（满60欧元的服务）。"},
+ levels:{fr:"Les niveaux",en:"The levels",es:"Los niveles",it:"I livelli",pt:"Os níveis",tr:"Seviyeler",zh:"等级"},
+ levelkeep:{fr:"Maintien des niveaux : votre niveau est conservé 2 mois après votre dernière réservation terminée. Sans nouvelle réservation, vous perdez un seul niveau, et ainsi de suite.",en:"Level retention: your level is kept for 2 months after your last completed booking. Without a new booking, you drop one level, and so on.",es:"Mantenimiento de niveles: su nivel se conserva 2 meses tras su última reserva completada. Sin nueva reserva, baja un nivel, y así sucesivamente.",it:"Mantenimento livelli: il tuo livello è conservato 2 mesi dopo l'ultima prenotazione completata. Senza nuove prenotazioni, scendi di un livello, e così via.",pt:"Manutenção de níveis: o seu nível é mantido 2 meses após a última reserva concluída. Sem nova reserva, desce um nível, e assim sucessivamente.",tr:"Seviye koruma: seviyeniz son tamamlanan rezervasyondan 2 ay sonra korunur. Yeni rezervasyon olmazsa bir seviye düşersiniz.",zh:"等级保持：自上次完成预订起保留2个月。无新预订则下降一个等级，依此类推。"},
+ pk_title:{fr:"Suivi partenariat",en:"Partnership tracking",es:"Seguimiento de colaboración",it:"Monitoraggio partnership",pt:"Acompanhamento de parceria",tr:"İş ortaklığı takibi",zh:"合作跟踪"},
+ pk_sub:{fr:"Vos courses du mois et votre objectif",en:"Your rides this month and your target",es:"Sus trayectos del mes y su objetivo",it:"Le tue corse del mese e il tuo obiettivo",pt:"As suas viagens do mês e o seu objetivo",tr:"Bu ayki yolculuklarınız ve hedefiniz",zh:"本月行程及目标"},
+ pk_done:{fr:"Courses terminées ce mois",en:"Rides completed this month",es:"Trayectos completados este mes",it:"Corse completate questo mese",pt:"Viagens concluídas este mês",tr:"Bu ay tamamlanan yolculuklar",zh:"本月完成行程"},
+ pk_goal:{fr:"Objectif estimé",en:"Estimated target",es:"Objetivo estimado",it:"Obiettivo stimato",pt:"Objetivo estimado",tr:"Tahmini hedef",zh:"预估目标"},
+ pk_disc:{fr:"Remise partenaire",en:"Partner discount",es:"Descuento socio",it:"Sconto partner",pt:"Desconto parceiro",tr:"İş ortağı indirimi",zh:"合作折扣"},
+ pk_ask:{fr:"Demander un nouveau pourcentage",en:"Request a new percentage",es:"Solicitar un nuevo porcentaje",it:"Richiedi una nuova percentuale",pt:"Pedir uma nova percentagem",tr:"Yeni bir yüzde talep et",zh:"申请新的百分比"},
+ pk_ask_note:{fr:"Lorsque vos courses terminées dans le mois dépassent votre objectif de plus de 50 %, vous pouvez demander une révision de votre remise. L'administrateur reçoit votre demande par e-mail et dans son espace.",en:"When your completed rides this month exceed your target by more than 50%, you can request a review of your discount. The administrator receives your request by email and in their area.",es:"Cuando sus trayectos completados del mes superan su objetivo en más del 50 %, puede solicitar una revisión de su descuento. El administrador recibe su solicitud por correo y en su área.",it:"Quando le corse completate del mese superano il tuo obiettivo di oltre il 50%, puoi richiedere una revisione dello sconto. L'amministratore riceve la richiesta via email e nella sua area.",pt:"Quando as suas viagens concluídas do mês superam o objetivo em mais de 50%, pode pedir uma revisão do desconto. O administrador recebe o pedido por email e na sua área.",tr:"Bu ay tamamlanan yolculuklarınız hedefinizi %50'den fazla aştığında indirim revizyonu talep edebilirsiniz. Yönetici talebinizi e-posta ve alanında alır.",zh:"当您本月完成的行程超出目标50%以上时，可申请调整折扣。管理员将通过邮件及后台收到您的请求。"},
+ prof_sub:{fr:"Vos informations sont reprises dans vos réservations",en:"Your details are used in your bookings",es:"Sus datos se utilizan en sus reservas",it:"I tuoi dati sono usati nelle prenotazioni",pt:"Os seus dados são usados nas reservas",tr:"Bilgileriniz rezervasyonlarınızda kullanılır",zh:"您的信息将用于预订"},
+ l_name:{fr:"Nom complet",en:"Full name",es:"Nombre completo",it:"Nome completo",pt:"Nome completo",tr:"Ad soyad",zh:"全名"},
+ l_phone:{fr:"Téléphone",en:"Phone",es:"Teléfono",it:"Telefono",pt:"Telefone",tr:"Telefon",zh:"电话"},
+ l_email:{fr:"E-mail",en:"Email",es:"Email",it:"Email",pt:"Email",tr:"E-posta",zh:"邮箱"},
+ l_since:{fr:"Membre depuis",en:"Member since",es:"Miembro desde",it:"Membro dal",pt:"Membro desde",tr:"Üyelik tarihi",zh:"注册于"},
+ l_company:{fr:"Société (facultatif)",en:"Company (optional)",es:"Empresa (opcional)",it:"Azienda (facoltativo)",pt:"Empresa (opcional)",tr:"Şirket (isteğe bağlı)",zh:"公司（可选）"},
+ l_addr:{fr:"Adresse (n° et rue)",en:"Address (no. & street)",es:"Dirección (n.º y calle)",it:"Indirizzo (n. e via)",pt:"Morada (n.º e rua)",tr:"Adres (no ve cadde)",zh:"地址（门牌和街道）"},
+ l_zip:{fr:"Code postal",en:"Postcode",es:"Código postal",it:"CAP",pt:"Código postal",tr:"Posta kodu",zh:"邮编"},
+ l_city:{fr:"Ville",en:"City",es:"Ciudad",it:"Città",pt:"Cidade",tr:"Şehir",zh:"城市"},
+ l_country:{fr:"Pays",en:"Country",es:"País",it:"Paese",pt:"País",tr:"Ülke",zh:"国家"},
+ l_siren:{fr:"SIREN (pro, facultatif)",en:"Company reg. (B2B, optional)",es:"Reg. mercantil (pro, opcional)",it:"P.IVA (pro, facoltativo)",pt:"Reg. (pro, opcional)",tr:"Şirket no (kurumsal, ops.)",zh:"企业注册号（可选）"},
+ l_vat:{fr:"TVA intracom. (pro, facultatif)",en:"EU VAT (B2B, optional)",es:"IVA intracom. (pro, opcional)",it:"IVA intracom. (pro, facoltativo)",pt:"IVA intracom. (pro, opcional)",tr:"AB KDV (kurumsal, ops.)",zh:"欧盟增值税号（可选）"},
+ prof_note:{fr:"Ces informations préremplissent automatiquement vos prochaines demandes de devis.",en:"These details auto-fill your next quote requests.",es:"Estos datos rellenan automáticamente sus próximas solicitudes de presupuesto.",it:"Questi dati precompilano le tue prossime richieste di preventivo.",pt:"Estes dados preenchem automaticamente os próximos pedidos de orçamento.",tr:"Bu bilgiler sonraki teklif taleplerinizi otomatik doldurur.",zh:"这些信息将自动填入您下次的报价请求。"},
+ save:{fr:"Enregistrer",en:"Save",es:"Guardar",it:"Salva",pt:"Guardar",tr:"Kaydet",zh:"保存"},
+ st_pending:{fr:"En attente",en:"Pending",es:"Pendiente",it:"In attesa",pt:"Pendente",tr:"Beklemede",zh:"待处理"},
+ st_confirmed:{fr:"Confirmée",en:"Confirmed",es:"Confirmada",it:"Confermata",pt:"Confirmada",tr:"Onaylandı",zh:"已确认"},
+ st_completed:{fr:"Terminée",en:"Completed",es:"Completada",it:"Completata",pt:"Concluída",tr:"Tamamlandı",zh:"已完成"},
+ st_cancelled:{fr:"Annulée",en:"Cancelled",es:"Anulada",it:"Annullata",pt:"Anulada",tr:"İptal edildi",zh:"已取消"},
+ st_refunded:{fr:"Remboursé",en:"Refunded",es:"Reembolsado",it:"Rimborsato",pt:"Reembolsado",tr:"İade edildi",zh:"已退款"},
+ st_avoir:{fr:"Avoir émis",en:"Credit issued",es:"Vale emitido",it:"Buono emesso",pt:"Crédito emitido",tr:"Alacak verildi",zh:"已开credit"},
+ lv_membre:{fr:"Membre",en:"Member",es:"Miembro",it:"Membro",pt:"Membro",tr:"Üye",zh:"会员"},
+ lv_bronze:{fr:"Bronze",en:"Bronze",es:"Bronce",it:"Bronzo",pt:"Bronze",tr:"Bronz",zh:"青铜"},
+ lv_argent:{fr:"Argent",en:"Silver",es:"Plata",it:"Argento",pt:"Prata",tr:"Gümüş",zh:"白银"},
+ lv_or:{fr:"Or",en:"Gold",es:"Oro",it:"Oro",pt:"Ouro",tr:"Altın",zh:"黄金"},
+ lv_diamant:{fr:"Diamant",en:"Diamond",es:"Diamante",it:"Diamante",pt:"Diamante",tr:"Elmas",zh:"钻石"},
+ paid:{fr:"payée",en:"paid",es:"pagada",it:"pagata",pt:"paga",tr:"ödendi",zh:"已付"},
+ topay:{fr:"à payer",en:"to pay",es:"a pagar",it:"da pagare",pt:"a pagar",tr:"ödenecek",zh:"待付"},
+ btn_cancel:{fr:"Annuler / remboursement",en:"Cancel / refund",es:"Cancelar / reembolso",it:"Annulla / rimborso",pt:"Cancelar / reembolso",tr:"İptal / iade",zh:"取消/退款"},
+ req_sent:{fr:"Demande envoyée",en:"Request sent",es:"Solicitud enviada",it:"Richiesta inviata",pt:"Pedido enviado",tr:"Talep gönderildi",zh:"请求已发送"},
+ next_course:{fr:"Votre prochaine course",en:"Your next ride",es:"Su próximo trayecto",it:"La tua prossima corsa",pt:"A sua próxima viagem",tr:"Sonraki yolculuğunuz",zh:"您的下一趟行程"},
+ pax:{fr:"passager(s)",en:"passenger(s)",es:"pasajero(s)",it:"passeggero/i",pt:"passageiro(s)",tr:"yolcu",zh:"位乘客"},
+ pickup_in:{fr:"Prise en charge",en:"Pick-up",es:"Recogida",it:"Presa",pt:"Recolha",tr:"Alış",zh:"上车"},
+ av_none:{fr:"Aucun avoir disponible pour le moment.",en:"No credit note available yet.",es:"Ningún vale disponible por ahora.",it:"Nessun buono disponibile al momento.",pt:"Nenhum crédito disponível de momento.",tr:"Şu anda alacak yok.",zh:"暂无可用credit。"},
+ av_appear:{fr:"En cas d'annulation éligible, votre avoir apparaîtra ici.",en:"In case of an eligible cancellation, your credit note will appear here.",es:"En caso de cancelación elegible, su vale aparecerá aquí.",it:"In caso di annullamento idoneo, il buono apparirà qui.",pt:"Em caso de cancelamento elegível, o crédito aparecerá aqui.",tr:"Uygun bir iptalde alacağınız burada görünür.",zh:"如发生符合条件的取消，您的credit将显示在此。"},
+ av_credit:{fr:"Avoir",en:"Credit note",es:"Vale",it:"Buono",pt:"Crédito",tr:"Alacak",zh:"Credit"},
+ av_code:{fr:"Code",en:"Code",es:"Código",it:"Codice",pt:"Código",tr:"Kod",zh:"代码"},
+ av_until:{fr:"valable jusqu'au",en:"valid until",es:"válido hasta",it:"valido fino al",pt:"válido até",tr:"geçerlilik",zh:"有效期至"},
+ av_disp:{fr:"Disponible",en:"Available",es:"Disponible",it:"Disponibile",pt:"Disponível",tr:"Mevcut",zh:"可用"},
+ av_pending:{fr:"En cours",en:"Reserved",es:"En curso",it:"In corso",pt:"Em curso",tr:"Beklemede",zh:"使用中"},
+ av_use:{fr:"Saisissez ce code dans « Code de réduction » au moment de réserver.",en:"Enter this code under “Discount code” when booking.",es:"Introduzca este código en «Código de descuento» al reservar.",it:"Inserisci questo codice in «Codice sconto» al momento della prenotazione.",pt:"Introduza este código em «Código de desconto» ao reservar.",tr:"Rezervasyon sırasında « İndirim kodu » alanına bu kodu girin.",zh:"预订时在「折扣码」中输入此代码。"},
+ av_reserved:{fr:"Réservé sur une demande en cours. Il redeviendra disponible si la réservation est annulée ou remboursée.",en:"Reserved on a pending request. It will become available again if the booking is cancelled or refunded.",es:"Reservado en una solicitud en curso. Volverá a estar disponible si la reserva se cancela o reembolsa.",it:"Riservato su una richiesta in corso. Tornerà disponibile se la prenotazione viene annullata o rimborsata.",pt:"Reservado num pedido em curso. Ficará disponível de novo se a reserva for cancelada ou reembolsada.",tr:"Bekleyen bir talepte ayrıldı. Rezervasyon iptal/iade edilirse tekrar kullanılabilir olur.",zh:"已在待处理请求中预留。若预订取消或退款将重新可用。"},
+ pk_inprogress:{fr:"Demande en cours",en:"Request pending",es:"Solicitud en curso",it:"Richiesta in corso",pt:"Pedido em curso",tr:"Talep beklemede",zh:"请求处理中"},
+ pk_sent_on:{fr:"Envoyée le",en:"Sent on",es:"Enviada el",it:"Inviata il",pt:"Enviado em",tr:"Gönderildi",zh:"发送于"},
+ pk_await:{fr:"En attente de réponse de l'administrateur.",en:"Awaiting the administrator's reply.",es:"A la espera de respuesta del administrador.",it:"In attesa di risposta dell'amministratore.",pt:"A aguardar resposta do administrador.",tr:"Yöneticinin yanıtı bekleniyor.",zh:"等待管理员回复。"},
+ pk_goalset:{fr:"Votre objectif sera fixé par l'administrateur lors de la validation du partenariat.",en:"Your target will be set by the administrator when the partnership is approved.",es:"Su objetivo lo fijará el administrador al validar la colaboración.",it:"Il tuo obiettivo sarà fissato dall'amministratore alla conferma della partnership.",pt:"O seu objetivo será definido pelo administrador na validação da parceria.",tr:"Hedefiniz, ortaklık onaylandığında yönetici tarafından belirlenir.",zh:"您的目标将在合作确认时由管理员设定。"},
+ pk_avail_goal:{fr:"Disponible une fois votre objectif fixé.",en:"Available once your target is set.",es:"Disponible cuando se fije su objetivo.",it:"Disponibile una volta fissato l'obiettivo.",pt:"Disponível assim que o objetivo for definido.",tr:"Hedefiniz belirlenince kullanılabilir.",zh:"目标设定后可用。"},
+ pk_rides_done:{fr:"réalisées",en:"completed",es:"realizados",it:"effettuate",pt:"realizadas",tr:"tamamlandı",zh:"已完成"},
+ pk_target:{fr:"objectif",en:"target",es:"objetivo",it:"obiettivo",pt:"objetivo",tr:"hedef",zh:"目标"},
+ pk_nogoal:{fr:"objectif non fixé",en:"target not set",es:"objetivo no fijado",it:"obiettivo non fissato",pt:"objetivo não definido",tr:"hedef belirlenmedi",zh:"未设目标"},
+ pk_over:{fr:"Objectif dépassé de plus de 50 % — vous pouvez demander un nouveau pourcentage.",en:"Target exceeded by more than 50% — you can request a new percentage.",es:"Objetivo superado en más del 50 % — puede solicitar un nuevo porcentaje.",it:"Obiettivo superato di oltre il 50% — puoi richiedere una nuova percentuale.",pt:"Objetivo superado em mais de 50% — pode pedir uma nova percentagem.",tr:"Hedef %50'den fazla aşıldı — yeni bir yüzde talep edebilirsiniz.",zh:"已超目标50%以上 — 可申请新百分比。"},
+ pk_reach:{fr:"Atteignez le seuil ce mois (objectif +50 %) pour pouvoir demander une révision.",en:"Reach the threshold this month (target +50%) to request a review.",es:"Alcance el umbral este mes (objetivo +50 %) para solicitar una revisión.",it:"Raggiungi la soglia questo mese (obiettivo +50%) per richiedere una revisione.",pt:"Atinja o limiar este mês (objetivo +50%) para pedir uma revisão.",tr:"Revizyon talep etmek için bu ay eşiğe ulaşın (hedef +%50).",zh:"本月达到阈值（目标+50%）即可申请调整。"},
+ toast_saved:{fr:"Profil enregistré ✓",en:"Profile saved ✓",es:"Perfil guardado ✓",it:"Profilo salvato ✓",pt:"Perfil guardado ✓",tr:"Profil kaydedildi ✓",zh:"资料已保存 ✓"},
+ toast_err:{fr:"Erreur : ",en:"Error: ",es:"Error: ",it:"Errore: ",pt:"Erro: ",tr:"Hata: ",zh:"错误："},
+ cancel_ask:{fr:"Confirmer la demande d'annulation ?",en:"Confirm the cancellation request?",es:"¿Confirmar la solicitud de cancelación?",it:"Confermare la richiesta di annullamento?",pt:"Confirmar o pedido de cancelamento?",tr:"İptal talebini onaylıyor musunuz?",zh:"确认取消请求？"},
+ cancel_reason:{fr:"Motif de l'annulation (facultatif) :",en:"Cancellation reason (optional):",es:"Motivo de la cancelación (opcional):",it:"Motivo dell'annullamento (facoltativo):",pt:"Motivo do cancelamento (opcional):",tr:"İptal nedeni (isteğe bağlı):",zh:"取消原因（可选）："},
+ cancel_sent:{fr:"Demande d'annulation envoyée ✓",en:"Cancellation request sent ✓",es:"Solicitud de cancelación enviada ✓",it:"Richiesta di annullamento inviata ✓",pt:"Pedido de cancelamento enviado ✓",tr:"İptal talebi gönderildi ✓",zh:"取消请求已发送 ✓"},
+ bonus_ask:{fr:"Demander une révision de votre remise partenaire à l'administrateur ?",en:"Request a review of your partner discount from the administrator?",es:"¿Solicitar al administrador una revisión de su descuento de socio?",it:"Richiedere all'amministratore una revisione del tuo sconto partner?",pt:"Pedir ao administrador uma revisão do seu desconto de parceiro?",tr:"Yöneticiden iş ortağı indirim revizyonu talep edilsin mi?",zh:"向管理员申请调整合作折扣？"},
+ bonus_sent:{fr:"Demande envoyée ✓",en:"Request sent ✓",es:"Solicitud enviada ✓",it:"Richiesta inviata ✓",pt:"Pedido enviado ✓",tr:"Talep gönderildi ✓",zh:"请求已发送 ✓"},
+ resa_empty:{fr:"Aucune réservation pour le moment.",en:"No bookings yet.",es:"Ninguna reserva por ahora.",it:"Nessuna prenotazione al momento.",pt:"Nenhuma reserva de momento.",tr:"Henüz rezervasyon yok.",zh:"暂无预订。"},
+ docs_empty:{fr:"Aucun document pour le moment.",en:"No documents yet.",es:"Ningún documento por ahora.",it:"Nessun documento al momento.",pt:"Nenhum documento de momento.",tr:"Henüz belge yok.",zh:"暂无文件。"},
+};
+let LANG=(function(){try{return localStorage.getItem('pvtc_lang')||'fr';}catch(e){return 'fr';}})();
+if(!T.nav_home[LANG])LANG='fr';
+function t(k){const e=T[k];return e?(e[LANG]||e.fr):k;}
+function setLang(l){ if(!T.nav_home[l])l='fr'; LANG=l; try{localStorage.setItem('pvtc_lang',l);}catch(e){}
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.getAttribute('data-i18n'));});
+  document.querySelectorAll('.lang button').forEach(b=>b.classList.toggle('active',b.dataset.l===l));
+  document.documentElement.lang=l;
+  if(typeof PROFILE!=='undefined'&&PROFILE){ try{rerenderAll();}catch(e){} }
+}
+function rerenderAll(){
+  const fn=PROFILE.full_name||'client';
+  const hl=document.getElementById('hello'); if(hl)hl.textContent=t('hello')+' '+fn.split(' ')[0]+' 👋';
+  renderLoyalty(PROFILE.loyalty_points);
+  renderReservations(ALLBK); renderDocs(ALLBK); renderAvoirs(AVOIRS); renderPartner();
+}
 function show(v){document.querySelectorAll('.nav-i').forEach(x=>x.classList.toggle('active',x.dataset.v===v));document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.id===v));window.scrollTo(0,0);document.querySelector('.side').classList.remove('open');}
 document.querySelectorAll('.nav-i').forEach(n=>n.addEventListener('click',()=>show(n.dataset.v)));
 document.querySelectorAll('[data-go]').forEach(l=>l.addEventListener('click',()=>show(l.dataset.go)));
@@ -225,18 +353,18 @@ function medal(lvl,big){
   return `<svg class="${c} m-${lvl}" viewBox="0 0 24 24" fill="currentColor"><path d="${STAR}"/></svg>`;
 }
 function medalFor(name){return ({Diamant:'platine',Or:'or',Argent:'argent',Bronze:'bronze'})[name]||'';}
-const STMAP={pending:['att','En attente'],confirmed:['conf','Confirmée'],completed:['term','Terminée'],cancelled:['ann','Annulée'],refunded:['term','Remboursé'],avoir:['term','Avoir émis']};
-function stBadge(s){const m=STMAP[s]||['att',s||'—'];return `<span class="st ${m[0]}">${m[1]}</span>`;}
+const STCLS={pending:'att',confirmed:'conf',completed:'term',cancelled:'ann',refunded:'term',avoir:'term'};
+function stBadge(s){const cls=STCLS[s]||'att';return `<span class="st ${cls}">${t('st_'+s)}</span>`;}
 function statusBadgeFull(b){
   if(b.status==='cancelled'){
     const c=b.details&&b.details.cancel;
-    if(c&&c.refunded){ if(c.outcome==='avoir') return '<span class="st term">Avoir émis</span>'; if(c.outcome==='refund') return '<span class="st term">Remboursé</span>'; }
-    return '<span class="st ann">Annulée</span>';
+    if(c&&c.refunded){ if(c.outcome==='avoir') return '<span class="st term">'+t('st_avoir')+'</span>'; if(c.outcome==='refund') return '<span class="st term">'+t('st_refunded')+'</span>'; }
+    return '<span class="st ann">'+t('st_cancelled')+'</span>';
   }
   return stBadge(b.status);
 }
 
-let PROFILE=null, ALLBK=[];
+let PROFILE=null, ALLBK=[], AVOIRS=[];
 
 async function load(){
   await requireAuth();
@@ -246,7 +374,7 @@ async function load(){
 
   // entête / profil
   const fn = PROFILE.full_name || 'client';
-  document.getElementById('hello').textContent = 'Bonjour '+fn.split(' ')[0]+' 👋';
+  document.getElementById('hello').textContent = t('hello')+' '+fn.split(' ')[0]+' 👋';
   document.getElementById('sfName').textContent = fn;
   document.getElementById('sfAv').textContent = initials(fn);
   document.getElementById('pName').value = PROFILE.full_name||'';
@@ -265,9 +393,11 @@ async function load(){
   renderDocs(list);
   let avoirCodes=[];
   try{ const {data:ac}=await sb.from('promo_codes').select('*').eq('kind','avoir').eq('used_by',PROFILE.id).in('status',['available','pending']); avoirCodes=ac||[]; }catch(e){}
+  AVOIRS=avoirCodes;
   renderAvoirs(avoirCodes);
 
   renderPartner();
+  setLang(LANG);   // applique la langue (data-i18n) une fois le contenu rendu
 }
 function isDone(b){return b.status==='completed' || b.status==='avoir' || (b.status==='cancelled'&&b.details&&b.details.cancel&&b.details.cancel.outcome==='avoir');}
 function partnerMonthDone(){
@@ -286,93 +416,100 @@ function renderPartner(){
   const goal=Number(PROFILE.partner_goal)||0;
   const disc=Number(PROFILE.partner_discount)||0;
   const done=partnerMonthDone();
-  const monthName=new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  const loc={fr:'fr-FR',en:'en-GB',es:'es-ES',it:'it-IT',pt:'pt-PT',tr:'tr-TR',zh:'zh-CN'}[LANG]||'fr-FR';
+  const RM={fr:'courses / mois',en:'rides / month',es:'trayectos / mes',it:'corse / mese',pt:'viagens / mês',tr:'yolculuk / ay',zh:'次/月'}[LANG]||'courses / mois';
+  const monthName=new Date().toLocaleDateString(loc,{month:'long',year:'numeric'});
   document.getElementById('pkDone').textContent=done;
   document.getElementById('pkMonth').textContent=monthName;
-  document.getElementById('pkGoal').textContent=goal>0?(goal+' courses / mois'):'—';
+  document.getElementById('pkGoal').textContent=goal>0?(goal+' '+RM):'—';
   document.getElementById('pkDisc').textContent=disc>0?('−'+disc+'%'):'—';
   const threshold=goal>0?Math.ceil(goal*1.5):0;
   const pct=goal>0?Math.min(100,Math.round(done/goal*100)):0;
   document.getElementById('pkFill').style.width=pct+'%';
-  document.getElementById('pkCur').textContent=done+' réalisées';
-  document.getElementById('pkNext').textContent=goal>0?('objectif '+goal):'objectif non fixé';
+  document.getElementById('pkCur').textContent=done+' '+t('pk_rides_done');
+  document.getElementById('pkNext').textContent=goal>0?(t('pk_target')+' '+goal):t('pk_nogoal');
   const hint=document.getElementById('pkHint');
   const act=document.getElementById('pkAction');
   if(goal<=0){
-    hint.textContent='Votre objectif sera fixé par l’administrateur lors de la validation du partenariat.';
-    act.innerHTML='<span class="sub2">Disponible une fois votre objectif fixé.</span>';
+    hint.textContent=t('pk_goalset');
+    act.innerHTML='<span class="sub2">'+t('pk_avail_goal')+'</span>';
     return;
   }
   const eligible=done>=threshold;
-  if(done>=threshold){ hint.textContent='Objectif dépassé de plus de 50 % ('+done+' / seuil '+threshold+') — vous pouvez demander un nouveau pourcentage.'; }
-  else { hint.textContent='Atteignez '+threshold+' courses ce mois (objectif +50 %) pour pouvoir demander une révision.'; }
+  hint.textContent = eligible ? t('pk_over') : t('pk_reach');
   if(PROFILE.partner_bonus_at){
-    act.innerHTML='<span class="st att">Demande en cours</span> <span class="sub2" style="margin-left:8px">Envoyée le '+new Date(PROFILE.partner_bonus_at).toLocaleDateString('fr-FR')+'. En attente de réponse de l’administrateur.</span>';
+    act.innerHTML='<span class="st att">'+t('pk_inprogress')+'</span> <span class="sub2" style="margin-left:8px">'+t('pk_sent_on')+' '+new Date(PROFILE.partner_bonus_at).toLocaleDateString(loc)+'. '+t('pk_await')+'</span>';
   } else if(eligible){
-    act.innerHTML='<button class="btn btn-gold btn-sm" onclick="requestBonus()">Demander un nouveau pourcentage</button>';
+    act.innerHTML='<button class="btn btn-gold btn-sm" onclick="requestBonus()">'+t('pk_ask')+'</button>';
   } else {
-    act.innerHTML='<button class="btn btn-ghost btn-sm" disabled style="opacity:.5;cursor:not-allowed">Demander un nouveau pourcentage</button>';
+    act.innerHTML='<button class="btn btn-ghost btn-sm" disabled style="opacity:.5;cursor:not-allowed">'+t('pk_ask')+'</button>';
   }
 }
 async function requestBonus(){
   const goal=Number(PROFILE.partner_goal)||0, done=partnerMonthDone();
-  if(!confirm('Demander une révision de votre remise partenaire à l’administrateur ?\n\nCourses ce mois : '+done+' · objectif : '+goal))return;
+  if(!confirm(t('bonus_ask')))return;
   try{
     const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'partner-bonus-request',done:done,goal:goal}});
     if(error||(data&&data.ok===false)) throw new Error((data&&data.error)||(error&&error.message)||'err');
     PROFILE.partner_bonus_at=new Date().toISOString();
-    toast('Demande envoyée ✓'); renderPartner();
-  }catch(err){ toast('Erreur : '+(err.message||err)); }
+    toast(t('bonus_sent')); renderPartner();
+  }catch(err){ toast(t('toast_err')+(err.message||err)); }
 }
 function renderAvoirs(codes){
   const el=document.getElementById('avoirList'); if(!el)return;
+  const loc={fr:'fr-FR',en:'en-GB',es:'es-ES',it:'it-IT',pt:'pt-PT',tr:'tr-TR',zh:'zh-CN'}[LANG]||'fr-FR';
   const valid=(codes||[]).filter(c=>!c.expires_at || new Date(c.expires_at)>=new Date());
-  if(!valid.length){ el.innerHTML='<div class="card"><div class="empty">Aucun avoir disponible pour le moment.<br>En cas d’annulation éligible, votre avoir apparaîtra ici.</div></div>'; return; }
+  if(!valid.length){ el.innerHTML='<div class="card"><div class="empty">'+t('av_none')+'<br>'+t('av_appear')+'</div></div>'; return; }
   el.innerHTML='<div class="grid2">'+valid.map(c=>{
     const fin=c.expires_at?new Date(c.expires_at):null;
     const pending=c.status==='pending';
     return `<div class="avoir">
-      <div style="color:var(--muted-2);font-size:12.5px">Avoir · ${escapeHtml(c.avoir_no||'')}</div>
+      <div style="color:var(--muted-2);font-size:12.5px">${t('av_credit')} · ${escapeHtml(c.avoir_no||'')}</div>
       <div class="v">${eur(c.amount)}</div>
-      <div class="x">Code : <b style="color:var(--gold-2)">${escapeHtml(c.code)}</b>${fin?(' · valable jusqu’au '+fin.toLocaleDateString('fr-FR')):''}</div>
-      <div style="margin-top:10px">${pending?'<span class="st att">En cours</span>':'<span class="st conf">Disponible</span>'}</div>
-      <div class="sub2" style="margin-top:8px">${pending?'Réservé sur une demande en cours. Il redeviendra disponible si la réservation est annulée ou remboursée.':'Saisissez ce code dans « Code de réduction » au moment de réserver.'}</div>
+      <div class="x">${t('av_code')} : <b style="color:var(--gold-2)">${escapeHtml(c.code)}</b>${fin?(' · '+t('av_until')+' '+fin.toLocaleDateString(loc)):''}</div>
+      <div style="margin-top:10px">${pending?'<span class="st att">'+t('av_pending')+'</span>':'<span class="st conf">'+t('av_disp')+'</span>'}</div>
+      <div class="sub2" style="margin-top:8px">${pending?t('av_reserved'):t('av_use')}</div>
     </div>`;
   }).join('')+'</div>';
 }
 
+function lvName(fr){return t(({Membre:'lv_membre',Bronze:'lv_bronze',Argent:'lv_argent',Or:'lv_or',Diamant:'lv_diamant'})[fr]||'lv_membre');}
 function renderLoyalty(points){
   const L = loyalty(points);
   const md = medalFor(L.name);
-  const badge = (md?medal(md):'★ ')+L.name+(L.off?` · −${L.off} %`:'');
+  const badge = (md?medal(md):'★ ')+lvName(L.name)+(L.off?` · −${L.off} %`:'');
+  const MORE={fr:'Plus que',en:'Only',es:'Solo',it:'Ancora',pt:'Faltam',tr:'Kalan',zh:'还差'}[LANG]||'Plus que';
+  const FOR={fr:'pour',en:'for',es:'para',it:'per',pt:'para',tr:'için',zh:'即可享'}[LANG]||'pour';
+  const MAXN={fr:'Niveau maximum',en:'Top level',es:'Nivel máximo',it:'Livello massimo',pt:'Nível máximo',tr:'En üst seviye',zh:'最高等级'}[LANG]||'Niveau maximum';
+  const MAXM={fr:'Vous profitez de la réduction maximale.',en:'You enjoy the maximum discount.',es:'Disfruta del descuento máximo.',it:'Hai lo sconto massimo.',pt:'Tem o desconto máximo.',tr:'En yüksek indirimden yararlanıyorsunuz.',zh:'您已享受最高折扣。'}[LANG]||'';
+  const ACT={fr:'actuel',en:'current',es:'actual',it:'attuale',pt:'atual',tr:'mevcut',zh:'当前'}[LANG]||'actuel';
+  const DES={fr:'dès',en:'from',es:'desde',it:'da',pt:'a partir de',tr:'itibaren',zh:'满'}[LANG]||'dès';
   document.getElementById('hPts').textContent = (points||0)+' pts';
   document.getElementById('fPts').textContent = (points||0);
   document.getElementById('hBadge').innerHTML = badge;
   document.getElementById('fBadge').innerHTML = badge;
-  // médaille dans la barre latérale
   const sf=document.getElementById('sfName');
   if(sf && !sf.querySelector('.medal') && md) sf.insertAdjacentHTML('afterbegin', medal(md));
-  document.getElementById('hCur').textContent = L.name;
-  document.getElementById('fCur').textContent = L.name;
+  document.getElementById('hCur').textContent = lvName(L.name);
+  document.getElementById('fCur').textContent = lvName(L.name);
   if(L.next){
-    document.getElementById('hNext').textContent = L.next.name+' — '+L.next.min+' pts';
-    document.getElementById('fNext').textContent = L.next.name+' — '+L.next.min+' pts';
+    document.getElementById('hNext').textContent = lvName(L.next.name)+' — '+L.next.min+' pts';
+    document.getElementById('fNext').textContent = lvName(L.next.name)+' — '+L.next.min+' pts';
     const remain=L.next.min-(points||0);
-    document.getElementById('hHint').innerHTML = 'Plus que <b style="color:var(--gold-2)">'+remain+' pts</b> pour −'+L.next.off+' %';
-    document.getElementById('fHint').innerHTML = 'Plus que <b style="color:var(--gold-2)">'+remain+' points</b> pour −'+L.next.off+' %';
+    document.getElementById('hHint').innerHTML = MORE+' <b style="color:var(--gold-2)">'+remain+' pts</b> '+FOR+' −'+L.next.off+' %';
+    document.getElementById('fHint').innerHTML = MORE+' <b style="color:var(--gold-2)">'+remain+' pts</b> '+FOR+' −'+L.next.off+' %';
   } else {
-    document.getElementById('hNext').textContent='Niveau maximum';
-    document.getElementById('fNext').textContent='Niveau maximum';
-    document.getElementById('hHint').textContent='Vous profitez de la réduction maximale.';
-    document.getElementById('fHint').textContent='Vous profitez de la réduction maximale.';
+    document.getElementById('hNext').textContent=MAXN;
+    document.getElementById('fNext').textContent=MAXN;
+    document.getElementById('hHint').textContent=MAXM;
+    document.getElementById('fHint').textContent=MAXM;
   }
   document.getElementById('hFill').style.width=L.progress+'%';
   document.getElementById('fFill').style.width=L.progress+'%';
-  // grille niveaux
   const tiers=[['Bronze',5,100,'bronze'],['Argent',10,500,'argent'],['Or',15,1000,'or'],['Diamant',20,5000,'platine']];
-  document.getElementById('lvlGrid').innerHTML = tiers.map(t=>{
-    const cur = L.name===t[0];
-    return `<div class="lvl${cur?' cur':''}"><div class="n">${medal(t[3])}${t[0]}${cur?' · actuel':''}</div><div class="pct">−${t[1]} %</div><div class="th">dès ${t[2]} pts</div></div>`;
+  document.getElementById('lvlGrid').innerHTML = tiers.map(function(tr){
+    const cur = L.name===tr[0];
+    return `<div class="lvl${cur?' cur':''}"><div class="n">${medal(tr[3])}${lvName(tr[0])}${cur?' · '+ACT:''}</div><div class="pct">−${tr[1]} %</div><div class="th">${DES} ${tr[2]} pts</div></div>`;
   }).join('');
 }
 
@@ -380,11 +517,18 @@ function parseRDV(s){ if(!s)return null; s=String(s); let m=s.match(/(\d{1,2})\/
 function bkTime(b){ if(b.date_time) return new Date(b.date_time).getTime(); const l=b.details&&b.details.lines&&b.details.lines[0]; return l&&l.dt?parseRDV(l.dt):null; }
 function bkRDV(b){ if(b.date_time) return dateFR(b.date_time); const l=b.details&&b.details.lines&&b.details.lines[0]; return (l&&l.dt)||'—'; }
 function cancelPolicy(ts){
-  if(!ts) return {key:'none',label:'Aucun remboursement (date inconnue ou passée)'};
+  const POL={
+   none0:{fr:'Aucun remboursement (date inconnue ou passée)',en:'No refund (unknown or past date)',es:'Sin reembolso (fecha desconocida o pasada)',it:'Nessun rimborso (data sconosciuta o passata)',pt:'Sem reembolso (data desconhecida ou passada)',tr:'İade yok (bilinmeyen veya geçmiş tarih)',zh:'不退款（日期未知或已过）'},
+   refund:{fr:'Remboursement intégral (annulation plus de 24 h avant)',en:'Full refund (cancelled more than 24 h before)',es:'Reembolso íntegro (cancelación más de 24 h antes)',it:'Rimborso totale (annullamento oltre 24 h prima)',pt:'Reembolso integral (cancelamento mais de 24 h antes)',tr:'Tam iade (24 saatten fazla önce iptal)',zh:'全额退款（提前24小时以上取消）'},
+   avoir:{fr:'Avoir valable 2 mois (entre 24 h et 2 h avant)',en:'Credit note valid 2 months (between 24 h and 2 h before)',es:'Vale válido 2 meses (entre 24 h y 2 h antes)',it:'Buono valido 2 mesi (tra 24 h e 2 h prima)',pt:'Crédito válido 2 meses (entre 24 h e 2 h antes)',tr:'2 ay geçerli alacak (24-2 saat arası)',zh:'2个月有效credit（24至2小时之间）'},
+   none:{fr:'Aucun remboursement ni avoir (moins de 2 h avant ou départ passé)',en:'No refund or credit (less than 2 h before or past departure)',es:'Sin reembolso ni vale (menos de 2 h antes o salida pasada)',it:'Nessun rimborso né buono (meno di 2 h prima o partenza passata)',pt:'Sem reembolso nem crédito (menos de 2 h antes ou partida passada)',tr:'İade veya alacak yok (2 saatten az önce veya geçmiş)',zh:'不退款不credit（少于2小时或已出发）'}
+  };
+  const L=k=>POL[k][LANG]||POL[k].fr;
+  if(!ts) return {key:'none',label:L('none0')};
   const h=(ts-Date.now())/36e5;
-  if(h>=24) return {key:'refund',label:'Remboursement intégral (annulation plus de 24 h avant)'};
-  if(h>=2)  return {key:'avoir',label:'Avoir valable 2 mois (entre 24 h et 2 h avant)'};
-  return {key:'none',label:'Aucun remboursement ni avoir (moins de 2 h avant ou départ passé)'};
+  if(h>=24) return {key:'refund',label:L('refund')};
+  if(h>=2)  return {key:'avoir',label:L('avoir')};
+  return {key:'none',label:L('none')};
 }
 function lineList(b){return (b&&b.details&&Array.isArray(b.details.lines))?b.details.lines:[];}
 function isMultiResa(b){return (b.type==='reservation'||b.type==='facture')&&lineList(b).length>1;}
@@ -392,11 +536,11 @@ function lineTTC(b,l){if(l&&l.price!=null&&l.price!=='')return Number(l.price)||
 function lineVehicle(l){if(l&&l.detail){return String(l.detail).split('·')[0].trim()||'—';}return '—';}
 function rowResaMulti(b,withCancel){
   const ls=lineList(b);
-  const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">payée</span>':' <span class="st att" style="margin-left:6px">à payer</span>'):'';
+  const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">'+t('paid')+'</span>':' <span class="st att" style="margin-left:6px">'+t('topay')+'</span>'):'';
   let extra='';
   if(withCancel){
-    if(b.details&&b.details.cancel&&b.details.cancel.requested&&b.status!=='cancelled') extra='<span class="sub2" style="color:var(--amber)">Demande envoyée</span>';
-    else if(!['cancelled','completed','refunded','avoir'].includes(b.status)) extra=`<button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">Annuler / remboursement</button>`;
+    if(b.details&&b.details.cancel&&b.details.cancel.requested&&b.status!=='cancelled') extra='<span class="sub2" style="color:var(--amber)">'+t('req_sent')+'</span>';
+    else if(!['cancelled','completed','refunded','avoir'].includes(b.status)) extra=`<button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">${t('btn_cancel')}</button>`;
   }
   const head=`<tr style="background:rgba(201,162,74,.04)"><td><div class="cli">${escapeHtml(b.service||('Réservation — '+ls.length+' services'))}${payTag}</div><div class="sub2">${ls.length} prestations · facture unique</div></td>
     <td class="sub2">—</td><td class="sub2">—</td><td class="amt">${eur(b.amount_ttc)}</td><td>${statusBadgeFull(b)}</td>${withCancel?`<td>${extra}</td>`:''}</tr>`;
@@ -409,22 +553,22 @@ function rowResa(b,withCancel){
   let extra='';
   const ts=bkTime(b);
   if(withCancel){
-    if(b.details&&b.details.cancel&&b.details.cancel.requested&&b.status!=='cancelled') extra='<span class="sub2" style="color:var(--amber)">Demande envoyée</span>';
-    else if(!['cancelled','completed','refunded','avoir'].includes(b.status)) extra=`<button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">Annuler / remboursement</button>`;
+    if(b.details&&b.details.cancel&&b.details.cancel.requested&&b.status!=='cancelled') extra='<span class="sub2" style="color:var(--amber)">'+t('req_sent')+'</span>';
+    else if(!['cancelled','completed','refunded','avoir'].includes(b.status)) extra=`<button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">${t('btn_cancel')}</button>`;
   }
-  const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">payée</span>':' <span class="st att" style="margin-left:6px">à payer</span>'):'';
+  const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">'+t('paid')+'</span>':' <span class="st att" style="margin-left:6px">'+t('topay')+'</span>'):'';
   return `<tr><td><div class="cli">${escapeHtml(b.service||b.type)}${payTag}</div><div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
     <td>${bkRDV(b)}</td><td>${escapeHtml(b.vehicle||'—')}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${statusBadgeFull(b)}</td>${withCancel?`<td>${extra}</td>`:''}</tr>`;
 }
 async function requestCancel(id){
   const b=ALLBK.find(x=>x.id===id); if(!b)return;
   const pol=cancelPolicy(bkTime(b));
-  const reason=prompt('Motif de l’annulation (facultatif) :\n\nCondition applicable : '+pol.label,'');
+  const reason=prompt(t('cancel_reason')+'\n\n'+pol.label,'');
   if(reason===null)return;
-  if(!confirm('Confirmer la demande d’annulation ?\n\n'+pol.label))return;
+  if(!confirm(t('cancel_ask')+'\n\n'+pol.label))return;
   const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'cancel-request',booking_id:id,reason:reason,policy:pol.label}});
-  if(error||(data&&data.ok===false)){ toast('Échec : '+((data&&data.error)||(error&&error.message)||'')); return; }
-  toast('Demande d’annulation envoyée ✓');
+  if(error||(data&&data.ok===false)){ toast(t('toast_err')+((data&&data.error)||(error&&error.message)||'')); return; }
+  toast(t('cancel_sent'));
   load();
 }
 function renderReservations(list){
@@ -434,7 +578,7 @@ function renderReservations(list){
   const resa=list.filter(b=>(b.type==='reservation'||b.type==='facture') && !TERM.includes(b.status));
   const all=document.getElementById('allResa');
   const home=document.getElementById('homeResa');
-  if(!resa.length){ all.innerHTML='<tr><td colspan="6" class="empty">Aucune réservation pour le moment.</td></tr>'; home.innerHTML='<tr><td colspan="5" class="empty">Aucune réservation pour le moment.</td></tr>'; }
+  if(!resa.length){ all.innerHTML='<tr><td colspan="6" class="empty">'+t('resa_empty')+'</td></tr>'; home.innerHTML='<tr><td colspan="5" class="empty">'+t('resa_empty')+'</td></tr>'; }
   else { all.innerHTML=resa.map(b=>rowResa(b,true)).join(''); home.innerHTML=resa.slice(0,3).map(b=>rowResa(b,false)).join(''); }
 
   // prochaine course = réservation à venir la plus proche
@@ -445,9 +589,9 @@ function renderReservations(list){
   if(upcoming.length){
     const b=upcoming[0];
     nw.innerHTML=`<div class="next"><div class="big"><svg viewBox="0 0 24 24"><path d="M5 17h14l-1.5-6.5a2 2 0 0 0-2-1.5h-7a2 2 0 0 0-2 1.5z"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="16.5" cy="17.5" r="1.6"/></svg></div>
-      <div><div class="lbl">Votre prochaine course · ${(STMAP[b.status]||['','—'])[1]}</div><div class="ttl">${escapeHtml(b.service||'Réservation')}</div>
-      <div class="meta">${bkRDV(b)} · ${escapeHtml(b.vehicle||'')} · ${b.pax||1} passager(s)${b.pickup?'<br>Prise en charge : '+escapeHtml(b.pickup):''}</div></div>
-      <div class="right"><div class="lbl">Montant TTC</div><div class="amt">${eur(b.amount_ttc)}</div></div></div>`;
+      <div><div class="lbl">${t('next_course')} · ${t('st_'+b.status)}</div><div class="ttl">${escapeHtml(b.service||t('th_resa'))}</div>
+      <div class="meta">${bkRDV(b)} · ${escapeHtml(b.vehicle||'')} · ${b.pax||1} ${t('pax')}${b.pickup?'<br>'+t('pickup_in')+' : '+escapeHtml(b.pickup):''}</div></div>
+      <div class="right"><div class="lbl">${t('th_amount')} TTC</div><div class="amt">${eur(b.amount_ttc)}</div></div></div>`;
   } else { nw.innerHTML=''; }
 }
 function renderDocs(list){
@@ -458,12 +602,15 @@ function renderDocs(list){
   const keep5=new Set(all.slice(0,5).map(b=>b.id));   // toujours visibles : les 5 derniers documents
   const docs=all.filter(b=>keep5.has(b.id) || dt(b)>=cutoff || !b.created_at);
   const el=document.getElementById('allDocs');
-  if(!docs.length){ el.innerHTML='<tr><td colspan="6" class="empty">Aucun document pour le moment.</td></tr>'; return; }
+  if(!docs.length){ el.innerHTML='<tr><td colspan="6" class="empty">'+t('docs_empty')+'</td></tr>'; return; }
+  const loc={fr:'fr-FR',en:'en-GB',es:'es-ES',it:'it-IT',pt:'pt-PT',tr:'tr-TR',zh:'zh-CN'}[LANG]||'fr-FR';
+  const DEVIS={fr:'Devis',en:'Quote',es:'Presupuesto',it:'Preventivo',pt:'Orçamento',tr:'Teklif',zh:'报价'}[LANG]||'Devis';
+  const FPAID={fr:'Facture payée',en:'Invoice paid',es:'Factura pagada',it:'Fattura pagata',pt:'Fatura paga',tr:'Fatura ödendi',zh:'发票已付'}[LANG]||'Facture payée';
   el.innerHTML=docs.map(b=>{
     let badge;
-    if(b.type==='facture') badge=(['cancelled','refunded'].includes(b.status))?statusBadgeFull(b):(b.pay_status==='paid'?'<span class="st conf">Facture payée</span>':'<span class="st att">À payer</span>');
-    else badge='<span class="st att">Devis</span>';
-    return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(b.service||'')}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${badge}</td><td>${b.type==='facture'?`<button class="btn btn-ghost btn-sm" onclick="clientDocPDF('${b.id}')">PDF</button>`:''}</td></tr>`;
+    if(b.type==='facture') badge=(['cancelled','refunded'].includes(b.status))?statusBadgeFull(b):(b.pay_status==='paid'?'<span class="st conf">'+FPAID+'</span>':'<span class="st att">'+t('topay')+'</span>');
+    else badge='<span class="st att">'+DEVIS+'</span>';
+    return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(b.service||'')}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString(loc):'—'}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${badge}</td><td>${b.type==='facture'?`<button class="btn btn-ghost btn-sm" onclick="clientDocPDF('${b.id}')">PDF</button>`:''}</td></tr>`;
   }).join('');
 }
 /* ---- PDF côté client (mêmes polices accentuées + retour à la ligne) ---- */
@@ -488,6 +635,41 @@ async function buildInvoiceDoc(b,opts){
   const F=await pdfFont(doc);
   const gold=[201,162,74],dark=[20,28,46],red=[192,57,43]; const W=595; const d=b.details||{};
   const isInv=b.type==='facture', paid=b.pay_status==='paid';
+  const PL={
+   facture:{fr:'FACTURE',en:'INVOICE',es:'FACTURA',it:'FATTURA',pt:'FATURA',tr:'FATURA',zh:'发票'},
+   devis:{fr:'DEVIS',en:'QUOTE',es:'PRESUPUESTO',it:'PREVENTIVO',pt:'ORÇAMENTO',tr:'TEKLİF',zh:'报价'},
+   cancel:{fr:'— ANNULATION —',en:'— CANCELLATION —',es:'— ANULACIÓN —',it:'— ANNULLAMENTO —',pt:'— ANULAÇÃO —',tr:'— İPTAL —',zh:'— 取消 —'},
+   facno:{fr:'Facture n° ',en:'Invoice no. ',es:'Factura n.º ',it:'Fattura n. ',pt:'Fatura n.º ',tr:'Fatura no. ',zh:'发票编号 '},
+   devno:{fr:'Devis n° ',en:'Quote no. ',es:'Presupuesto n.º ',it:'Preventivo n. ',pt:'Orçamento n.º ',tr:'Teklif no. ',zh:'报价编号 '},
+   paidd:{fr:'PAYÉE',en:'PAID',es:'PAGADA',it:'PAGATA',pt:'PAGA',tr:'ÖDENDİ',zh:'已付款'},
+   awaitp:{fr:'EN ATTENTE DE PAIEMENT',en:'AWAITING PAYMENT',es:'PENDIENTE DE PAGO',it:'IN ATTESA DI PAGAMENTO',pt:'A AGUARDAR PAGAMENTO',tr:'ÖDEME BEKLENİYOR',zh:'待付款'},
+   clientt:{fr:'Client :',en:'Client:',es:'Cliente:',it:'Cliente:',pt:'Cliente:',tr:'Müşteri:',zh:'客户：'},
+   service:{fr:'SERVICE',en:'SERVICE',es:'SERVICIO',it:'SERVIZIO',pt:'SERVIÇO',tr:'HİZMET',zh:'服务'},
+   vath:{fr:'TVA',en:'VAT',es:'IVA',it:'IVA',pt:'IVA',tr:'KDV',zh:'增值税'},
+   pricettc:{fr:'PRIX TTC',en:'PRICE',es:'PRECIO',it:'PREZZO',pt:'PREÇO',tr:'FİYAT',zh:'价格'},
+   onquote:{fr:'Sur devis',en:'On quote',es:'Presupuesto',it:'Su preventivo',pt:'Sob orçamento',tr:'Teklife bağlı',zh:'另行报价'},
+   subtotal:{fr:'Sous-total',en:'Subtotal',es:'Subtotal',it:'Subtotale',pt:'Subtotal',tr:'Ara toplam',zh:'小计'},
+   remise:{fr:'Remise',en:'Discount',es:'Descuento',it:'Sconto',pt:'Desconto',tr:'İndirim',zh:'折扣'},
+   totalht:{fr:'Total HT',en:'Total excl. VAT',es:'Total sin IVA',it:'Totale imponibile',pt:'Total s/ IVA',tr:'KDV hariç toplam',zh:'不含税总计'},
+   vatincl:{fr:'TVA {r}% incluse',en:'VAT {r}% incl.',es:'IVA {r}% incl.',it:'IVA {r}% incl.',pt:'IVA {r}% incl.',tr:'KDV %{r} dahil',zh:'含税 {r}%'},
+   totalttc:{fr:'Total TTC',en:'Total incl. VAT',es:'Total con IVA',it:'Totale IVA incl.',pt:'Total c/ IVA',tr:'KDV dahil toplam',zh:'含税总计'},
+   refann:{fr:'Remboursé / annulé',en:'Refunded / cancelled',es:'Reembolsado / anulado',it:'Rimborsato / annullato',pt:'Reembolsado / anulado',tr:'İade / iptal',zh:'已退/已取消'},
+   netfact:{fr:'Net facturé',en:'Net billed',es:'Neto facturado',it:'Netto fatturato',pt:'Líquido faturado',tr:'Net fatura',zh:'净计费'},
+   dontavoir:{fr:'Dont avoir(s) émis',en:'Incl. credit note(s)',es:'Incl. vale(s)',it:'Incl. buono/i',pt:'Incl. crédito(s)',tr:'Dahil alacak(lar)',zh:'含已开credit'},
+   credit2m:{fr:'Crédit client · valable 2 mois',en:'Client credit · valid 2 months',es:'Vale cliente · válido 2 meses',it:'Credito cliente · valido 2 mesi',pt:'Crédito cliente · válido 2 meses',tr:'Müşteri alacağı · 2 ay geçerli',zh:'客户credit · 2个月有效'},
+   resaCancel:{fr:'Réservation annulée',en:'Booking cancelled',es:'Reserva anulada',it:'Prenotazione annullata',pt:'Reserva anulada',tr:'Rezervasyon iptal edildi',zh:'预订已取消'},
+   avoirOf:{fr:'Avoir de {a} valable 2 mois, utilisable sur une prochaine réservation.',en:'Credit note of {a} valid 2 months, usable on a future booking.',es:'Vale de {a} válido 2 meses, utilizable en una próxima reserva.',it:'Buono di {a} valido 2 mesi, utilizzabile su una prossima prenotazione.',pt:'Crédito de {a} válido 2 meses, utilizável numa próxima reserva.',tr:'{a} tutarında 2 ay geçerli alacak, gelecekteki rezervasyonda kullanılabilir.',zh:'{a} 的credit，2个月内有效，可用于下次预订。'},
+   refundOf:{fr:'Remboursement de {a} effectué.',en:'Refund of {a} processed.',es:'Reembolso de {a} efectuado.',it:'Rimborso di {a} effettuato.',pt:'Reembolso de {a} efetuado.',tr:'{a} iadesi yapıldı.',zh:'已退款 {a}。'},
+   cancelReg:{fr:'Annulation enregistrée.',en:'Cancellation recorded.',es:'Anulación registrada.',it:'Annullamento registrato.',pt:'Anulação registada.',tr:'İptal kaydedildi.',zh:'已记录取消。'},
+   thanks:{fr:'Paiement reçu — merci.',en:'Payment received — thank you.',es:'Pago recibido — gracias.',it:'Pagamento ricevuto — grazie.',pt:'Pagamento recebido — obrigado.',tr:'Ödeme alındı — teşekkürler.',zh:'已收到付款 — 谢谢。'},
+   bank:{fr:'Coordonnées bancaires — règlement par virement',en:'Bank details — payment by transfer',es:'Datos bancarios — pago por transferencia',it:'Coordinate bancarie — pagamento con bonifico',pt:'Dados bancários — pagamento por transferência',tr:'Banka bilgileri — havale ile ödeme',zh:'银行信息 — 转账付款'},
+   svcRef:{fr:'Service remboursé — −{a} (remise incluse)',en:'Service refunded — −{a} (discount incl.)',es:'Servicio reembolsado — −{a} (desc. incl.)',it:'Servizio rimborsato — −{a} (sconto incl.)',pt:'Serviço reembolsado — −{a} (desc. incl.)',tr:'Hizmet iade edildi — −{a} (indirim dahil)',zh:'服务已退款 — −{a}（含折扣）'},
+   svcCanc:{fr:'Service annulé — −{a} (remise incluse)',en:'Service cancelled — −{a} (discount incl.)',es:'Servicio anulado — −{a} (desc. incl.)',it:'Servizio annullato — −{a} (sconto incl.)',pt:'Serviço anulado — −{a} (desc. incl.)',tr:'Hizmet iptal — −{a} (indirim dahil)',zh:'服务已取消 — −{a}（含折扣）'},
+   svcAvoir:{fr:'Avoir émis{c} — {a} conservés en crédit (remise incluse)',en:'Credit issued{c} — {a} kept as credit (discount incl.)',es:'Vale emitido{c} — {a} en crédito (desc. incl.)',it:'Buono emesso{c} — {a} a credito (sconto incl.)',pt:'Crédito emitido{c} — {a} em crédito (desc. incl.)',tr:'Alacak verildi{c} — {a} kredi olarak (indirim dahil)',zh:'已开credit{c} — {a} 保留为credit（含折扣）'},
+   footer:{fr:'Prix TTC garantis · SIRET 934505702 · TVA intracom. FR32934505702 · Disponible 24/7 · Merci de votre confiance.',en:'Guaranteed prices incl. VAT · SIRET 934505702 · EU VAT FR32934505702 · Available 24/7 · Thank you.',es:'Precios con IVA garantizados · SIRET 934505702 · IVA FR32934505702 · Disponible 24/7 · Gracias.',it:'Prezzi IVA incl. garantiti · SIRET 934505702 · IVA FR32934505702 · Disponibile 24/7 · Grazie.',pt:'Preços c/ IVA garantidos · SIRET 934505702 · IVA FR32934505702 · Disponível 24/7 · Obrigado.',tr:'KDV dahil garantili fiyatlar · SIRET 934505702 · KDV FR32934505702 · 7/24 · Teşekkürler.',zh:'含税价格保证 · SIRET 934505702 · 增值税号 FR32934505702 · 全天候服务 · 感谢信任。'},
+  };
+  const P=k=>{const e=PL[k];return e?(e[LANG]||e.fr):k;};
+  const ploc={fr:'fr-FR',en:'en-GB',es:'es-ES',it:'it-IT',pt:'pt-PT',tr:'tr-TR',zh:'zh-CN'}[LANG]||'fr-FR';
   doc.setFillColor(7,10,18);doc.rect(0,0,W,134,'F');
   doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(22);doc.text('ParisVTCDriver',40,58);
   doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(8.5);
@@ -495,15 +677,15 @@ async function buildInvoiceDoc(b,opts){
   doc.text("Siège : 38 Av. des Combattants de l'Afrique du Nord, 93420 Villepinte",40,87);
   doc.text("SIRET 934505702 · TVA intracom. FR32934505702",40,100);
   doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(15);
-  doc.text(cancel?'FACTURE':(isInv?'FACTURE':'DEVIS'),W-40,60,{align:'right'});
+  doc.text((cancel||isInv)?P('facture'):P('devis'),W-40,60,{align:'right'});
   let yh=76;
-  if(cancel){doc.setTextColor(...red);doc.setFont(F,'bold');doc.setFontSize(11);doc.text('— ANNULATION —',W-40,yh,{align:'right'});yh+=15;}
+  if(cancel){doc.setTextColor(...red);doc.setFont(F,'bold');doc.setFontSize(11);doc.text(P('cancel'),W-40,yh,{align:'right'});yh+=15;}
   doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(9);
-  doc.text(((isInv||cancel)?'Facture n° ':'Devis n° ')+(b.reference||'—'),W-40,yh,{align:'right'});yh+=14;
-  doc.text(b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):new Date().toLocaleDateString('fr-FR'),W-40,yh,{align:'right'});yh+=16;
-  if(isInv&&!cancel){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?'PAYÉE':'EN ATTENTE DE PAIEMENT',W-40,yh,{align:'right'});}
+  doc.text(((isInv||cancel)?P('facno'):P('devno'))+(b.reference||'—'),W-40,yh,{align:'right'});yh+=14;
+  doc.text(b.created_at?new Date(b.created_at).toLocaleDateString(ploc):new Date().toLocaleDateString(ploc),W-40,yh,{align:'right'});yh+=16;
+  if(isInv&&!cancel){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?P('paidd'):P('awaitp'),W-40,yh,{align:'right'});}
   let y=160;
-  doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(10);doc.text('Client :',40,y);
+  doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(10);doc.text(P('clientt'),40,y);
   doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
   const cl=[clientNameFor(b)];
   if(d.client_company)cl.push(d.client_company);
@@ -518,14 +700,14 @@ async function buildInvoiceDoc(b,opts){
   const xPrice=W-48, xVat=W-118, xHt=W-185, detW=W-245-48;   // HT aligné sur « Sous-total » ; description plus étroite
   doc.setFillColor(20,28,46);doc.rect(40,y,W-80,24,'F');
   doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(8.5);
-  doc.text('SERVICE',48,y+16);doc.text('HT',xHt,y+16,{align:'right'});doc.text('TVA',xVat,y+16,{align:'right'});doc.text('PRIX TTC',xPrice,y+16,{align:'right'});
+  doc.text(P('service'),48,y+16);doc.text('HT',xHt,y+16,{align:'right'});doc.text(P('vath'),xVat,y+16,{align:'right'});doc.text(P('pricettc'),xPrice,y+16,{align:'right'});
   y+=42;
   _lns.forEach(function(l){
     var v=_lv(l);
     doc.setFont(F,'bold');doc.setTextColor(30,38,56);doc.setFontSize(9.5);
     var lab=doc.splitTextToSize(String(l.label||''),detW); var yTop=y; lab.forEach(function(ln,i){if(i)y+=13;doc.text(ln,48,y);});
     if(l.custom){
-      doc.setFont(F,'normal');doc.setTextColor(110,160,120);doc.setFontSize(9);doc.text('Sur devis',xPrice,yTop,{align:'right'});
+      doc.setFont(F,'normal');doc.setTextColor(110,160,120);doc.setFontSize(9);doc.text(P('onquote'),xPrice,yTop,{align:'right'});
       doc.setTextColor(150,160,175);doc.text('—',xHt,yTop,{align:'right'});doc.text('—',xVat,yTop,{align:'right'});
     } else {
       doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(9.5);doc.text(eur(v.ttc),xPrice,yTop,{align:'right'});
@@ -535,9 +717,9 @@ async function buildInvoiceDoc(b,opts){
     [['route','Trajet : '],['dt','RDV : '],['req','Demande : ']].forEach(function(kp){var k=kp[0],pfx=kp[1];if(l[k]){doc.setTextColor(150,120,40);doc.setFontSize(8.5);doc.splitTextToSize(pfx+l[k],detW).forEach(function(ln){y+=12;doc.text(ln,48,y);});}});
     if(l.st&&['cancelled','refunded','avoir'].indexOf(l.st)>=0){
       y+=12;doc.setFont(F,'bold');doc.setFontSize(8.5);
-      if(l.st==='avoir'){doc.setTextColor(...gold);doc.text('Avoir émis'+(l.avoirCode?(' · code '+l.avoirCode):'')+' — '+eur(_net(l))+' conservés en crédit (remise incluse)',48,y);}
-      else if(l.st==='refunded'){doc.setTextColor(...red);doc.text('Service remboursé — −'+eur(_net(l))+' (remise incluse)',48,y);}
-      else{doc.setTextColor(...red);doc.text('Service annulé — −'+eur(_net(l))+' (remise incluse)',48,y);}
+      if(l.st==='avoir'){doc.setTextColor(...gold);doc.text(P('svcAvoir').replace('{c}',l.avoirCode?(' · '+l.avoirCode):'').replace('{a}',eur(_net(l))),48,y);}
+      else if(l.st==='refunded'){doc.setTextColor(...red);doc.text(P('svcRef').replace('{a}',eur(_net(l))),48,y);}
+      else{doc.setTextColor(...red);doc.text(P('svcCanc').replace('{a}',eur(_net(l))),48,y);}
       doc.setFont(F,'normal');doc.setFontSize(9.5);
     }
     y+=18;doc.setDrawColor(228,231,238);doc.line(40,y-8,W-40,y-8);
@@ -549,49 +731,49 @@ async function buildInvoiceDoc(b,opts){
   _vat10=Math.round(_vat10*100)/100;_vat20=Math.round(_vat20*100)/100;
   y+=8;doc.setDrawColor(220);doc.line(W-230,y,W-40,y);y+=16;
   doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
-  doc.text('Sous-total',W-230,y);doc.text(eur(_sub||b.amount_ttc),W-40,y,{align:'right'});y+=15;
+  doc.text(P('subtotal'),W-230,y);doc.text(eur(_sub||b.amount_ttc),W-40,y,{align:'right'});y+=15;
   if(Number(d.discount)>0){
-    doc.setTextColor(40,160,110);doc.text('Remise',W-230,y);doc.text('−'+eur(d.discount),W-40,y,{align:'right'});y+=12;
+    doc.setTextColor(40,160,110);doc.text(P('remise'),W-230,y);doc.text('−'+eur(d.discount),W-40,y,{align:'right'});y+=12;
     if(d.discount_label){doc.setFontSize(8);doc.text(String(d.discount_label),W-230,y);doc.setFontSize(9.5);y+=12;}
     doc.setTextColor(60,70,90);
   }
-  doc.text('Total HT',W-230,y);doc.text(eur(b.amount_ht),W-40,y,{align:'right'});y+=15;
-  if(_vat10>0.009){doc.text('TVA 10% incluse',W-230,y);doc.text(eur(_vat10),W-40,y,{align:'right'});y+=15;}
-  if(_vat20>0.009){doc.text('TVA 20% incluse',W-230,y);doc.text(eur(_vat20),W-40,y,{align:'right'});y+=15;}
-  if(_vat10<=0.009&&_vat20<=0.009){doc.text('TVA',W-230,y);doc.text(eur(b.vat),W-40,y,{align:'right'});y+=15;}
+  doc.text(P('totalht'),W-230,y);doc.text(eur(b.amount_ht),W-40,y,{align:'right'});y+=15;
+  if(_vat10>0.009){doc.text(P('vatincl').replace('{r}','10'),W-230,y);doc.text(eur(_vat10),W-40,y,{align:'right'});y+=15;}
+  if(_vat20>0.009){doc.text(P('vatincl').replace('{r}','20'),W-230,y);doc.text(eur(_vat20),W-40,y,{align:'right'});y+=15;}
+  if(_vat10<=0.009&&_vat20<=0.009){doc.text(P('vath'),W-230,y);doc.text(eur(b.vat),W-40,y,{align:'right'});y+=15;}
   y+=3;doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
-  doc.text('Total TTC',W-230,y);doc.text(eur(b.amount_ttc),W-40,y,{align:'right'});
+  doc.text(P('totalttc'),W-230,y);doc.text(eur(b.amount_ttc),W-40,y,{align:'right'});
   const _ded=_lns.filter(l=>l.st==='cancelled'||l.st==='refunded').reduce((s,l)=>s+_net(l),0);
   const _avo=_lns.filter(l=>l.st==='avoir').reduce((s,l)=>s+_net(l),0);
   if(_ded>0.009||_avo>0.009){
     y+=10;doc.setDrawColor(225);doc.line(W-230,y,W-40,y);y+=15;
-    if(_ded>0.009){ doc.setFont(F,'normal');doc.setFontSize(9.5);doc.setTextColor(...red);doc.text('Remboursé / annulé',W-230,y);doc.text('−'+eur(_ded),W-40,y,{align:'right'});y+=16; }
+    if(_ded>0.009){ doc.setFont(F,'normal');doc.setFontSize(9.5);doc.setTextColor(...red);doc.text(P('refann'),W-230,y);doc.text('−'+eur(_ded),W-40,y,{align:'right'});y+=16; }
     doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(11);
     const _net2=Math.round((Number(b.amount_ttc||0)-_ded)*100)/100;
-    doc.text('Net facturé',W-230,y);doc.text(eur(_net2),W-40,y,{align:'right'});y+=15;
+    doc.text(P('netfact'),W-230,y);doc.text(eur(_net2),W-40,y,{align:'right'});y+=15;
     if(_avo>0.009){
       doc.setFont(F,'normal');doc.setFontSize(9.5);doc.setTextColor(...gold);
-      doc.text('Dont avoir(s) émis',W-230,y);doc.text(eur(_avo),W-40,y,{align:'right'});y+=11;
-      doc.setFontSize(7.5);doc.setTextColor(160,148,95);doc.text('Crédit client · valable 2 mois',W-230,y);doc.setFontSize(9.5);
+      doc.text(P('dontavoir'),W-230,y);doc.text(eur(_avo),W-40,y,{align:'right'});y+=11;
+      doc.setFontSize(7.5);doc.setTextColor(160,148,95);doc.text(P('credit2m'),W-230,y);doc.setFontSize(9.5);
     }
   }
   y+=40;doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
   if(cancel){
-    doc.setFont(F,'bold');doc.setTextColor(...red);doc.setFontSize(9.5);doc.text('Réservation annulée',40,y);y+=14;
+    doc.setFont(F,'bold');doc.setTextColor(...red);doc.setFontSize(9.5);doc.text(P('resaCancel'),40,y);y+=14;
     doc.setFont(F,'normal');doc.setTextColor(60,70,90);
     const refunded=b.status==='refunded'||b.status==='avoir'||(b.details&&b.details.cancel&&b.details.cancel.refunded);
-    if(isAvoir) doc.text('Avoir de '+eur(b.amount_ttc)+' valable 2 mois, utilisable sur une prochaine réservation.',40,y);
-    else if(refunded) doc.text('Remboursement de '+eur(b.amount_ttc)+' effectué.',40,y);
-    else doc.text('Annulation enregistrée.',40,y);
+    if(isAvoir) doc.text(P('avoirOf').replace('{a}',eur(b.amount_ttc)),40,y);
+    else if(refunded) doc.text(P('refundOf').replace('{a}',eur(b.amount_ttc)),40,y);
+    else doc.text(P('cancelReg'),40,y);
   } else {
     doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);
-    doc.text(paid?'Paiement reçu — merci.':'Coordonnées bancaires — règlement par virement',40,y);y+=14;
+    doc.text(paid?P('thanks'):P('bank'),40,y);y+=14;
     doc.setFont(F,'normal');doc.setTextColor(60,70,90);
     doc.text('Bénéficiaire : PARISVTCDRIVER',40,y);y+=13;
     doc.text('IBAN FR76 1695 8000 0148 8377 7337 715   ·   BIC QNTOFRP1XXX',40,y);
   }
   doc.setFont(F,'normal');doc.setTextColor(150,158,172);doc.setFontSize(7.5);
-  doc.text('Prix TTC garantis · SIRET 934505702 · TVA intracom. FR32934505702 · Disponible 24/7 · Merci de votre confiance.',W/2,815,{align:'center'});
+  doc.text(P('footer'),W/2,815,{align:'center'});
   return doc;
 }
 
@@ -605,12 +787,12 @@ async function saveProfile(){
     ({ error } = await sb.from('profiles').update({ full_name, phone }).eq('id', PROFILE.id));
     if(!error) toast('Nom et téléphone enregistrés. Exécutez supabase-profil-coordonnees.sql pour mémoriser l’adresse.');
   }
-  if(error){ toast('Erreur : '+error.message); return; }
+  if(error){ toast(t('toast_err')+error.message); return; }
   PROFILE.full_name=full_name; PROFILE.phone=phone; Object.assign(PROFILE,extra);
   document.getElementById('sfName').textContent=full_name;
   document.getElementById('sfAv').textContent=initials(full_name);
-  document.getElementById('hello').textContent='Bonjour '+(full_name.split(' ')[0]||'')+' 👋';
-  toast('Profil enregistré ✓');
+  document.getElementById('hello').textContent=t('hello')+' '+(full_name.split(' ')[0]||'')+' 👋';
+  toast(t('toast_saved'));
 }
 
 load();
