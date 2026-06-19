@@ -1451,7 +1451,7 @@ async function loadClientReviews(){
       const ini=(name[0]||"C").toUpperCase();
       const rn=Math.max(1,Math.min(5,r.rating||5));
       const st="★★★★★☆☆☆☆☆".slice(5-rn,10-rn);
-      const sub=r.role?escHtml(r.role):("ParisVTCDriver"+(r.created_at?" · "+new Date(r.created_at).toLocaleDateString():""));
+      const sub=r.role?escHtml(r.role):(r.created_at?new Date(r.created_at).toLocaleDateString():"");
       return `<div class="t-card">
         <div class="stars">${st}</div>
         ${r.comment?`<p>“${escHtml(r.comment)}”</p>`:`<p style="opacity:.6">—</p>`}
