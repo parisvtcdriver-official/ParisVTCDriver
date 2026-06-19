@@ -1453,9 +1453,12 @@ async function loadClientReviews(){
       const st="★★★★★☆☆☆☆☆".slice(5-rn,10-rn);
       const parts=[]; if(r.role)parts.push(escHtml(r.role)); if(r.country)parts.push(escHtml(r.country)); if(!r.role&&r.created_at)parts.push(new Date(r.created_at).toLocaleDateString());
       const sub=parts.join(" · ");
+      // Affiche directement la traduction déjà en cache (évite le retour à l'original)
+      const src0=String(r.lang||"fr").split("-")[0]; let dc=r.comment||"";
+      if(r.comment&&src0!==LANG){ const c=_trCacheGet(r.comment,LANG); if(c!=null) dc=c; }
       return `<div class="t-card">
         <div class="stars">${st}</div>
-        ${r.comment?`<p id="rvc-${i}">“${escHtml(r.comment)}”</p>`:`<p style="opacity:.6">—</p>`}
+        ${r.comment?`<p id="rvc-${i}">“${escHtml(dc)}”</p>`:`<p style="opacity:.6">—</p>`}
         <div class="t-who"><span style="width:48px;height:48px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(201,162,74,.18);color:var(--gold);font-weight:700;font-size:18px">${ini}</span><div><b>${escHtml(name)}</b><small>${sub}</small></div></div>
       </div>`;
     }).join("");
@@ -1469,16 +1472,27 @@ function _trCacheGet(text,lang){try{return localStorage.getItem("pvtc_tr_"+lang+
 function _trCacheSet(text,lang,val){try{localStorage.setItem("pvtc_tr_"+lang+"_"+_trHash(text),val);}catch(e){}}
 function _decodeEntities(s){const t=document.createElement("textarea");t.innerHTML=s;return t.value;}
 function _setRvText(i,txt){const el=document.getElementById("rvc-"+i);if(el)el.textContent="“"+txt+"”";}
+async function _gTranslate(text,src,target){
+  // Google (endpoint public gtx) — fiable, toutes les langues, sans clé
+  const u="https://translate.googleapis.com/translate_a/single?client=gtx&sl="+encodeURIComponent(src||"auto")+"&tl="+encodeURIComponent(target)+"&dt=t&q="+encodeURIComponent(text);
+  const r=await fetch(u);
+  if(!r.ok) return null;
+  const j=await r.json();
+  if(Array.isArray(j)&&Array.isArray(j[0])){ const out=j[0].map(s=>(s&&s[0])?s[0]:"").join(""); if(out.trim()) return out; }
+  return null;
+}
 async function _mmTranslate(text,src,target){
-  // MyMemory : traduction gratuite sans clé (q ≤ 500 caractères)
-  const url="https://api.mymemory.translated.net/get?q="+encodeURIComponent(text.slice(0,480))+"&langpair="+encodeURIComponent(src+"|"+target);
-  const resp=await fetch(url);
-  const j=await resp.json();
+  // MyMemory — repli sans clé (q ≤ 480 caractères)
+  const u="https://api.mymemory.translated.net/get?q="+encodeURIComponent(text.slice(0,480))+"&langpair="+encodeURIComponent((src||"fr")+"|"+target);
+  const r=await fetch(u); const j=await r.json();
   const tx=j&&j.responseData&&j.responseData.translatedText;
-  if(!tx) return null;
-  // MyMemory renvoie parfois un message d'erreur en majuscules dans translatedText
-  if(/MYMEMORY WARNING|INVALID LANGUAGE|QUERY LENGTH LIMIT/i.test(tx)) return null;
+  if(!tx||/MYMEMORY WARNING|INVALID LANGUAGE|QUERY LENGTH LIMIT|YOU USED ALL/i.test(tx)) return null;
   return _decodeEntities(String(tx));
+}
+async function _translateText(text,src,target){
+  try{ const g=await _gTranslate(text,src,target); if(g) return g; }catch(e){}
+  try{ const m=await _mmTranslate(text,src,target); if(m) return m; }catch(e){}
+  return null;
 }
 async function translateReviewCards(data){
   const myLang=LANG;
@@ -1487,10 +1501,9 @@ async function translateReviewCards(data){
     if(!r.comment || src===myLang) continue;       // déjà dans la bonne langue
     const cached=_trCacheGet(r.comment,myLang);
     if(cached!=null){ if(LANG===myLang)_setRvText(i,cached); continue; }
-    try{
-      const dec=await _mmTranslate(r.comment,src,myLang);
-      if(dec){ _trCacheSet(r.comment,myLang,dec); if(LANG===myLang)_setRvText(i,dec); }
-    }catch(e){}
+    const dec=await _translateText(r.comment,src,myLang);
+    if(dec && LANG===myLang){ _trCacheSet(r.comment,myLang,dec); _setRvText(i,dec); }
+    else if(dec){ _trCacheSet(r.comment,myLang,dec); }
   }
 }
 /* ---------------- TESTIMONIALS CAROUSEL (sobre & premium) ---------------- */
