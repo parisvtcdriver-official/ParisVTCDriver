@@ -457,6 +457,9 @@ function renderResaTable(elId,list,withSelect){
   }).join('');
 }
 function clientMailOf(b){return (b.details&&b.details.client_email)||(b.user_id&&PROFILES[b.user_id]&&PROFILES[b.user_id].email)||'';}
+function eLang(b){return (b&&b.details&&b.details.lang)||'fr';}
+function pickL(d,l){return (d&&(d[l]||d.fr))||'';}
+const FOOT_HTML='<p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>';
 function stars(n){let s='';for(let i=1;i<=5;i++)s+=i<=n?'★':'☆';return s;}
 function renderReviews(){
   const el=document.getElementById('allAvis'); if(!el)return;
@@ -495,8 +498,17 @@ async function inviteGoogle(id){
   const mail=(r.user_id&&PROFILES[r.user_id]&&PROFILES[r.user_id].email)||'';
   if(!mail)return;
   const name=(r.user_id&&PROFILES[r.user_id]&&PROFILES[r.user_id].full_name)||r.author_name||'';
-  const html=`<h2 style="color:#a07d2c">Votre avis est publié — recevez 5 €</h2><p>Bonjour ${name},</p><p>Merci ! Votre avis a été validé et publié sur notre site. Pour recevoir un <b>code de 5 €</b> utilisable sur l'ensemble du site, publiez également votre avis sur Google :</p><p><a href="${GOOGLE_REVIEW_URL}" style="display:inline-block;background:#a07d2c;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px;font-weight:700">Laisser mon avis Google</a></p><p>Ensuite, revenez dans votre espace client et cliquez sur « J'ai laissé mon avis Google ». Après une rapide vérification, nous vous enverrons votre code de 5 €.</p><p style="color:#888;font-size:12px;margin-top:16px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`;
-  try{ await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to:mail,subject:'Votre avis est publié — recevez 5 € sur ParisVTCDriver',html}}); }catch(e){}
+  const L=r.lang||'fr';
+  const IG={
+    subj:{fr:"Votre avis est publié — recevez 5 € sur ParisVTCDriver",en:"Your review is live — get €5 on ParisVTCDriver",es:"Su opinión está publicada — reciba 5 € en ParisVTCDriver",it:"La tua recensione è online — ricevi 5 € su ParisVTCDriver",pt:"A sua avaliação está publicada — receba 5 € na ParisVTCDriver",tr:"Yorumunuz yayında — ParisVTCDriver'da 5 € kazanın",zh:"您的评价已发布 — 在 ParisVTCDriver 获得 5 欧元"},
+    h:{fr:"Votre avis est publié — recevez 5 €",en:"Your review is live — get €5",es:"Su opinión está publicada — reciba 5 €",it:"La tua recensione è online — ricevi 5 €",pt:"A sua avaliação está publicada — receba 5 €",tr:"Yorumunuz yayında — 5 € kazanın",zh:"您的评价已发布 — 获得 5 欧元"},
+    hi:{fr:"Bonjour",en:"Hello",es:"Hola",it:"Ciao",pt:"Olá",tr:"Merhaba",zh:"您好"},
+    p1:{fr:"Merci ! Votre avis a été validé et publié sur notre site. Pour recevoir un <b>code de 5 €</b> utilisable sur l'ensemble du site, publiez également votre avis sur Google :",en:"Thank you! Your review has been approved and published on our site. To receive a <b>€5 code</b> usable across the whole site, also post your review on Google:",es:"¡Gracias! Su opinión ha sido aprobada y publicada en nuestro sitio. Para recibir un <b>código de 5 €</b> válido en todo el sitio, publique también su opinión en Google:",it:"Grazie! La tua recensione è stata approvata e pubblicata sul nostro sito. Per ricevere un <b>codice da 5 €</b> valido su tutto il sito, pubblica la recensione anche su Google:",pt:"Obrigado! A sua avaliação foi aprovada e publicada no nosso site. Para receber um <b>código de 5 €</b> válido em todo o site, publique também a sua avaliação no Google:",tr:"Teşekkürler! Yorumunuz onaylandı ve sitemizde yayınlandı. Tüm sitede geçerli <b>5 € kod</b> almak için yorumunuzu Google'da da yayınlayın:",zh:"谢谢！您的评价已审核并发布在我们网站上。要获得全站可用的<b>5 欧元优惠码</b>，请同时在 Google 上发布评价："},
+    btn:{fr:"Laisser mon avis Google",en:"Leave my Google review",es:"Dejar mi opinión en Google",it:"Lascia la mia recensione Google",pt:"Deixar a minha avaliação no Google",tr:"Google yorumumu bırak",zh:"发表我的 Google 评价"},
+    p2:{fr:"Ensuite, revenez dans votre espace client et cliquez sur « J'ai laissé mon avis Google ». Après une rapide vérification, nous vous enverrons votre code de 5 €.",en:"Then come back to your client area and click \"I left my Google review\". After a quick check, we'll send you your €5 code.",es:"Después, vuelva a su área de cliente y haga clic en «Ya dejé mi opinión en Google». Tras una rápida verificación, le enviaremos su código de 5 €.",it:"Poi torna nella tua area cliente e clicca su \"Ho lasciato la recensione Google\". Dopo una rapida verifica, ti invieremo il codice da 5 €.",pt:"Depois, volte à sua área de cliente e clique em \"Já deixei a avaliação no Google\". Após uma verificação rápida, enviamos o seu código de 5 €.",tr:"Ardından müşteri alanınıza dönün ve \"Google yorumumu bıraktım\" düğmesine tıklayın. Kısa bir kontrolden sonra 5 € kodunuzu göndereceğiz.",zh:"然后回到您的客户专区，点击「我已发表 Google 评价」。经过快速核实后，我们会发送您的 5 欧元优惠码。"},
+  };
+  const html=`<h2 style="color:#a07d2c">${pickL(IG.h,L)}</h2><p>${pickL(IG.hi,L)} ${name},</p><p>${pickL(IG.p1,L)}</p><p><a href="${GOOGLE_REVIEW_URL}" style="display:inline-block;background:#a07d2c;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px;font-weight:700">${pickL(IG.btn,L)}</a></p><p>${pickL(IG.p2,L)}</p>${FOOT_HTML}`;
+  try{ await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to:mail,subject:pickL(IG.subj,L),html}}); }catch(e){}
 }
 async function rewardReview(id){
   if(!confirm('Avez-vous vérifié l\'avis Google du client ?\n\nLe code de 5 € sera généré et envoyé au client par e-mail.'))return;
@@ -572,14 +584,28 @@ async function emailCancellation(b,isAvoir){
   let pdf64='';
   // Avoir : facture PAYÉE (argent conservé). Remboursement : facture d'annulation.
   try{const doc=await buildInvoiceDoc(b,{cancellation:!isAvoir});pdf64=doc.output('datauristring').split(',')[1];}catch(e){}
+  const L=eLang(b), svc=escapeHtml(b.service||''), amt=eur(b.amount_ttc);
+  const D={
+    hi:{fr:"Bonjour",en:"Hello",es:"Hola",it:"Ciao",pt:"Olá",tr:"Merhaba",zh:"您好"},
+    attached:{fr:"Votre facture acquittée est en pièce jointe.",en:"Your paid invoice is attached.",es:"Su factura pagada está adjunta.",it:"La tua fattura quietanzata è in allegato.",pt:"A sua fatura paga está em anexo.",tr:"Ödenmiş faturanız ektedir.",zh:"您的已付发票见附件。"},
+    av_subj:{fr:"Avoir crédité "+ref+" · ParisVTCDriver",en:"Credit issued "+ref+" · ParisVTCDriver",es:"Vale acreditado "+ref+" · ParisVTCDriver",it:"Buono accreditato "+ref+" · ParisVTCDriver",pt:"Vale creditado "+ref+" · ParisVTCDriver",tr:"Kupon tanımlandı "+ref+" · ParisVTCDriver",zh:"已发放代金券 "+ref+" · ParisVTCDriver"},
+    av_h:{fr:"Avoir crédité",en:"Credit issued",es:"Vale acreditado",it:"Buono accreditato",pt:"Vale creditado",tr:"Kupon tanımlandı",zh:"代金券已发放"},
+    av_p:{fr:`Suite à l'annulation de « ${svc} », un <b>avoir de ${amt}</b> valable 2 mois vous est crédité.`,en:`Following the cancellation of "${svc}", a <b>credit of ${amt}</b> valid for 2 months has been issued to you.`,es:`Tras la cancelación de «${svc}», se le acredita un <b>vale de ${amt}</b> válido 2 meses.`,it:`A seguito dell'annullamento di "${svc}", ti viene accreditato un <b>buono di ${amt}</b> valido 2 mesi.`,pt:`Na sequência do cancelamento de "${svc}", é-lhe creditado um <b>vale de ${amt}</b> válido 2 meses.`,tr:`"${svc}" iptali sonrası, 2 ay geçerli <b>${amt} tutarında kupon</b> hesabınıza tanımlandı.`,zh:`因取消"${svc}"，已向您发放一张有效期2个月、<b>金额为 ${amt}</b> 的代金券。`},
+    av_code:{fr:`Code à saisir dans « Code de réduction » lors de votre prochaine réservation : `,en:`Code to enter in "Discount code" on your next booking: `,es:`Código para introducir en «Código de descuento» en su próxima reserva: `,it:`Codice da inserire in "Codice sconto" alla prossima prenotazione: `,pt:`Código a inserir em "Código de desconto" na próxima reserva: `,tr:`Bir sonraki rezervasyonunuzda "İndirim kodu" alanına girilecek kod: `,zh:`下次预订时在"折扣码"中输入的代码：`},
+    rf_subj:{fr:"Facture d'annulation "+ref+" · ParisVTCDriver",en:"Cancellation invoice "+ref+" · ParisVTCDriver",es:"Factura de anulación "+ref+" · ParisVTCDriver",it:"Fattura di annullamento "+ref+" · ParisVTCDriver",pt:"Fatura de cancelamento "+ref+" · ParisVTCDriver",tr:"İptal faturası "+ref+" · ParisVTCDriver",zh:"取消发票 "+ref+" · ParisVTCDriver"},
+    rf_h:{fr:"Annulation confirmée",en:"Cancellation confirmed",es:"Anulación confirmada",it:"Annullamento confermato",pt:"Cancelamento confirmado",tr:"İptal onaylandı",zh:"取消已确认"},
+    rf_p1:{fr:`Votre réservation « ${svc} » a bien été annulée.`,en:`Your booking "${svc}" has been cancelled.`,es:`Su reserva «${svc}» ha sido anulada.`,it:`La tua prenotazione "${svc}" è stata annullata.`,pt:`A sua reserva "${svc}" foi cancelada.`,tr:`"${svc}" rezervasyonunuz iptal edildi.`,zh:`您的预订"${svc}"已取消。`},
+    rf_p2:{fr:`Le <b>remboursement de ${amt}</b> a été effectué.`,en:`The <b>refund of ${amt}</b> has been processed.`,es:`Se ha efectuado el <b>reembolso de ${amt}</b>.`,it:`Il <b>rimborso di ${amt}</b> è stato effettuato.`,pt:`O <b>reembolso de ${amt}</b> foi efetuado.`,tr:`<b>${amt} tutarındaki iade</b> gerçekleştirildi.`,zh:`<b>${amt} 的退款</b>已完成。`},
+    rf_att:{fr:"Votre facture d'annulation est en pièce jointe.",en:"Your cancellation invoice is attached.",es:"Su factura de anulación está adjunta.",it:"La tua fattura di annullamento è in allegato.",pt:"A sua fatura de cancelamento está em anexo.",tr:"İptal faturanız ektedir.",zh:"您的取消发票见附件。"},
+  };
   let subject, html, filename;
   if(isAvoir){
-    subject="Avoir crédité "+ref+" · ParisVTCDriver";
-    html=`<h2 style="color:#a07d2c">Avoir crédité</h2><p>Bonjour ${escapeHtml(name)},</p><p>Suite à l'annulation de « ${escapeHtml(b.service||'')} », un <b>avoir de ${eur(b.amount_ttc)}</b> valable 2 mois vous est crédité.</p>${code?('<p>Code à saisir dans « Code de réduction » lors de votre prochaine réservation : <b style="color:#a07d2c">'+escapeHtml(code)+'</b></p>'):''}<p>Votre facture acquittée est en pièce jointe.</p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`;
+    subject=pickL(D.av_subj,L);
+    html=`<h2 style="color:#a07d2c">${pickL(D.av_h,L)}</h2><p>${pickL(D.hi,L)} ${escapeHtml(name)},</p><p>${pickL(D.av_p,L)}</p>${code?('<p>'+pickL(D.av_code,L)+'<b style="color:#a07d2c">'+escapeHtml(code)+'</b></p>'):''}<p>${pickL(D.attached,L)}</p>${FOOT_HTML}`;
     filename='facture-'+(ref||'doc')+'.pdf';
   } else {
-    subject="Facture d'annulation "+ref+" · ParisVTCDriver";
-    html=`<h2 style="color:#c0392b">Annulation confirmée</h2><p>Bonjour ${escapeHtml(name)},</p><p>Votre réservation « ${escapeHtml(b.service||'')} » a bien été annulée.</p><p>Le <b>remboursement de ${eur(b.amount_ttc)}</b> a été effectué.</p><p>Votre facture d'annulation est en pièce jointe.</p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`;
+    subject=pickL(D.rf_subj,L);
+    html=`<h2 style="color:#c0392b">${pickL(D.rf_h,L)}</h2><p>${pickL(D.hi,L)} ${escapeHtml(name)},</p><p>${pickL(D.rf_p1,L)}</p><p>${pickL(D.rf_p2,L)}</p><p>${pickL(D.rf_att,L)}</p>${FOOT_HTML}`;
     filename='facture-annulation-'+(ref||'doc')+'.pdf';
   }
   try{
@@ -598,7 +624,7 @@ function renderResaChips(){
 }
 function isArchived(b){return !!(b&&b.details&&b.details.archived);}
 function renderResa(){
-  let list=BOOKINGS.filter(b=>b.status!=='completed' && !isArchived(b));   // terminée/archivée → masquée des réservations, conservée dans Devis & factures
+  let list=BOOKINGS.filter(b=>b.status!=='completed' && b.status!=='avoir' && !keptAsAvoir(b) && !isArchived(b));   // terminée / avoir émis / archivée → masquée des réservations, conservée dans Devis & factures
   if(RESA_FILTER!=='all') list=list.filter(b=>b.status===RESA_FILTER);
   list=list.slice().sort((a,b)=>(bkSortTime(a)||0)-(bkSortTime(b)||0)); // tri par date de rendez-vous (chronologique)
   renderResaTable('allResa',list,true);
@@ -1144,7 +1170,16 @@ async function setStatus(id,status){
   const {error}=await sb.from('bookings').update(upd).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
   if(status==='completed' && b && b.details && b.details.applied_code){ await processAvoirRedemption(b); }
-  if(status==='completed' && b){ const to=clientMailOf(b); if(to){ try{ await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject:'Votre avis nous intéresse — ParisVTCDriver',html:`<h2 style="color:#a07d2c">Comment s'est passée votre course ?</h2><p>Bonjour,</p><p>Votre course « ${escapeHtml(b.service||'')} » est terminée. Nous serions ravis de recueillir votre avis : connectez-vous à votre espace client et cliquez sur « ★ Laisser un avis » à côté de votre course (onglet Devis &amp; factures).</p><p><a href="https://www.parisvtcdriver.com/connexion.html" style="color:#a07d2c">Accéder à mon espace</a></p><p style="color:#888;font-size:12px">ParisVTCDriver · +33 7 49 19 83 18</p>`}}); }catch(e){} } }
+  if(status==='completed' && b){ const to=clientMailOf(b); if(to){
+    const L=eLang(b), svc=escapeHtml(b.service||'');
+    const RV={
+      subj:{fr:"Votre avis nous intéresse — ParisVTCDriver",en:"We'd love your feedback — ParisVTCDriver",es:"Su opinión nos interesa — ParisVTCDriver",it:"Il tuo parere ci interessa — ParisVTCDriver",pt:"A sua opinião interessa-nos — ParisVTCDriver",tr:"Görüşünüz bizim için önemli — ParisVTCDriver",zh:"期待您的评价 — ParisVTCDriver"},
+      h:{fr:"Comment s'est passée votre course ?",en:"How was your ride?",es:"¿Qué tal su trayecto?",it:"Com'è andata la tua corsa?",pt:"Como correu a sua viagem?",tr:"Yolculuğunuz nasıldı?",zh:"您的行程体验如何？"},
+      hi:{fr:"Bonjour,",en:"Hello,",es:"Hola,",it:"Ciao,",pt:"Olá,",tr:"Merhaba,",zh:"您好，"},
+      p:{fr:`Votre course « ${svc} » est terminée. Nous serions ravis de recueillir votre avis : connectez-vous à votre espace client et cliquez sur « ★ Laisser un avis » à côté de votre course (onglet Devis & factures).`,en:`Your ride "${svc}" is complete. We'd love your feedback: log in to your client area and click "★ Leave a review" next to your ride (Quotes & invoices tab).`,es:`Su trayecto "${svc}" ha finalizado. Nos encantaría conocer su opinión: inicie sesión en su área de cliente y haga clic en "★ Dejar una opinión" junto a su trayecto (pestaña Presupuestos y facturas).`,it:`La tua corsa "${svc}" è terminata. Ci farebbe piacere il tuo parere: accedi alla tua area cliente e clicca su "★ Lascia una recensione" accanto alla corsa (scheda Preventivi e fatture).`,pt:`A sua viagem "${svc}" terminou. Adoraríamos a sua opinião: inicie sessão na sua área de cliente e clique em "★ Deixar uma avaliação" junto à sua viagem (separador Orçamentos e faturas).`,tr:`"${svc}" yolculuğunuz tamamlandı. Görüşünüzü almaktan memnuniyet duyarız: müşteri alanınıza giriş yapın ve yolculuğunuzun yanındaki "★ Yorum bırak" düğmesine tıklayın (Teklifler ve faturalar sekmesi).`,zh:`您的行程"${svc}"已完成。期待您的评价：登录客户专区，在行程旁点击"★ 发表评价"（报价与发票标签）。`},
+      link:{fr:"Accéder à mon espace",en:"Go to my area",es:"Acceder a mi área",it:"Vai alla mia area",pt:"Aceder à minha área",tr:"Alanıma git",zh:"前往我的专区"},
+    };
+    try{ await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject:pickL(RV.subj,L),html:`<h2 style="color:#a07d2c">${pickL(RV.h,L)}</h2><p>${pickL(RV.hi,L)}</p><p>${pickL(RV.p,L)}</p><p><a href="https://www.parisvtcdriver.com/connexion.html" style="color:#a07d2c">${pickL(RV.link,L)}</a></p>${FOOT_HTML}`}}); }catch(e){} } }
   if(['cancelled','refunded','avoir'].includes(status)){ await releaseAppliedCode(b); }   // le code utilisé redevient disponible
   if(isRefund){
     toast(status==='avoir'?'Avoir émis ✓ (code généré)':'Remboursement validé ✓');
@@ -1172,8 +1207,12 @@ async function setLineStatus(id,idx,status){
     l.st=status; if(status!=='cancelled'){ delete l.avoirCode; delete l.refunded_at; delete l.avoir_exp; }
   }
   d.lines=ls;
-  const {error}=await sb.from('bookings').update({status:rollupStatus(b),details:d}).eq('id',id);
+  const ns=rollupStatus(b);
+  const {error}=await sb.from('bookings').update({status:ns,details:d}).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
+  // Cycle du code promo aligné sur la course (corrige le code resté « en cours »)
+  if(ns==='completed' && d.applied_code){ await processAvoirRedemption(b); }
+  if(['cancelled','refunded','avoir'].includes(ns)){ await releaseAppliedCode(b); }
   toast('Statut du service mis à jour ✓'); refresh();
 }
 async function processAvoirRedemption(b){

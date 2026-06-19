@@ -618,7 +618,7 @@ async function requestCancel(id){
   const reason=prompt(t('cancel_reason')+'\n\n'+pol.label,'');
   if(reason===null)return;
   if(!confirm(t('cancel_ask')+'\n\n'+pol.label))return;
-  const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'cancel-request',booking_id:id,reason:reason,policy:pol.label}});
+  const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'cancel-request',booking_id:id,reason:reason,policy:pol.label,lang:LANG}});
   if(error||(data&&data.ok===false)){ toast(t('toast_err')+((data&&data.error)||(error&&error.message)||'')); return; }
   toast(t('cancel_sent'));
   load();
@@ -851,7 +851,7 @@ async function submitReview(){
   if(!REVRATE){document.getElementById('revMsg').textContent=t('rev_norate');return;}
   const btn=document.getElementById('revSubmitBtn');btn.disabled=true;
   const comment=document.getElementById('revComment').value.trim();
-  const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'submit-review',booking_id:REVID,rating:REVRATE,comment,author_name:PROFILE.full_name||''}});
+  const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'submit-review',booking_id:REVID,rating:REVRATE,comment,author_name:PROFILE.full_name||'',lang:LANG}});
   if(error||!data||!data.ok){document.getElementById('revMsg').textContent=t('toast_err')+((data&&data.error)||(error&&error.message)||'');btn.disabled=false;return;}
   REVIEWED.add(REVID); REVMAP[REVID]={id:null,booking_id:REVID,status:'pending',google_claimed:false,reward_code:null}; closeRev();
   toast(t('rev_thanks'));
@@ -930,7 +930,7 @@ async function saveModif(){
   if(dropoff&&dep(oldD)&&dep(dropoff)&&dep(dropoff)!==dep(oldD)){ msg.textContent=mm('deptD'); return; }
   const btn=document.getElementById('modSaveBtn'); btn.disabled=true;
   try{
-    const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'modify-booking',booking_id:MODID,pickup,dropoff,date_time:dtv||''}});
+    const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'modify-booking',booking_id:MODID,pickup,dropoff,date_time:dtv||'',lang:LANG}});
     if(error||(data&&data.ok===false)) throw new Error((data&&data.error)||(error&&error.message)||'err');
     closeMod(); toast(data.applied? mm('okNow') : mm('okReq')); load();
   }catch(e){ msg.textContent=(e.message||e); btn.disabled=false; }

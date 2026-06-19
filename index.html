@@ -973,6 +973,17 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
     </div>
   </div>
 </div>
+<!-- ============== RAPPEL CONNEXION (visiteur non connecté) ============== -->
+<div class="modal-bg" id="loginReminder">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head"><h3 id="lrTitle"></h3><button class="x-close" onclick="closeLoginReminder()">✕</button></div>
+    <div class="modal-body" id="lrBody" style="max-height:none"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="lrContinue" onclick="loginReminderContinue()"></button>
+      <button class="btn btn-gold" id="lrGo" onclick="location.href='connexion.html'"></button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1731,6 +1742,7 @@ function openPreview(){
   if(!services.length&&!packs.length){toast(t("noServices"));return;}
   if(!packIdfOk())return;
   if(!svcLuggageOk())return;
+  if(typeof validateServices==="function" && !validateServices())return;
   const {ttc,disc,tax,vat10,vat20,total}=computeTotals();
   const cv=id=>document.getElementById(id).value.trim();
   const name=cv("c_name")||t("noName");
@@ -1767,13 +1779,71 @@ function openPreview(){
   document.getElementById("modal").classList.add("open");
 }
 function closePreview(){document.getElementById("modal").classList.remove("open");}
+let IS_LOGGED=false, _guestAck=false, _pendingQuoteBtn=null;
+const QV={
+ v_date:{fr:"Indiquez la date et l'heure pour chaque prestation.",en:"Enter the date and time for each service.",es:"Indique la fecha y la hora de cada servicio.",it:"Indica data e ora per ogni servizio.",pt:"Indique a data e a hora de cada serviço.",tr:"Her hizmet için tarih ve saat girin.",zh:"请为每项服务填写日期和时间。"},
+ v_pickup:{fr:"Indiquez l'adresse de prise en charge pour chaque prestation.",en:"Enter the pick-up address for each service.",es:"Indique la dirección de recogida de cada servicio.",it:"Indica l'indirizzo di presa per ogni servizio.",pt:"Indique o endereço de recolha de cada serviço.",tr:"Her hizmet için alış adresini girin.",zh:"请为每项服务填写上车地址。"},
+ v_dropoff:{fr:"Indiquez l'adresse de destination pour chaque prestation.",en:"Enter the drop-off address for each service.",es:"Indique la dirección de destino de cada servicio.",it:"Indica l'indirizzo di destinazione per ogni servizio.",pt:"Indique o endereço de destino de cada serviço.",tr:"Her hizmet için varış adresini girin.",zh:"请为每项服务填写目的地地址。"},
+ v_name:{fr:"Indiquez votre nom.",en:"Enter your name.",es:"Indique su nombre.",it:"Inserisci il tuo nome.",pt:"Indique o seu nome.",tr:"Adınızı girin.",zh:"请填写您的姓名。"},
+ v_email:{fr:"Entrez votre e-mail pour recevoir le devis.",en:"Enter your email to receive the quote.",es:"Introduzca su correo para recibir el presupuesto.",it:"Inserisci la tua e-mail per ricevere il preventivo.",pt:"Introduza o seu e-mail para receber o orçamento.",tr:"Teklifi almak için e-postanızı girin.",zh:"请输入您的邮箱以接收报价。"},
+ v_phone:{fr:"Indiquez votre numéro de téléphone.",en:"Enter your phone number.",es:"Indique su número de teléfono.",it:"Inserisci il tuo numero di telefono.",pt:"Indique o seu número de telefone.",tr:"Telefon numaranızı girin.",zh:"请填写您的电话号码。"}
+};
+function qv(k){return (QV[k]&&(QV[k][LANG]||QV[k].fr))||"";}
+function validateServices(){
+  for(const s of services){
+    if(!s.date){toast(qv('v_date'));return false;}
+    if(!(s.pickup||"").trim()){toast(qv('v_pickup'));return false;}
+    const st=SERVICES.find(x=>x.id===s.type);
+    if(!(st&&st.perH) && !(s.dropoff||"").trim()){toast(qv('v_dropoff'));return false;}
+  }
+  for(const p of packs){
+    if(!p.date){toast(qv('v_date'));return false;}
+    if(!(p.pickup||"").trim()){toast(qv('v_pickup'));return false;}
+  }
+  return true;
+}
+function validateClient(){
+  const cvf=id=>{const e=document.getElementById(id);return e?e.value.trim():"";};
+  if(!cvf("c_name")){toast(qv('v_name'));return false;}
+  if(!cvf("c_email")){toast(qv('v_email'));return false;}
+  if(!cvf("c_phone")){toast(qv('v_phone'));return false;}
+  return true;
+}
+const LR={
+ title:{fr:"Pensez à votre compte",en:"Remember your account",es:"Recuerde su cuenta",it:"Ricorda il tuo account",pt:"Lembre-se da sua conta",tr:"Hesabınızı unutmayın",zh:"别忘了您的账户"},
+ body:{fr:"Vous n'êtes pas connecté. Connectez-vous ou créez un compte pour suivre votre réservation, cumuler des points de fidélité et profiter d'avantages. Vous pouvez aussi continuer sans compte.",en:"You are not logged in. Log in or create an account to track your booking, earn loyalty points and unlock benefits. You can also continue without an account.",es:"No ha iniciado sesión. Inicie sesión o cree una cuenta para seguir su reserva, acumular puntos de fidelidad y disfrutar de ventajas. También puede continuar sin cuenta.",it:"Non hai effettuato l'accesso. Accedi o crea un account per seguire la prenotazione, accumulare punti fedeltà e ottenere vantaggi. Puoi anche continuare senza account.",pt:"Não tem sessão iniciada. Inicie sessão ou crie uma conta para acompanhar a sua reserva, acumular pontos de fidelidade e obter vantagens. Também pode continuar sem conta.",tr:"Giriş yapmadınız. Rezervasyonunuzu takip etmek, sadakat puanı kazanmak ve avantajlardan yararlanmak için giriş yapın veya hesap oluşturun. Hesapsız da devam edebilirsiniz.",zh:"您尚未登录。登录或创建账户即可跟踪预订、累积积分并享受优惠。您也可以不登录继续。"},
+ cont:{fr:"Continuer sans compte",en:"Continue without account",es:"Continuar sin cuenta",it:"Continua senza account",pt:"Continuar sem conta",tr:"Hesapsız devam et",zh:"不登录继续"},
+ go:{fr:"Se connecter / S'inscrire",en:"Log in / Sign up",es:"Iniciar sesión / Registrarse",it:"Accedi / Registrati",pt:"Entrar / Registar",tr:"Giriş yap / Kayıt ol",zh:"登录 / 注册"}
+};
+function showLoginReminder(btn){
+  _pendingQuoteBtn=btn;
+  document.getElementById('lrTitle').textContent=LR.title[LANG]||LR.title.fr;
+  document.getElementById('lrBody').innerHTML='<p style="color:var(--muted);font-size:14px;line-height:1.6">'+(LR.body[LANG]||LR.body.fr)+'</p>';
+  document.getElementById('lrContinue').textContent=LR.cont[LANG]||LR.cont.fr;
+  document.getElementById('lrGo').textContent=LR.go[LANG]||LR.go.fr;
+  document.getElementById('loginReminder').classList.add('open');
+}
+function closeLoginReminder(){document.getElementById('loginReminder').classList.remove('open');}
+function loginReminderContinue(){_guestAck=true;closeLoginReminder();sendQuoteRequest(_pendingQuoteBtn);}
+function resetBookingForm(){
+  services=[];svcSeq=0;const sv=document.getElementById("services");if(sv)sv.innerHTML="";
+  packs=[];packSeq=0;const ps=document.getElementById("packServices");if(ps)ps.innerHTML="";
+  appliedCode="";appliedVal=0;appliedCodeRow=null;
+  const sc=document.getElementById("s_code");if(sc)sc.value="";
+  const cmsg=document.getElementById("codeMsg");if(cmsg){cmsg.textContent="";cmsg.className="code-msg";}
+  _guestAck=false;
+  try{localStorage.removeItem(FORMKEY);}catch(e){}
+  recalc();
+}
 async function sendQuoteRequest(btn){
   if(!services.length&&!packs.length){toast(t("noServices"));return;}
-  const cv=id=>document.getElementById(id).value.trim();
-  const email=cv("c_email");
-  if(!email){toast(LANG==="fr"?"Entrez votre e-mail pour recevoir le devis.":"Enter your email to receive the quote.");return;}
   if(!packIdfOk())return;
   if(!svcLuggageOk())return;
+  if(!validateServices())return;
+  if(!validateClient())return;
+  const cv=id=>document.getElementById(id).value.trim();
+  const email=cv("c_email");
+  if(!IS_LOGGED && !_guestAck){ showLoginReminder(btn); return; }
   if(typeof sb==="undefined"){toast(LANG==="fr"?"Service indisponible, réessayez.":"Service unavailable, retry.");return;}
   const {ttc,disc,tax,total}=computeTotals();
   const ref=peekRef();
@@ -1808,6 +1878,7 @@ async function sendQuoteRequest(btn){
     if(data&&data.ok===false) throw new Error(data.error||"erreur serveur");
     toast(LANG==="fr"?"Demande envoyée ! Un e-mail de confirmation vous a été adressé.":"Request sent! A confirmation email is on its way.");
     closePreview();
+    resetBookingForm();   // on vide les prestations : le récapitulatif est remis à zéro
   }catch(e){
     toast((LANG==="fr"?"Échec : ":"Failed: ")+(e&&e.message?e.message:e));
   }finally{ if(btn){btn.disabled=false;btn.textContent=old;} }
@@ -2209,6 +2280,7 @@ document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="
 /* Fidélité : si un client est connecté, on applique sa réduction automatiquement */
 (async()=>{ try{ if(typeof sb!=="undefined"&&sb){
   const {data:{session}}=await sb.auth.getSession();
+  IS_LOGGED=!!session;
   if(session){
     const {data:p}=await sb.from("profiles").select("*").eq("id",session.user.id).single();
     // Pré-remplir les coordonnées du client connecté (sans écraser une saisie en cours)
