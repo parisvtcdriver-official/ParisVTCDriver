@@ -393,6 +393,20 @@ table.fares th.veh small{display:block;color:var(--muted-2);font-size:11px;font-
 .t-who img{width:46px;height:46px;border-radius:50%;object-fit:cover;border:1px solid var(--line)}
 .t-who b{display:block;font-size:14.5px}
 .t-who small{color:var(--muted-2);font-size:12.5px}
+/* testimonials carousel — sobre & premium */
+.t-carousel{position:relative;margin-top:38px}
+.t-viewport{overflow:hidden;padding:6px 2px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent);mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.t-track{display:flex;gap:22px;transition:transform .8s cubic-bezier(.22,.61,.36,1);will-change:transform}
+.t-track>.t-card{flex:0 0 calc((100% - 44px)/3);min-width:0;margin:0;opacity:.55;transform:scale(.97);transition:opacity .6s ease,transform .6s ease}
+.t-track>.t-card.is-active{opacity:1;transform:scale(1)}
+.t-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(10,16,30,.72);border:1px solid var(--line);color:var(--gold-2);font-size:22px;line-height:1;cursor:pointer;backdrop-filter:blur(8px);transition:all .25s;opacity:.85}
+.t-nav:hover{background:rgba(201,162,74,.16);border-color:var(--gold);color:var(--gold-bright);opacity:1}
+.t-nav.prev{left:-10px}.t-nav.next{right:-10px}
+.t-dots{display:flex;justify-content:center;gap:9px;margin-top:24px}
+.t-dots button{width:8px;height:8px;border-radius:50%;border:none;background:var(--line);cursor:pointer;padding:0;transition:all .3s}
+.t-dots button.on{background:var(--gold);width:26px;border-radius:6px}
+@media(max-width:1000px){.t-track>.t-card{flex-basis:calc((100% - 22px)/2)}}
+@media(max-width:720px){.t-track>.t-card{flex-basis:100%;opacity:1;transform:none}.t-nav.prev{left:2px}.t-nav.next{right:2px}}
 
 /* stats strip */
 .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center}
@@ -866,7 +880,12 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
   <div class="wrap">
     <span class="eyebrow" data-i18n="te_eyebrow">Client Voices</span>
     <h2 class="title" data-i18n="te_title">Trusted by Discerning Travellers</h2>
-    <div class="t-grid" style="margin-top:38px" id="testiGrid"></div>
+    <div class="t-carousel" id="testiCarousel" onmouseenter="stopCarousel()" onmouseleave="startCarousel()">
+      <button class="t-nav prev" type="button" onclick="carStep(-1)" aria-label="Précédent">‹</button>
+      <div class="t-viewport"><div class="t-track" id="testiTrack"></div></div>
+      <button class="t-nav next" type="button" onclick="carStep(1)" aria-label="Suivant">›</button>
+      <div class="t-dots" id="testiDots"></div>
+    </div>
   </div>
 </section>
 
@@ -1410,41 +1429,58 @@ function renderTrust(){
     </div>`).join("");
 }
 function escHtml(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
-function renderTesti(){
-  const fixed=TESTI.map(x=>`
-    <div class="t-card">
+function staticTestiCards(){
+  return TESTI.map(x=>`<div class="t-card">
       <div class="stars">★★★★★</div>
       <p>“${PL(x.q)}”</p>
       <div class="t-who"><img src="https://picsum.photos/seed/${x.img}/120/120" alt="${x.n}"><div><b>${x.n}</b><small>${PL(x.r)}</small></div></div>
     </div>`).join("");
-  document.getElementById("testiGrid").innerHTML=fixed;
+}
+function renderTesti(){
+  const tk=document.getElementById("testiTrack"); if(tk) tk.innerHTML=staticTestiCards();
+  buildCarousel();
   loadClientReviews();
 }
 async function loadClientReviews(){
   if(typeof sb==="undefined"||!sb) return;
   try{
-    const {data}=await sb.from("reviews").select("author_name,rating,comment,created_at").eq("status","approved").order("created_at",{ascending:false}).limit(9);
-    if(!data||!data.length) return;
+    const {data}=await sb.from("reviews").select("author_name,rating,comment,created_at,role").eq("status","approved").order("created_at",{ascending:false}).limit(12);
+    if(!data||!data.length) return;   // aucun avis en base → on garde les témoignages de démo
     const cards=data.map(r=>{
       const name=(r.author_name||"Client").trim();
       const ini=(name[0]||"C").toUpperCase();
-      const st="★★★★★☆☆☆☆☆".slice(5-Math.max(1,Math.min(5,r.rating||5)),10-Math.max(1,Math.min(5,r.rating||5)));
-      const dt=r.created_at?new Date(r.created_at).toLocaleDateString():"";
+      const rn=Math.max(1,Math.min(5,r.rating||5));
+      const st="★★★★★☆☆☆☆☆".slice(5-rn,10-rn);
+      const sub=r.role?escHtml(r.role):("ParisVTCDriver"+(r.created_at?" · "+new Date(r.created_at).toLocaleDateString():""));
       return `<div class="t-card">
         <div class="stars">${st}</div>
         ${r.comment?`<p>“${escHtml(r.comment)}”</p>`:`<p style="opacity:.6">—</p>`}
-        <div class="t-who"><span style="width:48px;height:48px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(201,162,74,.18);color:var(--gold);font-weight:700;font-size:18px">${ini}</span><div><b>${escHtml(name)}</b><small>ParisVTCDriver · ${dt}</small></div></div>
+        <div class="t-who"><span style="width:48px;height:48px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(201,162,74,.18);color:var(--gold);font-weight:700;font-size:18px">${ini}</span><div><b>${escHtml(name)}</b><small>${sub}</small></div></div>
       </div>`;
     }).join("");
-    const fixed=TESTI.map(x=>`
-      <div class="t-card">
-        <div class="stars">★★★★★</div>
-        <p>“${PL(x.q)}”</p>
-        <div class="t-who"><img src="https://picsum.photos/seed/${x.img}/120/120" alt="${x.n}"><div><b>${x.n}</b><small>${PL(x.r)}</small></div></div>
-      </div>`).join("");
-    document.getElementById("testiGrid").innerHTML=cards+fixed;
+    const tk=document.getElementById("testiTrack"); if(tk){ tk.innerHTML=cards; buildCarousel(); }
   }catch(e){}
 }
+/* ---------------- TESTIMONIALS CAROUSEL (sobre & premium) ---------------- */
+let _carI=0,_carTimer=null;
+function carVisible(){return window.innerWidth<=720?1:(window.innerWidth<=1000?2:3);}
+function carMax(){const tk=document.getElementById("testiTrack");if(!tk)return 0;return Math.max(0,tk.children.length-carVisible());}
+function carApply(){
+  const tk=document.getElementById("testiTrack"); if(!tk||!tk.children.length)return;
+  const max=carMax(); if(_carI>max)_carI=max; if(_carI<0)_carI=0;
+  const cw=tk.children[0].getBoundingClientRect().width, gap=22;
+  tk.style.transform="translateX(-"+(_carI*(cw+gap))+"px)";
+  const vis=carVisible();
+  Array.from(tk.children).forEach((c,i)=>c.classList.toggle("is-active",i>=_carI&&i<_carI+vis));
+  const dots=document.getElementById("testiDots");
+  if(dots){let h="";for(let i=0;i<=max;i++)h+=`<button type="button" class="${i===_carI?'on':''}" onclick="carGo(${i})" aria-label="Avis ${i+1}"></button>`;dots.innerHTML=h;}
+}
+function carStep(d){_carI+=d;const max=carMax();if(_carI>max)_carI=0;if(_carI<0)_carI=max;carApply();}
+function carGo(i){_carI=i;carApply();}
+function buildCarousel(){_carI=0;carApply();startCarousel();}
+function startCarousel(){stopCarousel();const tk=document.getElementById("testiTrack");if(tk&&tk.children.length>carVisible())_carTimer=setInterval(()=>carStep(1),5200);}
+function stopCarousel(){if(_carTimer){clearInterval(_carTimer);_carTimer=null;}}
+window.addEventListener("resize",()=>{clearTimeout(window._carRz);window._carRz=setTimeout(carApply,180);});
 
 /* ---------------- SERVICES ---------------- */
 function addService(data){
