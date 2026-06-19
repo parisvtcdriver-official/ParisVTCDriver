@@ -1451,7 +1451,7 @@ async function loadClientReviews(){
       const ini=(name[0]||"C").toUpperCase();
       const rn=Math.max(1,Math.min(5,r.rating||5));
       const st="★★★★★☆☆☆☆☆".slice(5-rn,10-rn);
-      const parts=[]; if(r.role)parts.push(escHtml(r.role)); else if(r.country)parts.push(escHtml(r.country)); if(!r.role&&r.created_at)parts.push(new Date(r.created_at).toLocaleDateString());
+      const parts=[]; if(r.role)parts.push(escHtml(r.role)); if(r.country)parts.push(escHtml(r.country)); if(!r.role&&r.created_at)parts.push(new Date(r.created_at).toLocaleDateString());
       const sub=parts.join(" · ");
       return `<div class="t-card">
         <div class="stars">${st}</div>
@@ -1469,21 +1469,29 @@ function _trCacheGet(text,lang){try{return localStorage.getItem("pvtc_tr_"+lang+
 function _trCacheSet(text,lang,val){try{localStorage.setItem("pvtc_tr_"+lang+"_"+_trHash(text),val);}catch(e){}}
 function _decodeEntities(s){const t=document.createElement("textarea");t.innerHTML=s;return t.value;}
 function _setRvText(i,txt){const el=document.getElementById("rvc-"+i);if(el)el.textContent="“"+txt+"”";}
+async function _mmTranslate(text,src,target){
+  // MyMemory : traduction gratuite sans clé (q ≤ 500 caractères)
+  const url="https://api.mymemory.translated.net/get?q="+encodeURIComponent(text.slice(0,480))+"&langpair="+encodeURIComponent(src+"|"+target);
+  const resp=await fetch(url);
+  const j=await resp.json();
+  const tx=j&&j.responseData&&j.responseData.translatedText;
+  if(!tx) return null;
+  // MyMemory renvoie parfois un message d'erreur en majuscules dans translatedText
+  if(/MYMEMORY WARNING|INVALID LANGUAGE|QUERY LENGTH LIMIT/i.test(tx)) return null;
+  return _decodeEntities(String(tx));
+}
 async function translateReviewCards(data){
-  if(typeof sb==="undefined"||!sb) return;
-  const idxs=[],texts=[];
-  data.forEach((r,i)=>{
-    const src=String(r.lang||"fr").split("-")[0];
-    if(!r.comment || src===LANG) return;          // déjà dans la bonne langue
-    const cached=_trCacheGet(r.comment,LANG);
-    if(cached!=null){ _setRvText(i,cached); }
-    else { idxs.push(i); texts.push(r.comment); }
-  });
-  if(!texts.length) return;
-  try{
-    const {data:res}=await sb.functions.invoke('request-quote',{body:{action:'translate',texts,target:LANG}});
-    if(res&&res.translations){ res.translations.forEach((tx,k)=>{ const dec=_decodeEntities(String(tx||"")); _trCacheSet(texts[k],LANG,dec); _setRvText(idxs[k],dec); }); }
-  }catch(e){}
+  const myLang=LANG;
+  for(let i=0;i<data.length;i++){
+    const r=data[i]; const src=String(r.lang||"fr").split("-")[0];
+    if(!r.comment || src===myLang) continue;       // déjà dans la bonne langue
+    const cached=_trCacheGet(r.comment,myLang);
+    if(cached!=null){ if(LANG===myLang)_setRvText(i,cached); continue; }
+    try{
+      const dec=await _mmTranslate(r.comment,src,myLang);
+      if(dec){ _trCacheSet(r.comment,myLang,dec); if(LANG===myLang)_setRvText(i,dec); }
+    }catch(e){}
+  }
 }
 /* ---------------- TESTIMONIALS CAROUSEL (sobre & premium) ---------------- */
 let _carI=0,_carTimer=null;
