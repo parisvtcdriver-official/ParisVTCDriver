@@ -680,7 +680,7 @@ function renderDocs(){
       :`<button class="btn-mini" onclick="archiveBooking('${b.id}')" title="Archiver (masqué des listes, points et compteur du client conservés)">Archiver</button>`;
     let act=`<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> ${archBtn} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer définitivement (réduit le compteur de courses)">✕</button>`;
     if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
-    else if(b.type==='facture'&&b.pay_status!=='paid') act=`<button class="btn-mini gold" onclick="validatePayment('${b.id}')">Valider paiement</button> `+act;
+    else if(b.type==='facture'&&b.pay_status!=='paid') act=`<button class="btn-mini gold" onclick="validatePayment('${b.id}')">Valider paiement</button> <button class="btn-mini" onclick="resendPayLink('${b.id}')" title="Créer/renvoyer le lien de paiement carte">Renvoyer lien</button> `+act;
     return `<tr${arch?' style="opacity:.6"':''}><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(bookingClient(b))}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td>${eur(b.amount_ht)}</td><td>${eur(b.vat)}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${typeCell}</td><td>${act}</td></tr>`;
   }).join('');
 }
@@ -899,6 +899,20 @@ async function acceptDevis(id){
   toast(free?'Facture soldée émise ✓':'Facture émise (en attente de paiement) ✓');
   await refresh();
   await emailInvoice(BOOKINGS.find(x=>x.id===id), free?'paid':'awaiting');
+}
+async function resendPayLink(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  if(!Number(b.amount_ttc)){toast('Montant nul — pas de lien à créer.');return;}
+  toast('Création du lien de paiement…');
+  let url='';
+  try{
+    const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'create-payment',booking_id:id}});
+    if(error||!data||!data.ok){ toast('Stripe : '+((data&&data.error)||(error&&error.message)||'échec création lien')); return; }
+    url=data.url||'';
+  }catch(e){ toast('Stripe : '+(e&&e.message?e.message:e)); return; }
+  await refresh();
+  await emailInvoice(BOOKINGS.find(x=>x.id===id),'awaiting');
+  toast('Lien créé ✓ e-mail renvoyé');
 }
 async function validatePayment(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
