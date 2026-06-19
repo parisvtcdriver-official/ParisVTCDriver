@@ -663,7 +663,9 @@ function renderDocs(list){
     if(b.type==='facture') badge=(['cancelled','refunded'].includes(b.status))?statusBadgeFull(b):(b.pay_status==='paid'?'<span class="st conf">'+FPAID+'</span>':'<span class="st att">'+t('topay')+'</span>');
     else badge='<span class="st att">'+DEVIS+'</span>';
     const rev=revCell(b);
-    return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(b.service||'')}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString(loc):'—'}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${badge}</td><td>${b.type==='facture'?`<button class="btn btn-ghost btn-sm" onclick="clientDocPDF('${b.id}')">PDF</button>`:''}${rev}</td></tr>`;
+    const PAYNOW={fr:'Payer par carte',en:'Pay by card',es:'Pagar con tarjeta',it:'Paga con carta',pt:'Pagar com cartão',tr:'Kartla öde',zh:'银行卡支付'}[LANG]||'Payer par carte';
+    const payNow=(b.type==='facture'&&b.pay_status!=='paid'&&!['cancelled','refunded'].includes(b.status)&&b.details&&b.details.stripe_url)?`<a class="btn btn-gold btn-sm" style="margin-left:6px" href="${b.details.stripe_url}" target="_blank" rel="noopener">💳 ${PAYNOW}</a>`:'';
+    return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(b.service||'')}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString(loc):'—'}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${badge}</td><td>${b.type==='facture'?`<button class="btn btn-ghost btn-sm" onclick="clientDocPDF('${b.id}')">PDF</button>`:''}${payNow}${rev}</td></tr>`;
   }).join('');
 }
 /* ---- PDF côté client (mêmes polices accentuées + retour à la ligne) ---- */

@@ -920,9 +920,17 @@ async function emailInvoice(b,mode){
   const paid=mode==='paid';
   const ref=b.reference||'';
   const subject=paid?('Facture payée '+ref+' · ParisVTCDriver'):('Facture à régler '+ref+' · ParisVTCDriver');
+  // Lien de paiement carte (Stripe) — créé/récupéré pour les factures en attente avec montant > 0
+  let payUrl='';
+  if(!paid && Number(b.amount_ttc)>0){
+    try{ const {data:pr}=await sb.functions.invoke('request-quote',{body:{action:'create-payment',booking_id:b.id}}); if(pr&&pr.ok&&pr.url)payUrl=pr.url; else if(pr&&pr.error)console.warn('Stripe:',pr.error); }catch(e){}
+  }
+  const payBtn=payUrl
+    ? `<p style="margin:18px 0"><a href="${payUrl}" style="display:inline-block;background:#635bff;color:#fff;text-decoration:none;padding:13px 24px;border-radius:9px;font-weight:700">💳 Payer par carte en ligne</a></p><p style="color:#777;font-size:13px;margin:0 0 6px">— ou par virement bancaire —</p>`
+    : '';
   const html=paid
     ? `<h2 style="color:#a07d2c">Merci pour votre paiement</h2><p>Bonjour ${escapeHtml(name)},</p><p>Nous confirmons la réception de votre paiement. Votre facture acquittée est en pièce jointe.</p><p>Montant réglé : <b>${eur(b.amount_ttc)}</b></p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`
-    : `<h2 style="color:#a07d2c">Votre devis est accepté</h2><p>Bonjour ${escapeHtml(name)},</p><p>Votre facture est en pièce jointe. Merci de procéder au règlement par virement bancaire :</p><p><b>Montant : ${eur(b.amount_ttc)}</b><br>Bénéficiaire : PARISVTCDRIVER<br>IBAN : FR7616958000014883777337715<br>BIC : QNTOFRP1XXX<br>Référence à indiquer : ${escapeHtml(ref)}</p><p>Dès réception, nous vous confirmerons le paiement.</p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`;
+    : `<h2 style="color:#a07d2c">Votre devis est accepté</h2><p>Bonjour ${escapeHtml(name)},</p><p>Votre facture est en pièce jointe. Vous pouvez régler <b>${eur(b.amount_ttc)}</b> au choix :</p>${payBtn}<p><b>Virement bancaire</b><br>Bénéficiaire : PARISVTCDRIVER<br>IBAN : FR7616958000014883777337715<br>BIC : QNTOFRP1XXX<br>Référence à indiquer : ${escapeHtml(ref)}</p><p>Le paiement par carte est confirmé automatiquement ; pour le virement, nous vous confirmerons dès réception.</p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`;
   try{
     const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject,html,pdf_base64:pdf64,filename:(paid?'facture-payee-':'facture-')+(ref||'doc')+'.pdf'}});
     if(error||(data&&data.ok===false)) throw new Error((data&&data.error)||(error&&error.message)||'err');
