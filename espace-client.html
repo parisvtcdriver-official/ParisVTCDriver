@@ -225,6 +225,21 @@ tbody tr:hover{background:rgba(255,255,255,.02)}
     </div>
   </div>
 </div>
+<div id="revModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(3,6,12,.78);align-items:center;justify-content:center;padding:20px">
+  <div style="width:100%;max-width:440px;background:linear-gradient(165deg,#121d33,#0e1626);border:1px solid var(--line);border-radius:18px;padding:24px 26px;box-shadow:0 40px 90px -30px rgba(0,0,0,.8)">
+    <h2 id="revTitle" style="font-size:18px;margin-bottom:4px">Votre avis</h2>
+    <div id="revSvc" class="sub2" style="margin-bottom:16px"></div>
+    <div id="revRateLbl" style="font-size:12px;color:var(--muted-2);margin-bottom:6px">Votre note</div>
+    <div id="revStars" style="font-size:30px;color:var(--gold-2);cursor:pointer;letter-spacing:4px;margin-bottom:14px"></div>
+    <div id="revCommentLbl" style="font-size:12px;color:var(--muted-2);margin-bottom:6px">Votre commentaire</div>
+    <textarea id="revComment" rows="3" style="width:100%;background:rgba(7,11,20,.75);border:1px solid var(--line-soft);color:var(--txt);font-family:inherit;font-size:14px;border-radius:10px;padding:11px 13px"></textarea>
+    <div id="revMsg" style="color:var(--amber);font-size:12.5px;min-height:16px;margin:8px 0"></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeRev()" id="revCancelBtn">Annuler</button>
+      <button class="btn btn-gold btn-sm" style="flex:1" onclick="submitReview()" id="revSubmitBtn">Envoyer</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -307,6 +322,23 @@ const T={
  btn_cancel:{fr:"Annuler / remboursement",en:"Cancel / refund",es:"Cancelar / reembolso",it:"Annulla / rimborso",pt:"Cancelar / reembolso",tr:"İptal / iade",zh:"取消/退款"},
  btn_modify:{fr:"Modifier",en:"Edit",es:"Modificar",it:"Modifica",pt:"Modificar",tr:"Düzenle",zh:"修改"},
  mod_pending:{fr:"Modification en attente",en:"Edit pending",es:"Modificación pendiente",it:"Modifica in attesa",pt:"Modificação pendente",tr:"Düzenleme bekliyor",zh:"修改待处理"},
+ rev_leave:{fr:"Laisser un avis",en:"Leave a review",es:"Dejar una opinión",it:"Lascia una recensione",pt:"Deixar uma avaliação",tr:"Yorum bırak",zh:"留下评价"},
+ rev_sent:{fr:"Avis envoyé",en:"Review sent",es:"Opinión enviada",it:"Recensione inviata",pt:"Avaliação enviada",tr:"Yorum gönderildi",zh:"评价已提交"},
+ rev_title:{fr:"Votre avis",en:"Your review",es:"Su opinión",it:"La tua recensione",pt:"A sua avaliação",tr:"Yorumunuz",zh:"您的评价"},
+ rev_rate:{fr:"Votre note",en:"Your rating",es:"Su valoración",it:"Il tuo voto",pt:"A sua nota",tr:"Puanınız",zh:"您的评分"},
+ rev_comment:{fr:"Votre commentaire (facultatif)",en:"Your comment (optional)",es:"Su comentario (opcional)",it:"Il tuo commento (facoltativo)",pt:"O seu comentário (opcional)",tr:"Yorumunuz (isteğe bağlı)",zh:"您的评论（可选）"},
+ rev_ph:{fr:"Partagez votre expérience…",en:"Share your experience…",es:"Comparta su experiencia…",it:"Condividi la tua esperienza…",pt:"Partilhe a sua experiência…",tr:"Deneyiminizi paylaşın…",zh:"分享您的体验…"},
+ rev_submit:{fr:"Envoyer mon avis",en:"Send my review",es:"Enviar mi opinión",it:"Invia la recensione",pt:"Enviar a avaliação",tr:"Yorumu gönder",zh:"提交评价"},
+ rev_norate:{fr:"Choisissez une note (étoiles).",en:"Please pick a rating (stars).",es:"Elija una valoración (estrellas).",it:"Scegli un voto (stelle).",pt:"Escolha uma nota (estrelas).",tr:"Bir puan seçin (yıldız).",zh:"请选择评分（星级）。"},
+ rev_thanks:{fr:"Merci ! Votre avis sera publié après validation.",en:"Thank you! Your review will be published after approval.",es:"¡Gracias! Su opinión se publicará tras la validación.",it:"Grazie! La recensione sarà pubblicata dopo l'approvazione.",pt:"Obrigado! A sua avaliação será publicada após aprovação.",tr:"Teşekkürler! Yorumunuz onaydan sonra yayınlanacak.",zh:"谢谢！您的评价将在审核后发布。"},
+ rev_pending:{fr:"Avis en validation",en:"Review under review",es:"Opinión en validación",it:"Recensione in convalida",pt:"Avaliação em validação",tr:"Yorum doğrulanıyor",zh:"评价审核中"},
+ rev_declined:{fr:"Avis non retenu",en:"Review not retained",es:"Opinión no retenida",it:"Recensione non accettata",pt:"Avaliação não retida",tr:"Yorum kabul edilmedi",zh:"评价未采纳"},
+ rev_google_btn:{fr:"Laisser un avis Google",en:"Leave a Google review",es:"Dejar una opinión en Google",it:"Lascia una recensione Google",pt:"Deixar uma avaliação no Google",tr:"Google'da yorum bırak",zh:"在 Google 上留评价"},
+ rev_google_done:{fr:"J'ai laissé mon avis Google",en:"I left my Google review",es:"Ya dejé mi opinión en Google",it:"Ho lasciato la recensione Google",pt:"Já deixei a avaliação no Google",tr:"Google yorumumu bıraktım",zh:"我已在 Google 留评价"},
+ rev_google_confirm:{fr:"Confirmez-vous avoir publié votre avis sur Google ? Après vérification, votre code de 5 € vous sera envoyé.",en:"Do you confirm you have posted your Google review? After verification, your €5 code will be sent to you.",es:"¿Confirma que ha publicado su opinión en Google? Tras la verificación, le enviaremos su código de 5 €.",it:"Confermi di aver pubblicato la tua recensione su Google? Dopo la verifica riceverai il tuo codice da 5 €.",pt:"Confirma que publicou a sua avaliação no Google? Após a verificação, enviamos o seu código de 5 €.",tr:"Google yorumunuzu yayınladığınızı onaylıyor musunuz? Doğrulamadan sonra 5 € kodunuz gönderilecek.",zh:"您确认已在 Google 上发布评价了吗？核实后将向您发送 5 欧元优惠码。"},
+ rev_google_thanks:{fr:"Merci ! Nous vérifions votre avis Google et vous envoyons votre code de 5 € sous peu.",en:"Thank you! We are verifying your Google review and will send your €5 code shortly.",es:"¡Gracias! Estamos verificando su opinión en Google y le enviaremos su código de 5 € en breve.",it:"Grazie! Stiamo verificando la tua recensione Google e ti invieremo il codice da 5 € a breve.",pt:"Obrigado! Estamos a verificar a sua avaliação no Google e enviaremos o seu código de 5 € em breve.",tr:"Teşekkürler! Google yorumunuzu doğruluyoruz ve 5 € kodunuzu kısa süre içinde göndereceğiz.",zh:"谢谢！我们正在核实您的 Google 评价，将尽快发送 5 欧元优惠码。"},
+ rev_google_wait:{fr:"Avis Google reçu — code en cours",en:"Google review received — code pending",es:"Opinión de Google recibida — código en curso",it:"Recensione Google ricevuta — codice in arrivo",pt:"Avaliação Google recebida — código a caminho",tr:"Google yorumu alındı — kod hazırlanıyor",zh:"已收到 Google 评价 — 优惠码处理中"},
+ rev_code_got:{fr:"Code 5 € reçu :",en:"€5 code received:",es:"Código de 5 € recibido:",it:"Codice 5 € ricevuto:",pt:"Código de 5 € recebido:",tr:"5 € kodu alındı:",zh:"已获得 5 欧元优惠码："},
  req_sent:{fr:"Demande envoyée",en:"Request sent",es:"Solicitud enviada",it:"Richiesta inviata",pt:"Pedido enviado",tr:"Talep gönderildi",zh:"请求已发送"},
  next_course:{fr:"Votre prochaine course",en:"Your next ride",es:"Su próximo trayecto",it:"La tua prossima corsa",pt:"A sua próxima viagem",tr:"Sonraki yolculuğunuz",zh:"您的下一趟行程"},
  pax:{fr:"passager(s)",en:"passenger(s)",es:"pasajero(s)",it:"passeggero/i",pt:"passageiro(s)",tr:"yolcu",zh:"位乘客"},
@@ -380,7 +412,8 @@ function statusBadgeFull(b){
   return stBadge(b.status);
 }
 
-let PROFILE=null, ALLBK=[], AVOIRS=[];
+let PROFILE=null, ALLBK=[], AVOIRS=[], REVIEWED=new Set(), REVMAP={};
+const GOOGLE_REVIEW_URL="https://g.page/r/Cevxxo_8M7oVEBM/review";
 
 async function load(){
   await requireAuth();
@@ -411,6 +444,7 @@ async function load(){
   try{ const {data:ac}=await sb.from('promo_codes').select('*').eq('kind','avoir').eq('used_by',PROFILE.id).in('status',['available','pending']); avoirCodes=ac||[]; }catch(e){}
   AVOIRS=avoirCodes;
   renderAvoirs(avoirCodes);
+  try{ const {data:rv}=await sb.from('reviews').select('id,booking_id,status,google_claimed,reward_code').eq('user_id',PROFILE.id); REVIEWED=new Set((rv||[]).map(r=>r.booking_id)); REVMAP={}; (rv||[]).forEach(r=>{REVMAP[r.booking_id]=r;}); }catch(e){}
 
   renderPartner();
   setLang(LANG);   // applique la langue (data-i18n) une fois le contenu rendu
@@ -628,7 +662,8 @@ function renderDocs(list){
     let badge;
     if(b.type==='facture') badge=(['cancelled','refunded'].includes(b.status))?statusBadgeFull(b):(b.pay_status==='paid'?'<span class="st conf">'+FPAID+'</span>':'<span class="st att">'+t('topay')+'</span>');
     else badge='<span class="st att">'+DEVIS+'</span>';
-    return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(b.service||'')}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString(loc):'—'}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${badge}</td><td>${b.type==='facture'?`<button class="btn btn-ghost btn-sm" onclick="clientDocPDF('${b.id}')">PDF</button>`:''}</td></tr>`;
+    const rev=revCell(b);
+    return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(b.service||'')}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString(loc):'—'}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${badge}</td><td>${b.type==='facture'?`<button class="btn btn-ghost btn-sm" onclick="clientDocPDF('${b.id}')">PDF</button>`:''}${rev}</td></tr>`;
   }).join('');
 }
 /* ---- PDF côté client (mêmes polices accentuées + retour à la ligne) ---- */
@@ -795,6 +830,54 @@ async function buildInvoiceDoc(b,opts){
   return doc;
 }
 
+/* ---- Avis client (course terminée) ---- */
+let REVRATE=0, REVID=null;
+function drawStars(n){REVRATE=n;const el=document.getElementById('revStars');let h='';for(let i=1;i<=5;i++){h+=`<span onclick="drawStars(${i})">${i<=n?'★':'☆'}</span>`;}el.innerHTML=h;}
+function openReview(id){
+  const b=ALLBK.find(x=>x.id===id); if(!b)return; REVID=id;
+  document.getElementById('revTitle').textContent=t('rev_title');
+  document.getElementById('revRateLbl').textContent=t('rev_rate');
+  document.getElementById('revCommentLbl').textContent=t('rev_comment');
+  const c=document.getElementById('revComment'); c.placeholder=t('rev_ph'); c.value='';
+  document.getElementById('revSubmitBtn').textContent=t('rev_submit');
+  document.getElementById('revCancelBtn').textContent=({fr:'Annuler',en:'Cancel',es:'Cancelar',it:'Annulla',pt:'Cancelar',tr:'İptal',zh:'取消'}[LANG]||'Annuler');
+  document.getElementById('revSvc').textContent=b.service||'';
+  document.getElementById('revMsg').textContent='';
+  drawStars(0);
+  document.getElementById('revModal').style.display='flex';
+}
+function closeRev(){document.getElementById('revModal').style.display='none';REVID=null;}
+async function submitReview(){
+  if(!REVRATE){document.getElementById('revMsg').textContent=t('rev_norate');return;}
+  const btn=document.getElementById('revSubmitBtn');btn.disabled=true;
+  const comment=document.getElementById('revComment').value.trim();
+  const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'submit-review',booking_id:REVID,rating:REVRATE,comment,author_name:PROFILE.full_name||''}});
+  if(error||!data||!data.ok){document.getElementById('revMsg').textContent=t('toast_err')+((data&&data.error)||(error&&error.message)||'');btn.disabled=false;return;}
+  REVIEWED.add(REVID); REVMAP[REVID]={id:null,booking_id:REVID,status:'pending',google_claimed:false,reward_code:null}; closeRev();
+  toast(t('rev_thanks'));
+  renderDocs(ALLBK);
+}
+function revCell(b){
+  if(b.status!=='completed') return '';
+  const r=REVMAP[b.id];
+  if(!r) return `<button class="btn btn-ghost btn-sm" style="margin-left:6px" onclick="openReview('${b.id}')">★ ${t('rev_leave')}</button>`;
+  if(r.reward_code) return `<span class="sub2" style="margin-left:6px;color:var(--gold)">🎁 ${t('rev_code_got')} ${escapeHtml(r.reward_code)}</span>`;
+  if(r.status==='declined') return `<span class="sub2" style="margin-left:6px">${t('rev_declined')}</span>`;
+  if(r.status==='approved'){
+    if(r.google_claimed) return `<span class="sub2" style="margin-left:6px">⏳ ${t('rev_google_wait')}</span>`;
+    return `<a class="btn btn-ghost btn-sm" style="margin-left:6px" href="${GOOGLE_REVIEW_URL}" target="_blank" rel="noopener">★ ${t('rev_google_btn')}</a><button class="btn btn-gold btn-sm" style="margin-left:6px" onclick="claimGoogle('${r.id}',this)">${t('rev_google_done')}</button>`;
+  }
+  return `<span class="sub2" style="margin-left:6px">★ ${t('rev_pending')}</span>`;
+}
+async function claimGoogle(id,btn){
+  if(!id){toast(t('rev_pending'));return;}
+  if(!confirm(t('rev_google_confirm'))) return;
+  if(btn) btn.disabled=true;
+  const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'claim-google',review_id:id}});
+  if(error||!data||!data.ok){toast(t('toast_err')+((data&&data.error)||(error&&error.message)||''));if(btn)btn.disabled=false;return;}
+  if(REVMAP){for(const k in REVMAP){if(REVMAP[k].id===id)REVMAP[k].google_claimed=true;}}
+  toast(t('rev_google_thanks')); renderDocs(ALLBK);
+}
 /* ---- Modification de réservation par le client ---- */
 let MODID=null;
 const MM={

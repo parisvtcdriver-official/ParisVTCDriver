@@ -1398,13 +1398,41 @@ function renderTrust(){
       <h4>${PL(x.t)}</h4><p>${PL(x.d)}</p>
     </div>`).join("");
 }
+function escHtml(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 function renderTesti(){
-  document.getElementById("testiGrid").innerHTML=TESTI.map(x=>`
+  const fixed=TESTI.map(x=>`
     <div class="t-card">
       <div class="stars">★★★★★</div>
       <p>“${PL(x.q)}”</p>
       <div class="t-who"><img src="https://picsum.photos/seed/${x.img}/120/120" alt="${x.n}"><div><b>${x.n}</b><small>${PL(x.r)}</small></div></div>
     </div>`).join("");
+  document.getElementById("testiGrid").innerHTML=fixed;
+  loadClientReviews();
+}
+async function loadClientReviews(){
+  if(typeof sb==="undefined"||!sb) return;
+  try{
+    const {data}=await sb.from("reviews").select("author_name,rating,comment,created_at").eq("status","approved").order("created_at",{ascending:false}).limit(9);
+    if(!data||!data.length) return;
+    const cards=data.map(r=>{
+      const name=(r.author_name||"Client").trim();
+      const ini=(name[0]||"C").toUpperCase();
+      const st="★★★★★☆☆☆☆☆".slice(5-Math.max(1,Math.min(5,r.rating||5)),10-Math.max(1,Math.min(5,r.rating||5)));
+      const dt=r.created_at?new Date(r.created_at).toLocaleDateString():"";
+      return `<div class="t-card">
+        <div class="stars">${st}</div>
+        ${r.comment?`<p>“${escHtml(r.comment)}”</p>`:`<p style="opacity:.6">—</p>`}
+        <div class="t-who"><span style="width:48px;height:48px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(201,162,74,.18);color:var(--gold);font-weight:700;font-size:18px">${ini}</span><div><b>${escHtml(name)}</b><small>ParisVTCDriver · ${dt}</small></div></div>
+      </div>`;
+    }).join("");
+    const fixed=TESTI.map(x=>`
+      <div class="t-card">
+        <div class="stars">★★★★★</div>
+        <p>“${PL(x.q)}”</p>
+        <div class="t-who"><img src="https://picsum.photos/seed/${x.img}/120/120" alt="${x.n}"><div><b>${x.n}</b><small>${PL(x.r)}</small></div></div>
+      </div>`).join("");
+    document.getElementById("testiGrid").innerHTML=cards+fixed;
+  }catch(e){}
 }
 
 /* ---------------- SERVICES ---------------- */

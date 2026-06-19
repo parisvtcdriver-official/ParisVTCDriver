@@ -110,6 +110,7 @@ select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:
     <div class="nav-i" data-v="cli"><svg viewBox="0 0 24 24" stroke-width="1.7"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg> Clients</div>
     <div class="nav-i" data-v="fidel"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z"/></svg> Fidélité</div>
     <div class="nav-i" data-v="part"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M16 11a4 4 0 1 0-8 0M2 21v-1a5 5 0 0 1 5-5h2M22 21v-1a5 5 0 0 0-5-5h-2"/></svg> Partenaires <span class="badge" id="bPart"></span></div>
+    <div class="nav-i" data-v="avis"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z"/></svg> Avis <span class="badge" id="bAvis"></span></div>
     <div class="nav-i" data-v="stats"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M3 3v18h18"/><path d="M7 14l3-4 3 3 4-6"/></svg> Statistiques</div>
     <div class="nav-i" data-v="param"><svg viewBox="0 0 24 24" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg> Paramètres</div>
     <div class="side-foot"><div class="av" id="sfAv">··</div><div><b id="sfName" style="color:var(--txt);font-size:13px">…</b><div style="font-size:11px;color:var(--muted-2)">Administrateur</div></div>
@@ -207,6 +208,13 @@ select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:
       <div class="card infobox"><b style="color:var(--gold-2)">Workflow :</b> chaque demande arrive ici. Vous pouvez la passer en cours, l'accepter (et convenir d'un tarif préférentiel) ou la refuser.</div>
     </section>
 
+    <!-- AVIS -->
+    <section class="view" id="avis">
+      <div class="top"><div><h1>Avis clients</h1><div class="sub">Approuvez les avis avant publication sur le site</div></div></div>
+      <div class="card" id="allAvis"></div>
+      <div class="card infobox"><b style="color:var(--gold-2)">Modération :</b> seuls les avis « Approuvé » apparaissent sur le site public. Vous pouvez approuver, masquer ou supprimer chaque avis.</div>
+    </section>
+
     <!-- STATS -->
     <section class="view" id="stats">
       <div class="top"><div><h1>Statistiques</h1><div class="sub" id="statYear">Vue d'ensemble de l'activité</div></div></div>
@@ -279,7 +287,9 @@ function medal(lvl){
 }
 function medalFor(levelName){return ({Diamant:'platine',Or:'or',Argent:'argent',Bronze:'bronze'})[levelName]||'';}
 
-let ME=null, PROFILES={}, BOOKINGS=[], PARTS=[], PROMOS=[], RESA_FILTER='all', PART_FILTER='all';
+let ME=null, PROFILES={}, BOOKINGS=[], PARTS=[], PROMOS=[], REVIEWS=[], RESA_FILTER='all', PART_FILTER='all';
+const GOOGLE_REVIEW_URL="https://g.page/r/Cevxxo_8M7oVEBM/review";   // lien direct « écrire un avis »
+const GOOGLE_PROFILE_URL="https://share.google/k5VS6gZLbxR3QsHr7";  // fiche (pour relire les avis)
 
 async function load(){
   ME = await requireAdmin();
@@ -295,14 +305,15 @@ async function load(){
 }
 
 async function refresh(){
-  const [{data:profs},{data:bk},{data:parts},{data:promos}] = await Promise.all([
+  const [{data:profs},{data:bk},{data:parts},{data:promos},rvRes] = await Promise.all([
     sb.from('profiles').select('*').order('created_at',{ascending:false}),
     sb.from('bookings').select('*').order('date_time',{ascending:false,nullsFirst:false}),
     sb.from('partner_requests').select('*').order('created_at',{ascending:false}),
-    sb.from('promo_codes').select('*').order('created_at',{ascending:false})
+    sb.from('promo_codes').select('*').order('created_at',{ascending:false}),
+    sb.from('reviews').select('*').order('created_at',{ascending:false})
   ]);
   PROFILES={}; (profs||[]).forEach(p=>PROFILES[p.id]=p);
-  BOOKINGS=bk||[]; PARTS=parts||[]; PROMOS=promos||[];
+  BOOKINGS=bk||[]; PARTS=parts||[]; PROMOS=promos||[]; REVIEWS=(rvRes&&rvRes.data)||[];
   const allProfs=profs||[];
 
   const now=new Date(), yr=now.getFullYear(), mo=now.getMonth();
@@ -350,6 +361,9 @@ async function refresh(){
 
   // partenaires
   renderPartChips(); renderPartners();
+
+  // avis
+  renderReviews(); setBadge('bAvis', REVIEWS.filter(r=>r.status==='pending').length);
 
   // stats
   document.getElementById('sYearCA').textContent=eur(caYear);
@@ -443,6 +457,54 @@ function renderResaTable(elId,list,withSelect){
   }).join('');
 }
 function clientMailOf(b){return (b.details&&b.details.client_email)||(b.user_id&&PROFILES[b.user_id]&&PROFILES[b.user_id].email)||'';}
+function stars(n){let s='';for(let i=1;i<=5;i++)s+=i<=n?'★':'☆';return s;}
+function renderReviews(){
+  const el=document.getElementById('allAvis'); if(!el)return;
+  if(!REVIEWS.length){el.innerHTML='<div class="empty" style="padding:20px">Aucun avis pour le moment.</div>';return;}
+  const stLbl={pending:['att','À modérer'],approved:['conf','Approuvé'],declined:['ann','Masqué']};
+  el.innerHTML=REVIEWS.map(r=>{
+    const s=stLbl[r.status]||['att',r.status];
+    const who=r.author_name||(r.user_id&&PROFILES[r.user_id]&&(PROFILES[r.user_id].full_name||PROFILES[r.user_id].email))||'Client';
+    let act='';
+    if(r.status!=='approved') act+=`<button class="btn-mini gold" onclick="setReview('${r.id}','approved')">Approuver</button> `;
+    if(r.status!=='declined') act+=`<button class="btn-mini" onclick="setReview('${r.id}','declined')">Masquer</button> `;
+    act+=`<button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteReview('${r.id}')" title="Supprimer">✕</button>`;
+    // Étape « code 5 € » liée à l'avis Google
+    let gift='';
+    if(r.reward_code){
+      gift=`<div class="sub2" style="margin-top:8px;color:var(--gold)">🎁 Code 5 € envoyé : <b>${escapeHtml(r.reward_code)}</b>${r.reward_at?' · '+new Date(r.reward_at).toLocaleDateString('fr-FR'):''}</div>`;
+    } else if(r.status==='approved'){
+      if(r.google_claimed){
+        gift=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line-soft)"><span class="sub2" style="color:var(--amber)">⏳ Le client déclare avoir laissé son avis Google.</span><div style="margin-top:6px"><a class="btn-mini" href="${GOOGLE_PROFILE_URL}" target="_blank" rel="noopener">Vérifier sur Google</a> <button class="btn-mini gold" onclick="rewardReview('${r.id}')">Envoyer le code 5 €</button></div></div>`;
+      } else {
+        gift=`<div class="sub2" style="margin-top:8px;color:var(--muted)">En attente : le client doit publier son avis Google pour recevoir son code 5 €.</div>`;
+      }
+    }
+    return `<div style="padding:14px 20px;border-bottom:1px solid var(--line-soft)"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><b style="color:var(--gold-2);letter-spacing:2px">${stars(r.rating)}</b><b style="color:var(--txt)">${escapeHtml(who)}</b><span class="sub2">${r.created_at?new Date(r.created_at).toLocaleDateString('fr-FR'):''}</span><span style="margin-left:auto"><span class="st ${s[0]}">${s[1]}</span></span></div>${r.comment?`<div style="color:var(--muted);font-size:13.5px;margin-top:6px">« ${escapeHtml(r.comment)} »</div>`:''}<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${act}</div>${gift}</div>`;
+  }).join('');
+}
+async function setReview(id,status){
+  const{error}=await sb.from('reviews').update({status}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  if(status==='approved'){ inviteGoogle(id); }
+  toast(status==='approved'?'Avis approuvé ✓ (publié)':'Avis masqué');
+  refresh();
+}
+async function inviteGoogle(id){
+  const r=REVIEWS.find(x=>x.id===id); if(!r)return;
+  const mail=(r.user_id&&PROFILES[r.user_id]&&PROFILES[r.user_id].email)||'';
+  if(!mail)return;
+  const name=(r.user_id&&PROFILES[r.user_id]&&PROFILES[r.user_id].full_name)||r.author_name||'';
+  const html=`<h2 style="color:#a07d2c">Votre avis est publié — recevez 5 €</h2><p>Bonjour ${name},</p><p>Merci ! Votre avis a été validé et publié sur notre site. Pour recevoir un <b>code de 5 €</b> utilisable sur l'ensemble du site, publiez également votre avis sur Google :</p><p><a href="${GOOGLE_REVIEW_URL}" style="display:inline-block;background:#a07d2c;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px;font-weight:700">Laisser mon avis Google</a></p><p>Ensuite, revenez dans votre espace client et cliquez sur « J'ai laissé mon avis Google ». Après une rapide vérification, nous vous enverrons votre code de 5 €.</p><p style="color:#888;font-size:12px;margin-top:16px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`;
+  try{ await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to:mail,subject:'Votre avis est publié — recevez 5 € sur ParisVTCDriver',html}}); }catch(e){}
+}
+async function rewardReview(id){
+  if(!confirm('Avez-vous vérifié l\'avis Google du client ?\n\nLe code de 5 € sera généré et envoyé au client par e-mail.'))return;
+  const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'reward-review',review_id:id}});
+  if(error||!data||!data.ok){toast('Erreur : '+((data&&data.error)||(error&&error.message)||''));return;}
+  toast('Code 5 € envoyé ✓ ('+(data.code||'')+')'); refresh();
+}
+async function deleteReview(id){if(!confirm('Supprimer cet avis définitivement ?'))return;const{error}=await sb.from('reviews').delete().eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Avis supprimé ✓');refresh();}
 async function acceptModif(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b||!b.details||!b.details.mod_request)return;
   const mr=b.details.mod_request;
@@ -1082,6 +1144,7 @@ async function setStatus(id,status){
   const {error}=await sb.from('bookings').update(upd).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
   if(status==='completed' && b && b.details && b.details.applied_code){ await processAvoirRedemption(b); }
+  if(status==='completed' && b){ const to=clientMailOf(b); if(to){ try{ await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject:'Votre avis nous intéresse — ParisVTCDriver',html:`<h2 style="color:#a07d2c">Comment s'est passée votre course ?</h2><p>Bonjour,</p><p>Votre course « ${escapeHtml(b.service||'')} » est terminée. Nous serions ravis de recueillir votre avis : connectez-vous à votre espace client et cliquez sur « ★ Laisser un avis » à côté de votre course (onglet Devis &amp; factures).</p><p><a href="https://www.parisvtcdriver.com/connexion.html" style="color:#a07d2c">Accéder à mon espace</a></p><p style="color:#888;font-size:12px">ParisVTCDriver · +33 7 49 19 83 18</p>`}}); }catch(e){} } }
   if(['cancelled','refunded','avoir'].includes(status)){ await releaseAppliedCode(b); }   // le code utilisé redevient disponible
   if(isRefund){
     toast(status==='avoir'?'Avoir émis ✓ (code généré)':'Remboursement validé ✓');
