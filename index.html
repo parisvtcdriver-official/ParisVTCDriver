@@ -1444,21 +1444,45 @@ function renderTesti(){
 async function loadClientReviews(){
   if(typeof sb==="undefined"||!sb) return;
   try{
-    const {data}=await sb.from("reviews").select("author_name,rating,comment,created_at,role").eq("status","approved").order("created_at",{ascending:false}).limit(12);
+    const {data}=await sb.from("reviews").select("author_name,rating,comment,created_at,role,country,lang").eq("status","approved").order("created_at",{ascending:false}).limit(12);
     if(!data||!data.length) return;   // aucun avis en base → on garde les témoignages de démo
-    const cards=data.map(r=>{
+    const cards=data.map((r,i)=>{
       const name=(r.author_name||"Client").trim();
       const ini=(name[0]||"C").toUpperCase();
       const rn=Math.max(1,Math.min(5,r.rating||5));
       const st="★★★★★☆☆☆☆☆".slice(5-rn,10-rn);
-      const sub=r.role?escHtml(r.role):(r.created_at?new Date(r.created_at).toLocaleDateString():"");
+      const parts=[]; if(r.role)parts.push(escHtml(r.role)); else if(r.country)parts.push(escHtml(r.country)); if(!r.role&&r.created_at)parts.push(new Date(r.created_at).toLocaleDateString());
+      const sub=parts.join(" · ");
       return `<div class="t-card">
         <div class="stars">${st}</div>
-        ${r.comment?`<p>“${escHtml(r.comment)}”</p>`:`<p style="opacity:.6">—</p>`}
+        ${r.comment?`<p id="rvc-${i}">“${escHtml(r.comment)}”</p>`:`<p style="opacity:.6">—</p>`}
         <div class="t-who"><span style="width:48px;height:48px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(201,162,74,.18);color:var(--gold);font-weight:700;font-size:18px">${ini}</span><div><b>${escHtml(name)}</b><small>${sub}</small></div></div>
       </div>`;
     }).join("");
     const tk=document.getElementById("testiTrack"); if(tk){ tk.innerHTML=cards; buildCarousel(); }
+    translateReviewCards(data);
+  }catch(e){}
+}
+/* ---------------- TRADUCTION AUTO DES AVIS (langue du visiteur) ---------------- */
+function _trHash(s){let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0;}return String(h);}
+function _trCacheGet(text,lang){try{return localStorage.getItem("pvtc_tr_"+lang+"_"+_trHash(text));}catch(e){return null;}}
+function _trCacheSet(text,lang,val){try{localStorage.setItem("pvtc_tr_"+lang+"_"+_trHash(text),val);}catch(e){}}
+function _decodeEntities(s){const t=document.createElement("textarea");t.innerHTML=s;return t.value;}
+function _setRvText(i,txt){const el=document.getElementById("rvc-"+i);if(el)el.textContent="“"+txt+"”";}
+async function translateReviewCards(data){
+  if(typeof sb==="undefined"||!sb) return;
+  const idxs=[],texts=[];
+  data.forEach((r,i)=>{
+    const src=String(r.lang||"fr").split("-")[0];
+    if(!r.comment || src===LANG) return;          // déjà dans la bonne langue
+    const cached=_trCacheGet(r.comment,LANG);
+    if(cached!=null){ _setRvText(i,cached); }
+    else { idxs.push(i); texts.push(r.comment); }
+  });
+  if(!texts.length) return;
+  try{
+    const {data:res}=await sb.functions.invoke('request-quote',{body:{action:'translate',texts,target:LANG}});
+    if(res&&res.translations){ res.translations.forEach((tx,k)=>{ const dec=_decodeEntities(String(tx||"")); _trCacheSet(texts[k],LANG,dec); _setRvText(idxs[k],dec); }); }
   }catch(e){}
 }
 /* ---------------- TESTIMONIALS CAROUSEL (sobre & premium) ---------------- */
