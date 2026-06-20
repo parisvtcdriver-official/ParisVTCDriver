@@ -761,11 +761,11 @@ async function buildInvoiceDoc(b,opts){
   doc.text("Siège : 38 Av. des Combattants de l'Afrique du Nord, 93420 Villepinte",40,87);
   doc.text("SIRET 934505702 · TVA intracom. FR32934505702",40,100);
   doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(15);
-  doc.text(cancel?'FACTURE':(isInv?'FACTURE':'DEVIS'),W-40,60,{align:'right'});
+  doc.text(cancel?'FACTURE':(isInv?(paid?'FACTURE':'FACTURE PROFORMA'):'DEVIS'),W-40,60,{align:'right'});
   let yh=76;
   if(cancel){doc.setTextColor(...red);doc.setFont(F,'bold');doc.setFontSize(11);doc.text('— ANNULATION —',W-40,yh,{align:'right'});yh+=15;}
   doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(9);
-  doc.text(((isInv||cancel)?'Facture n° ':'Devis n° ')+(b.reference||'—'),W-40,yh,{align:'right'});yh+=14;
+  doc.text((cancel?'Facture n° ':(isInv?(paid?'Facture n° ':'Facture proforma n° '):'Devis n° '))+(b.reference||'—'),W-40,yh,{align:'right'});yh+=14;
   doc.text(b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):new Date().toLocaleDateString('fr-FR'),W-40,yh,{align:'right'});yh+=16;
   if(isInv&&!cancel){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?'PAYÉE':'EN ATTENTE DE PAIEMENT',W-40,yh,{align:'right'});}
   let y=160;
@@ -971,7 +971,7 @@ async function emailInvoice(b,mode){
   const name=(b.details&&b.details.client_name)||'';
   const paid=mode==='paid';
   const ref=b.reference||'';
-  const subject=paid?('Facture payée '+ref+' · ParisVTCDriver'):('Facture à régler '+ref+' · ParisVTCDriver');
+  const subject=paid?('Facture payée '+ref+' · ParisVTCDriver'):('Facture proforma '+ref+' · ParisVTCDriver');
   // Lien de paiement carte (Stripe) — créé/récupéré pour les factures en attente avec montant > 0
   let payUrl='';
   if(!paid && Number(b.amount_ttc)>0){
@@ -982,9 +982,9 @@ async function emailInvoice(b,mode){
     : '';
   const html=paid
     ? `<h2 style="color:#a07d2c">Merci pour votre paiement</h2><p>Bonjour ${escapeHtml(name)},</p><p>Nous confirmons la réception de votre paiement. Votre facture acquittée est en pièce jointe.</p><p>Montant réglé : <b>${eur(b.amount_ttc)}</b></p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`
-    : `<h2 style="color:#a07d2c">Votre devis est accepté</h2><p>Bonjour ${escapeHtml(name)},</p><p>Votre facture est en pièce jointe. Vous pouvez régler <b>${eur(b.amount_ttc)}</b> au choix :</p>${payBtn}<p><b>Virement bancaire</b><br>Bénéficiaire : PARISVTCDRIVER<br>IBAN : FR7616958000014883777337715<br>BIC : QNTOFRP1XXX<br>Référence à indiquer : ${escapeHtml(ref)}</p><p>Le paiement par carte est confirmé automatiquement ; pour le virement, nous vous confirmerons dès réception.</p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`;
+    : `<h2 style="color:#a07d2c">Votre devis est accepté</h2><p>Bonjour ${escapeHtml(name)},</p><p>Votre <b>facture proforma</b> est en pièce jointe. Vous pouvez régler <b>${eur(b.amount_ttc)}</b> au choix :</p>${payBtn}<p><b>Virement bancaire</b><br>Bénéficiaire : PARISVTCDRIVER<br>IBAN : FR7616958000014883777337715<br>BIC : QNTOFRP1XXX<br>Référence à indiquer : ${escapeHtml(ref)}</p><p>Le paiement par carte est confirmé automatiquement ; pour le virement, nous vous confirmerons dès réception.</p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`;
   try{
-    const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject,html,pdf_base64:pdf64,filename:(paid?'facture-payee-':'facture-')+(ref||'doc')+'.pdf'}});
+    const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject,html,pdf_base64:pdf64,filename:(paid?'facture-payee-':'facture-proforma-')+(ref||'doc')+'.pdf'}});
     if(error||(data&&data.ok===false)) throw new Error((data&&data.error)||(error&&error.message)||'err');
     toast('Facture envoyée par e-mail ✓');
   }catch(e){ toast('Facture émise, mais e-mail non envoyé : '+(e&&e.message?e.message:e)); }

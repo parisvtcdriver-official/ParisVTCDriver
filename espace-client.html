@@ -685,7 +685,7 @@ async function clientDocPDF(id){
   const cancel=['cancelled','refunded'].includes(b.status);   // l'avoir reste une facture payée
   const isAvoir=false;
   const doc=await buildInvoiceDoc(b,{cancellation:cancel,isAvoir});
-  doc.save((cancel?'facture-annulation-':'facture-')+(b.reference||'doc')+'.pdf');
+  doc.save((cancel?'facture-annulation-':(b.type==='facture'?(b.pay_status==='paid'?'facture-':'facture-proforma-'):'devis-'))+(b.reference||'doc')+'.pdf');
 }
 async function buildInvoiceDoc(b,opts){
   opts=opts||{}; const cancel=!!opts.cancellation; const isAvoir=!!opts.isAvoir;
@@ -695,6 +695,8 @@ async function buildInvoiceDoc(b,opts){
   const isInv=b.type==='facture', paid=b.pay_status==='paid';
   const PL={
    facture:{fr:'FACTURE',en:'INVOICE',es:'FACTURA',it:'FATTURA',pt:'FATURA',tr:'FATURA',zh:'发票'},
+   proforma:{fr:'FACTURE PROFORMA',en:'PROFORMA INVOICE',es:'FACTURA PROFORMA',it:'FATTURA PROFORMA',pt:'FATURA PROFORMA',tr:'PROFORMA FATURA',zh:'形式发票'},
+   pfno:{fr:'Facture proforma n° ',en:'Proforma invoice no. ',es:'Factura proforma n.º ',it:'Fattura proforma n. ',pt:'Fatura proforma n.º ',tr:'Proforma fatura no. ',zh:'形式发票编号 '},
    devis:{fr:'DEVIS',en:'QUOTE',es:'PRESUPUESTO',it:'PREVENTIVO',pt:'ORÇAMENTO',tr:'TEKLİF',zh:'报价'},
    cancel:{fr:'— ANNULATION —',en:'— CANCELLATION —',es:'— ANULACIÓN —',it:'— ANNULLAMENTO —',pt:'— ANULAÇÃO —',tr:'— İPTAL —',zh:'— 取消 —'},
    facno:{fr:'Facture n° ',en:'Invoice no. ',es:'Factura n.º ',it:'Fattura n. ',pt:'Fatura n.º ',tr:'Fatura no. ',zh:'发票编号 '},
@@ -735,11 +737,11 @@ async function buildInvoiceDoc(b,opts){
   doc.text("Siège : 38 Av. des Combattants de l'Afrique du Nord, 93420 Villepinte",40,87);
   doc.text("SIRET 934505702 · TVA intracom. FR32934505702",40,100);
   doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(15);
-  doc.text((cancel||isInv)?P('facture'):P('devis'),W-40,60,{align:'right'});
+  doc.text(cancel?P('facture'):(isInv?(paid?P('facture'):P('proforma')):P('devis')),W-40,60,{align:'right'});
   let yh=76;
   if(cancel){doc.setTextColor(...red);doc.setFont(F,'bold');doc.setFontSize(11);doc.text(P('cancel'),W-40,yh,{align:'right'});yh+=15;}
   doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(9);
-  doc.text(((isInv||cancel)?P('facno'):P('devno'))+(b.reference||'—'),W-40,yh,{align:'right'});yh+=14;
+  doc.text((cancel?P('facno'):(isInv?(paid?P('facno'):P('pfno')):P('devno')))+(b.reference||'—'),W-40,yh,{align:'right'});yh+=14;
   doc.text(b.created_at?new Date(b.created_at).toLocaleDateString(ploc):new Date().toLocaleDateString(ploc),W-40,yh,{align:'right'});yh+=16;
   if(isInv&&!cancel){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?P('paidd'):P('awaitp'),W-40,yh,{align:'right'});}
   let y=160;
