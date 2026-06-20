@@ -566,6 +566,9 @@ function renderLoyalty(points){
 function parseRDV(s){ if(!s)return null; s=String(s); let m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/),y,mo,d; if(m){d=+m[1];mo=+m[2];y=+m[3];} else { m=s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/); if(m){y=+m[1];mo=+m[2];d=+m[3];} else return null; } const t=s.match(/(\d{1,2}):(\d{2})/); return new Date(y,mo-1,d,t?+t[1]:0,t?+t[2]:0).getTime(); }
 function bkTime(b){ if(b.date_time) return new Date(b.date_time).getTime(); const l=b.details&&b.details.lines&&b.details.lines[0]; return l&&l.dt?parseRDV(l.dt):null; }
 function bkRDV(b){ if(b.date_time) return dateFR(b.date_time); const l=b.details&&b.details.lines&&b.details.lines[0]; return (l&&l.dt)||'—'; }
+function bkLine0(b){ return b.details&&b.details.lines&&b.details.lines[0]; }
+function bkVehicle(b){ if(b.vehicle) return b.vehicle; const l=bkLine0(b); if(l&&l.detail){ const v=String(l.detail).split('·')[0].trim(); if(v) return v; } return ''; }
+function bkPax(b){ const l=bkLine0(b); if(l&&l.detail){ const m=String(l.detail).match(/(\d+)\s*pax/i); if(m) return +m[1]; } return b.pax||1; }
 function cancelPolicy(ts){
   const POL={
    none0:{fr:'Aucun remboursement (date inconnue ou passée)',en:'No refund (unknown or past date)',es:'Sin reembolso (fecha desconocida o pasada)',it:'Nessun rimborso (data sconosciuta o passata)',pt:'Sem reembolso (data desconhecida ou passada)',tr:'İade yok (bilinmeyen veya geçmiş tarih)',zh:'不退款（日期未知或已过）'},
@@ -610,7 +613,7 @@ function rowResa(b,withCancel){
   }
   const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">'+t('paid')+'</span>':' <span class="st att" style="margin-left:6px">'+t('topay')+'</span>'):'';
   return `<tr><td><div class="cli">${escapeHtml(b.service||b.type)}${payTag}</div><div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
-    <td>${bkRDV(b)}</td><td>${escapeHtml(b.vehicle||'—')}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${statusBadgeFull(b)}</td>${withCancel?`<td>${extra}</td>`:''}</tr>`;
+    <td>${bkRDV(b)}</td><td>${escapeHtml(bkVehicle(b)||'—')}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${statusBadgeFull(b)}</td>${withCancel?`<td>${extra}</td>`:''}</tr>`;
 }
 async function requestCancel(id){
   const b=ALLBK.find(x=>x.id===id); if(!b)return;
@@ -642,7 +645,7 @@ function renderReservations(list){
     const b=upcoming[0];
     nw.innerHTML=`<div class="next"><div class="big"><svg viewBox="0 0 24 24"><path d="M5 17h14l-1.5-6.5a2 2 0 0 0-2-1.5h-7a2 2 0 0 0-2 1.5z"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="16.5" cy="17.5" r="1.6"/></svg></div>
       <div><div class="lbl">${t('next_course')} · ${t('st_'+b.status)}</div><div class="ttl">${escapeHtml(b.service||t('th_resa'))}</div>
-      <div class="meta">${bkRDV(b)} · ${escapeHtml(b.vehicle||'')} · ${b.pax||1} ${t('pax')}${b.pickup?'<br>'+t('pickup_in')+' : '+escapeHtml(b.pickup):''}</div></div>
+      <div class="meta">${bkRDV(b)} · ${escapeHtml(bkVehicle(b))} · ${bkPax(b)} ${t('pax')}${b.pickup?'<br>'+t('pickup_in')+' : '+escapeHtml(b.pickup):''}</div></div>
       <div class="right"><div class="lbl">${t('th_amount')} TTC</div><div class="amt">${eur(b.amount_ttc)}</div></div></div>`;
   } else { nw.innerHTML=''; }
 }
