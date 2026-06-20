@@ -1182,7 +1182,12 @@ function renderVehSplit(resaList){
 function _vehShort(s){s=String(s||'').toLowerCase();if(/van|classe v|v-class/.test(s))return 'VAN';if(/premium|berline|classe e|e-class/.test(s))return 'PREMIUM';if(/[ée]co|green|hybride|toyota/.test(s))return 'ECO';return (s||'—').toUpperCase();}
 function _noteDate(dtStr){
   let d=null;
-  if(dtStr){const m=String(dtStr).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);const t=String(dtStr).match(/(\d{1,2}):(\d{2})/);if(m)d=new Date(+m[3],+m[2]-1,+m[1],t?+t[1]:0,t?+t[2]:0);}
+  if(dtStr){
+    let Y,Mo,D,m=String(dtStr).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if(m){Y=+m[3];Mo=+m[2];D=+m[1];}
+    else{m=String(dtStr).match(/(\d{4})-(\d{1,2})-(\d{1,2})/);if(m){Y=+m[1];Mo=+m[2];D=+m[3];}}
+    if(m){const t=String(dtStr).match(/(\d{1,2}):(\d{2})/);d=new Date(Y,Mo-1,D,t?+t[1]:0,t?+t[2]:0);}
+  }
   if(!d||isNaN(d))return {date:dtStr||'—',heure:''};
   let date=d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   date=date.charAt(0).toUpperCase()+date.slice(1);
@@ -1207,8 +1212,7 @@ function missionNote(id){
     const suit=_num(/(\d+)\s*(?:grosse|valise|suitcase|hold)/i,l.detail);
     const cab=_num(/(\d+)\s*(?:cabine|cabin|bagage)/i,l.detail);
     L.push('');
-    L.push('Date: '+dd.date);
-    L.push('Heure: '+dd.heure);
+    L.push('Date: '+dd.date+(dd.heure?' · '+dd.heure:''));
     if(idx===0){ L.push(''); L.push('Nom: '+(d.client_name||bookingClient(b)||'')); L.push('Tél: '+(d.client_phone||'')); }
     L.push('');
     if(pax) L.push('Pax: '+pax+(+pax>1?' Passagers':' Passager'));
@@ -1218,6 +1222,7 @@ function missionNote(id){
     L.push('');
     L.push('PEC: '+(pec||'—'));
     L.push('DEP: '+(dep||'—'));
+    L.push('');
     L.push('Prix: '+eur(l.price!=null?l.price:b.amount_ttc));
   });
   L.push('');
@@ -1225,7 +1230,7 @@ function missionNote(id){
   L.push('📋 Suivi ER / SP / PEC ... Obligatoire');
   if(d.note_special) L.push('📝 '+d.note_special);
   if(d.note_lug) L.push('🧳 '+d.note_lug);
-  L.push('En fin de course, Virement sur Facture.');
+  L.push('Paiement en fin de course par Virement après Facture.');
   const text=L.join('\n');
   const blob=new Blob([text],{type:'text/plain;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
