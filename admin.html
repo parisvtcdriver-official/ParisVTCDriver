@@ -453,7 +453,7 @@ function renderResaTable(elId,list,withSelect){
       <td>${bkRDV(b)}</td>`+
       (wideVeh?`<td>${escapeHtml(bkVehicle(b))}</td>`:'')+
       `<td class="amt">${eur(b.amount_ttc)}</td>
-      <td>${statusCell}</td></tr>`;
+      <td>${statusCell}<div style="margin-top:6px"><button class="btn-mini" onclick="missionNote('${b.id}')" title="Télécharger la note de course">📝 Note</button></div></td></tr>`;
   }).join('');
 }
 function clientMailOf(b){return (b.details&&b.details.client_email)||(b.user_id&&PROFILES[b.user_id]&&PROFILES[b.user_id].email)||'';}
@@ -713,7 +713,7 @@ function renderDocs(){
     const archBtn=arch
       ?`<button class="btn-mini" onclick="unarchiveBooking('${b.id}')">Désarchiver</button>`
       :`<button class="btn-mini" onclick="archiveBooking('${b.id}')" title="Archiver (masqué des listes, points et compteur du client conservés)">Archiver</button>`;
-    let act=`<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> ${archBtn} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer définitivement (réduit le compteur de courses)">✕</button>`;
+    let act=`<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> <button class="btn-mini" onclick="missionNote('${b.id}')" title="Télécharger la note de course">Note</button> ${archBtn} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer définitivement (réduit le compteur de courses)">✕</button>`;
     if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
     else if(b.type==='facture'&&b.pay_status!=='paid') act=`<button class="btn-mini gold" onclick="validatePayment('${b.id}')">Valider paiement</button> <button class="btn-mini" onclick="resendPayLink('${b.id}')" title="Créer/renvoyer le lien de paiement carte">Renvoyer lien</button> `+act;
     return `<tr${arch?' style="opacity:.6"':''}><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(bookingClient(b))}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td>${eur(b.amount_ht)}</td><td>${eur(b.vat)}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${typeCell}</td><td>${act}</td></tr>`;
@@ -1178,6 +1178,62 @@ function renderVehSplit(resaList){
   el.innerHTML=entries.map((e,i)=>`<div class="list-i"><span class="dot" style="background:${colors[i%colors.length]}"></span><div class="li-main"><b>${escapeHtml(e[0])}</b></div><span class="li-amt">${Math.round(e[1]/total*100)} % <span class="sub2">(${e[1]})</span></span></div>`).join('');
 }
 
+/* ---- Note de course (ordre de mission) — image PNG fidèle au format écran ---- */
+function _vehShort(s){s=String(s||'').toLowerCase();if(/van|classe v|v-class/.test(s))return 'VAN';if(/premium|berline|classe e|e-class/.test(s))return 'PREMIUM';if(/[ée]co|green|hybride|toyota/.test(s))return 'ECO';return (s||'—').toUpperCase();}
+function _noteDate(dtStr){
+  let d=null;
+  if(dtStr){const m=String(dtStr).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);const t=String(dtStr).match(/(\d{1,2}):(\d{2})/);if(m)d=new Date(+m[3],+m[2]-1,+m[1],t?+t[1]:0,t?+t[2]:0);}
+  if(!d||isNaN(d))return {date:dtStr||'—',heure:''};
+  let date=d.toLocaleDateString('fr-FR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  date=date.charAt(0).toUpperCase()+date.slice(1);
+  const mi=d.getMinutes();const heure=d.getHours()+'h'+(mi?String(mi).padStart(2,'0'):'');
+  return {date,heure};
+}
+function _num(re,s){const m=String(s||'').match(re);return m?m[1]:'';}
+function missionNote(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  const d=b.details||{};
+  const ls=(d.lines&&d.lines.length)?d.lines:[{route:[b.pickup,b.dropoff].filter(Boolean).join(' → '),dt:bkRDV(b),detail:b.vehicle||'',price:b.amount_ttc}];
+  const ref=b.reference||b.invoice_no||b.quote_no||'';
+  const L=[];
+  L.push('INFO CLIENT');
+  L.push('');
+  L.push('Course RÉF.: '+ref);
+  ls.forEach((l,idx)=>{
+    if(ls.length>1){ L.push(''); L.push('— COURSE '+(idx+1)+' —'); }
+    const rt=String(l.route||'').split('→');const pec=(rt[0]||'').trim(),dep=(rt[1]||'').trim();
+    const dd=_noteDate(l.dt);
+    const pax=_num(/(\d+)\s*pax/i,l.detail);
+    const suit=_num(/(\d+)\s*(?:grosse|valise|suitcase|hold)/i,l.detail);
+    const cab=_num(/(\d+)\s*(?:cabine|cabin|bagage)/i,l.detail);
+    L.push('');
+    L.push('Date: '+dd.date);
+    L.push('Heure: '+dd.heure);
+    if(idx===0){ L.push(''); L.push('Nom: '+(d.client_name||bookingClient(b)||'')); L.push('Tél: '+(d.client_phone||'')); }
+    L.push('');
+    if(pax) L.push('Pax: '+pax+(+pax>1?' Passagers':' Passager'));
+    if(suit||cab) L.push('Valises: '+[suit?suit+' Grosses':'',cab?cab+' Cabines':''].filter(Boolean).join(' / '));
+    if(idx===0&&d.note_flight) L.push('Vol: '+d.note_flight);
+    L.push('Type véhicule: '+_vehShort((l.detail||'').split('·')[0]));
+    L.push('');
+    L.push('PEC: '+(pec||'—'));
+    L.push('DEP: '+(dep||'—'));
+    L.push('Prix: '+eur(l.price!=null?l.price:b.amount_ttc));
+  });
+  L.push('');
+  L.push('🎫 Tenue correcte 🙏');
+  L.push('📋 Suivi ER / SP / PEC ... Obligatoire');
+  if(d.note_special) L.push('📝 '+d.note_special);
+  if(d.note_lug) L.push('🧳 '+d.note_lug);
+  L.push('En fin de course, Virement sur Facture.');
+  const text=L.join('\n');
+  const blob=new Blob([text],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='note-'+String(ref||'course').replace(/[^a-zA-Z0-9]/g,'-')+'.txt';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast('Note téléchargée ✓');
+}
 function renderPromo(){
   const el=document.getElementById('allPromo');
   if(!PROMOS.length){el.innerHTML='<tr><td colspan="7" class="empty">Aucun code. Cliquez sur « + Générer des codes ».</td></tr>';return;}
