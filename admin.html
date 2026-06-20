@@ -457,6 +457,35 @@ function renderResaTable(elId,list,withSelect){
   }).join('');
 }
 function clientMailOf(b){return (b.details&&b.details.client_email)||(b.user_id&&PROFILES[b.user_id]&&PROFILES[b.user_id].email)||'';}
+// E-mail de félicitations quand le client franchit un palier de fidélité (Bronze/Argent/Or/Diamant)
+const TIER_NAME={
+  Bronze:{fr:'Bronze',en:'Bronze',es:'Bronce',it:'Bronzo',pt:'Bronze',tr:'Bronz',zh:'青铜'},
+  Argent:{fr:'Argent',en:'Silver',es:'Plata',it:'Argento',pt:'Prata',tr:'Gümüş',zh:'白银'},
+  Or:{fr:'Or',en:'Gold',es:'Oro',it:'Oro',pt:'Ouro',tr:'Altın',zh:'黄金'},
+  Diamant:{fr:'Diamant',en:'Diamond',es:'Diamante',it:'Diamante',pt:'Diamante',tr:'Elmas',zh:'钻石'}
+};
+const LM={
+  subj:{fr:'Félicitations ! Vous êtes niveau {tier} 🎉',en:'Congratulations! You reached {tier} 🎉',es:'¡Enhorabuena! Ha alcanzado el nivel {tier} 🎉',it:'Congratulazioni! Hai raggiunto il livello {tier} 🎉',pt:'Parabéns! Atingiu o nível {tier} 🎉',tr:'Tebrikler! {tier} seviyesine ulaştınız 🎉',zh:'恭喜！您已达到{tier}等级 🎉'},
+  h:{fr:'Bravo, vous passez {tier} !',en:'Well done, you are now {tier}!',es:'¡Bravo, ahora es {tier}!',it:'Bravo, ora sei {tier}!',pt:'Parabéns, agora é {tier}!',tr:'Harika, artık {tier} oldunuz!',zh:'太棒了，您现在是{tier}！'},
+  hi:{fr:'Bonjour',en:'Hello',es:'Hola',it:'Ciao',pt:'Olá',tr:'Merhaba',zh:'您好'},
+  p:{fr:'Grâce à votre fidélité, vous atteignez le niveau <b>{tier}</b> de notre programme et bénéficiez désormais de <b>−{off}%</b> sur vos prochaines réservations. Merci de votre confiance !',en:'Thanks to your loyalty, you have reached the <b>{tier}</b> level of our programme and now enjoy <b>−{off}%</b> on your next bookings. Thank you for your trust!',es:'Gracias a su fidelidad, ha alcanzado el nivel <b>{tier}</b> de nuestro programa y disfruta ahora de <b>−{off}%</b> en sus próximas reservas. ¡Gracias por su confianza!',it:'Grazie alla tua fedeltà, hai raggiunto il livello <b>{tier}</b> del nostro programma e ora benefici di <b>−{off}%</b> sulle prossime prenotazioni. Grazie per la fiducia!',pt:'Graças à sua fidelidade, atingiu o nível <b>{tier}</b> do nosso programa e beneficia agora de <b>−{off}%</b> nas próximas reservas. Obrigado pela sua confiança!',tr:'Sadakatiniz sayesinde programımızın <b>{tier}</b> seviyesine ulaştınız ve artık sonraki rezervasyonlarınızda <b>−%{off}</b> avantajından yararlanıyorsunuz. Güveniniz için teşekkürler!',zh:'感谢您的支持，您已达到我们会员计划的<b>{tier}</b>等级，今后预订可享<b>−{off}%</b>优惠。感谢您的信任！'}
+};
+async function maybeLoyaltyEmail(b){
+  if(!b||!b.user_id)return;
+  const oldPts=(PROFILES[b.user_id]&&PROFILES[b.user_id].loyalty_points)||0;
+  let prof=null;
+  try{ const {data}=await sb.from('profiles').select('loyalty_points,email,full_name').eq('id',b.user_id).single(); prof=data; }catch(e){}
+  const newPts=(prof&&prof.loyalty_points)||oldPts;
+  const oldName=loyalty(oldPts).name, L=loyalty(newPts), newName=L.name;
+  const named=['Bronze','Argent','Or','Diamant'];
+  if(newName===oldName || named.indexOf(newName)<0 || newPts<=oldPts) return;   // pas de nouveau palier nommé
+  const to=(prof&&prof.email)||clientMailOf(b); if(!to)return;
+  const lang=eLang(b);
+  const tier=pickL(TIER_NAME[newName],lang)||newName;
+  const rep=s=>s.replace(/\{tier\}/g,tier).replace(/\{off\}/g,String(L.off));
+  const html=`<h2 style="color:#a07d2c">${rep(pickL(LM.h,lang))}</h2><p>${pickL(LM.hi,lang)} ${escapeHtml((prof&&prof.full_name)||'')},</p><p>${rep(pickL(LM.p,lang))}</p>${FOOT_HTML}`;
+  try{ await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject:rep(pickL(LM.subj,lang)),html}}); }catch(e){}
+}
 // Numéro de facture (2026-NNNN) attribué au paiement, via le compteur en base
 async function assignInvoiceNo(){
   const y=new Date().getFullYear();
@@ -1127,14 +1156,26 @@ function partnerPDF(id){
   if(p.message){y+=8;doc.setFont('helvetica','bold');doc.setTextColor(...dark);doc.text('Message :',40,y);y+=16;doc.setFont('helvetica','normal');doc.setTextColor(60,70,90);doc.splitTextToSize(String(p.message),W-80).forEach(ln=>{doc.text(ln,40,y);y+=14;});}
   doc.save('partenariat-'+String(p.company||'demande').replace(/[^a-zA-Z0-9]/g,'-')+'.pdf');
 }
+function vehBucket(s){
+  s=String(s||'').toLowerCase();
+  if(/\bvan\b|classe v|v-class|vito|monospace/.test(s)) return 'Van Mercedes Classe V';
+  if(/premium|classe e|e-class|berline/.test(s)) return 'Berline Premium';
+  if(/[ée]co|green|hybride|toyota/.test(s)) return 'Éco Green Hybride';
+  return null;
+}
+function bkVehicles(b){
+  const ls=(b.details&&b.details.lines)||[];
+  const src=ls.length?ls.map(l=>(l.detail?String(l.detail).split('·')[0]:'')||b.vehicle||''):[b.vehicle||''];
+  return src.map(x=>vehBucket(x)||String(x).trim()||'Autre');
+}
 function renderVehSplit(resaList){
-  const counts={}; resaList.forEach(b=>{const v=b.vehicle||'Autre';counts[v]=(counts[v]||0)+1;});
-  const total=resaList.length||1;
+  const counts={}; resaList.forEach(b=>{ bkVehicles(b).forEach(v=>{ counts[v]=(counts[v]||0)+1; }); });
+  const total=Object.values(counts).reduce((s,n)=>s+n,0)||1;
   const colors=['var(--green)','var(--gold)','var(--blue)','var(--amber)'];
   const entries=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
   const el=document.getElementById('vehSplit');
   if(!entries.length){el.innerHTML='<div class="empty">Pas encore de données.</div>';return;}
-  el.innerHTML=entries.map((e,i)=>`<div class="list-i"><span class="dot" style="background:${colors[i%colors.length]}"></span><div class="li-main"><b>${escapeHtml(e[0])}</b></div><span class="li-amt">${Math.round(e[1]/total*100)} %</span></div>`).join('');
+  el.innerHTML=entries.map((e,i)=>`<div class="list-i"><span class="dot" style="background:${colors[i%colors.length]}"></span><div class="li-main"><b>${escapeHtml(e[0])}</b></div><span class="li-amt">${Math.round(e[1]/total*100)} % <span class="sub2">(${e[1]})</span></span></div>`).join('');
 }
 
 function renderPromo(){
@@ -1212,6 +1253,7 @@ async function setStatus(id,status){
       link:{fr:"Accéder à mon espace",en:"Go to my area",es:"Acceder a mi área",it:"Vai alla mia area",pt:"Aceder à minha área",tr:"Alanıma git",zh:"前往我的专区"},
     };
     try{ await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject:pickL(RV.subj,L),html:`<h2 style="color:#a07d2c">${pickL(RV.h,L)}</h2><p>${pickL(RV.hi,L)}</p><p>${pickL(RV.p,L)}</p><p><a href="https://www.parisvtcdriver.com/connexion.html" style="color:#a07d2c">${pickL(RV.link,L)}</a></p>${FOOT_HTML}`}}); }catch(e){} } }
+  if(status==='completed' && b){ try{ await maybeLoyaltyEmail(b); }catch(e){} }   // félicitations si nouveau palier fidélité
   if(['cancelled','refunded','avoir'].includes(status)){ await releaseAppliedCode(b); }   // le code utilisé redevient disponible
   if(isRefund){
     toast(status==='avoir'?'Avoir émis ✓ (code généré)':'Remboursement validé ✓');
