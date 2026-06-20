@@ -457,6 +457,12 @@ function renderResaTable(elId,list,withSelect){
   }).join('');
 }
 function clientMailOf(b){return (b.details&&b.details.client_email)||(b.user_id&&PROFILES[b.user_id]&&PROFILES[b.user_id].email)||'';}
+// Numéro de facture (2026-NNNN) attribué au paiement, via le compteur en base
+async function assignInvoiceNo(){
+  const y=new Date().getFullYear();
+  try{ const {data,error}=await sb.rpc('next_counter',{p_name:'invoice-'+y}); if(!error&&data!=null) return y+'-'+String(data).padStart(4,'0'); }catch(e){}
+  return null;
+}
 function eLang(b){return (b&&b.details&&b.details.lang)||'fr';}
 function pickL(d,l){return (d&&(d[l]||d.fr))||'';}
 const FOOT_HTML='<p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>';
@@ -894,6 +900,7 @@ async function acceptDevis(id){
   const upd=free
     ? {type:'facture',status:'confirmed',pay_status:'paid',accepted_at:new Date().toISOString(),paid_at:new Date().toISOString()}
     : {type:'facture',status:'confirmed',pay_status:'awaiting',accepted_at:new Date().toISOString()};
+  if(free && !b.invoice_no){ const inv=await assignInvoiceNo(); if(inv){ upd.invoice_no=inv; upd.reference=inv; } }   // soldé → n° de facture attribué
   const {error}=await sb.from('bookings').update(upd).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
   toast(free?'Facture soldée émise ✓':'Facture émise (en attente de paiement) ✓');
@@ -917,7 +924,9 @@ async function resendPayLink(id){
 async function validatePayment(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
   if(!confirm('Confirmer la réception du paiement ? La facture payée sera envoyée au client.'))return;
-  const {error}=await sb.from('bookings').update({pay_status:'paid',paid_at:new Date().toISOString()}).eq('id',id);
+  const upd={pay_status:'paid',paid_at:new Date().toISOString()};
+  if(!b.invoice_no){ const inv=await assignInvoiceNo(); if(inv){ upd.invoice_no=inv; upd.reference=inv; } }   // n° de facture au paiement
+  const {error}=await sb.from('bookings').update(upd).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
   toast('Paiement validé ✓ (la course reste à passer en « Terminée » après réalisation)');
   await refresh();
@@ -1182,10 +1191,11 @@ async function setStatus(id,status){
     d.cancel=Object.assign({},d.cancel,{refunded:true,outcome:(status==='avoir'?'avoir':'refund'),refunded_at:new Date().toISOString(),policy:((d.cancel&&d.cancel.policy)||(status==='avoir'?'Avoir':'Remboursement'))});
     if(status==='avoir'){
       upd.pay_status='paid'; upd.paid_at=new Date().toISOString();   // l'argent est encaissé (gardé en crédit)
+      if(b && !b.invoice_no){ const inv=await assignInvoiceNo(); if(inv){ upd.invoice_no=inv; upd.reference=inv; } }   // n° de facture conservé/attribué
       const code='AV-'+Math.floor(10000+Math.random()*89999);
       const exp=new Date(Date.now()+62*24*36e5).toISOString();
       d.cancel.code=code; d.cancel.expires_at=exp;
-      try{ await sb.from('promo_codes').insert({code,amount:Number(b.amount_ttc)||0,kind:'avoir',avoir_no:(b.reference||code),expires_at:exp,status:'available',used_by:b.user_id}); }catch(e){}
+      try{ await sb.from('promo_codes').insert({code,amount:Number(b.amount_ttc)||0,kind:'avoir',avoir_no:((upd.reference||b.reference)||code),expires_at:exp,status:'available',used_by:b.user_id}); }catch(e){}
     }
     upd.details=d;
   }

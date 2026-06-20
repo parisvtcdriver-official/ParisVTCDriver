@@ -1973,7 +1973,8 @@ function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 const NUMKEY="pvtc_lastInvoiceNo";
 function nextNo(){return (parseInt(lsGet(NUMKEY)||"0",10)||0)+1;}
 function fmtRef(n){return new Date().getFullYear()+"-"+String(n).padStart(4,"0");}
-function peekRef(){return fmtRef(nextNo());}                 // quote = next invoice number (not consumed)
+function fmtQuote(n){return "DV-"+String(new Date().getFullYear()).slice(2)+String(n).padStart(4,"0");} // n° de devis (aperçu local ; le n° officiel est attribué côté serveur)
+function peekRef(){return fmtQuote(nextNo());}              // aperçu du n° de devis
 function getRef(kind){                                       // invoice consumes the number
   const n=nextNo();
   if(kind==="invoice") lsSet(NUMKEY,String(n));
