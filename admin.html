@@ -855,7 +855,8 @@ async function buildInvoiceDoc(b,opts){
     else{doc.text('Annulation enregistrée.',40,y);}
   } else {
     doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);
-    doc.text(paid?'Paiement reçu — merci.':'Coordonnées bancaires — règlement par virement',40,y);y+=14;
+    var _via=(b.details&&b.details.paid_via)||'', _m=_via==='stripe'?'carte bancaire':(_via==='virement'?'virement bancaire':((_via==='avoir'||_via==='code')?'avoir / code de réduction':''));
+    doc.text(paid?(_m?('Paiement reçu par '+_m+' — merci.'):'Paiement reçu — merci.'):'Coordonnées bancaires — Règlement par virement',40,y);y+=14;
     doc.setFont(F,'normal');doc.setTextColor(60,70,90);
     doc.text('Bénéficiaire : PARISVTCDRIVER',40,y);y+=13;
     doc.text('IBAN FR76 1695 8000 0148 8377 7337 715   ·   BIC QNTOFRP1XXX',40,y);
@@ -927,7 +928,7 @@ async function acceptDevis(id){
   const free=!Number(b.amount_ttc);
   if(!confirm((free?'Ce devis est à 0 € (couvert par un avoir/code). ':'')+'Accepter ce devis et émettre une facture'+(free?' (soldée)':' en attente de paiement')+' ? Un e-mail avec la facture sera envoyé au client.'))return;
   const upd=free
-    ? {type:'facture',status:'confirmed',pay_status:'paid',accepted_at:new Date().toISOString(),paid_at:new Date().toISOString()}
+    ? {type:'facture',status:'confirmed',pay_status:'paid',accepted_at:new Date().toISOString(),paid_at:new Date().toISOString(),details:Object.assign({},b.details||{},{paid_via:'avoir'})}
     : {type:'facture',status:'confirmed',pay_status:'awaiting',accepted_at:new Date().toISOString()};
   if(free && !b.invoice_no){ const inv=await assignInvoiceNo(); if(inv){ upd.invoice_no=inv; upd.reference=inv; } }   // soldé → n° de facture attribué
   const {error}=await sb.from('bookings').update(upd).eq('id',id);
@@ -953,7 +954,8 @@ async function resendPayLink(id){
 async function validatePayment(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
   if(!confirm('Confirmer la réception du paiement ? La facture payée sera envoyée au client.'))return;
-  const upd={pay_status:'paid',paid_at:new Date().toISOString()};
+  const _d=Object.assign({},b.details||{}); _d.paid_via='virement';
+  const upd={pay_status:'paid',paid_at:new Date().toISOString(),details:_d};
   if(!b.invoice_no){ const inv=await assignInvoiceNo(); if(inv){ upd.invoice_no=inv; upd.reference=inv; } }   // n° de facture au paiement
   const {error}=await sb.from('bookings').update(upd).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}

@@ -722,7 +722,11 @@ async function buildInvoiceDoc(b,opts){
    refundOf:{fr:'Remboursement de {a} effectué.',en:'Refund of {a} processed.',es:'Reembolso de {a} efectuado.',it:'Rimborso di {a} effettuato.',pt:'Reembolso de {a} efetuado.',tr:'{a} iadesi yapıldı.',zh:'已退款 {a}。'},
    cancelReg:{fr:'Annulation enregistrée.',en:'Cancellation recorded.',es:'Anulación registrada.',it:'Annullamento registrato.',pt:'Anulação registada.',tr:'İptal kaydedildi.',zh:'已记录取消。'},
    thanks:{fr:'Paiement reçu — merci.',en:'Payment received — thank you.',es:'Pago recibido — gracias.',it:'Pagamento ricevuto — grazie.',pt:'Pagamento recebido — obrigado.',tr:'Ödeme alındı — teşekkürler.',zh:'已收到付款 — 谢谢。'},
-   bank:{fr:'Coordonnées bancaires — règlement par virement',en:'Bank details — payment by transfer',es:'Datos bancarios — pago por transferencia',it:'Coordinate bancarie — pagamento con bonifico',pt:'Dados bancários — pagamento por transferência',tr:'Banka bilgileri — havale ile ödeme',zh:'银行信息 — 转账付款'},
+   paidby:{fr:'Paiement reçu par {m} — merci.',en:'Payment received by {m} — thank you.',es:'Pago recibido por {m} — gracias.',it:'Pagamento ricevuto tramite {m} — grazie.',pt:'Pagamento recebido por {m} — obrigado.',tr:'{m} ile ödeme alındı — teşekkürler.',zh:'已通过{m}收到付款 — 谢谢。'},
+   m_card:{fr:'carte bancaire',en:'card',es:'tarjeta bancaria',it:'carta',pt:'cartão',tr:'kart',zh:'银行卡'},
+   m_wire:{fr:'virement bancaire',en:'bank transfer',es:'transferencia',it:'bonifico',pt:'transferência',tr:'havale',zh:'银行转账'},
+   m_credit:{fr:'avoir / code de réduction',en:'credit / discount code',es:'vale / código',it:'buono / codice',pt:'vale / código',tr:'kupon / kod',zh:'代金券/折扣码'},
+   bank:{fr:'Coordonnées bancaires — Règlement par virement',en:'Bank details — Payment by transfer',es:'Datos bancarios — Pago por transferencia',it:'Coordinate bancarie — Pagamento con bonifico',pt:'Dados bancários — Pagamento por transferência',tr:'Banka bilgileri — Havale ile ödeme',zh:'银行信息 — 转账付款'},
    svcRef:{fr:'Service remboursé — −{a} (remise incluse)',en:'Service refunded — −{a} (discount incl.)',es:'Servicio reembolsado — −{a} (desc. incl.)',it:'Servizio rimborsato — −{a} (sconto incl.)',pt:'Serviço reembolsado — −{a} (desc. incl.)',tr:'Hizmet iade edildi — −{a} (indirim dahil)',zh:'服务已退款 — −{a}（含折扣）'},
    svcCanc:{fr:'Service annulé — −{a} (remise incluse)',en:'Service cancelled — −{a} (discount incl.)',es:'Servicio anulado — −{a} (desc. incl.)',it:'Servizio annullato — −{a} (sconto incl.)',pt:'Serviço anulado — −{a} (desc. incl.)',tr:'Hizmet iptal — −{a} (indirim dahil)',zh:'服务已取消 — −{a}（含折扣）'},
    svcAvoir:{fr:'Avoir émis{c} — {a} conservés en crédit (remise incluse)',en:'Credit issued{c} — {a} kept as credit (discount incl.)',es:'Vale emitido{c} — {a} en crédito (desc. incl.)',it:'Buono emesso{c} — {a} a credito (sconto incl.)',pt:'Crédito emitido{c} — {a} em crédito (desc. incl.)',tr:'Alacak verildi{c} — {a} kredi olarak (indirim dahil)',zh:'已开credit{c} — {a} 保留为credit（含折扣）'},
@@ -827,7 +831,8 @@ async function buildInvoiceDoc(b,opts){
     else doc.text(P('cancelReg'),40,y);
   } else {
     doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);
-    doc.text(paid?P('thanks'):P('bank'),40,y);y+=14;
+    var _via=d.paid_via||'', _m=_via==='stripe'?P('m_card'):(_via==='virement'?P('m_wire'):((_via==='avoir'||_via==='code')?P('m_credit'):''));
+    doc.text(paid?(_m?P('paidby').replace('{m}',_m):P('thanks')):P('bank'),40,y);y+=14;
     doc.setFont(F,'normal');doc.setTextColor(60,70,90);
     doc.text('Bénéficiaire : PARISVTCDRIVER',40,y);y+=13;
     doc.text('IBAN FR76 1695 8000 0148 8377 7337 715   ·   BIC QNTOFRP1XXX',40,y);
