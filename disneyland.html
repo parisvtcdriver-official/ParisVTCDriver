@@ -13,10 +13,22 @@
 <meta property="og:title" content="Pack Disneyland Paris avec chauffeur privé | ParisVTCDriver" />
 <meta property="og:description" content="Transport privé aller-retour, billets parc(s), horaires sur-mesure, eau offerte. Réservation 24/7." />
 <meta property="og:url" content="https://www.parisvtcdriver.com/disneyland.html" />
-<meta property="og:image" content="https://www.parisvtcdriver.com/disney-hero.jpg" />
+<meta property="og:image" content="https://www.parisvtcdriver.com/hero-disney.jpg" />
 <meta property="og:locale" content="fr_FR" />
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Service","serviceType":"Transport privé avec chauffeur — Pack Disneyland Paris","provider":{"@type":"LocalBusiness","name":"ParisVTCDriver","telephone":"+33749198318","url":"https://www.parisvtcdriver.com/"},"areaServed":{"@type":"Place","name":"Paris, Disneyland Paris (Marne-la-Vallée)"},"url":"https://www.parisvtcdriver.com/disneyland.html","description":"Pack Disneyland Paris : transport privé aller-retour hôtel vers parc, billets, horaires sur-mesure, bouteille d'eau offerte."}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":"https://www.parisvtcdriver.com/"},{"@type":"ListItem","position":2,"name":"Pack Disneyland Paris","item":"https://www.parisvtcdriver.com/disneyland.html"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Combien coûte un transfert VTC pour Disneyland Paris ?","acceptedAnswer":{"@type":"Answer","text":"Le transfert privé vers Disneyland Paris est à prix fixe, communiqué et confirmé avant la réservation via notre devis en ligne. Le pack peut inclure le transport aller-retour et, en option, les billets du parc."}},
+{"@type":"Question","name":"Combien de temps dure le trajet Paris → Disneyland ?","acceptedAnswer":{"@type":"Answer","text":"Comptez généralement 40 à 50 minutes entre Paris et Disneyland Paris (Marne-la-Vallée) selon la circulation. Au départ des aéroports CDG ou Orly, le trajet est également direct."}},
+{"@type":"Question","name":"Le pack Disneyland inclut-il les billets du parc ?","acceptedAnswer":{"@type":"Answer","text":"Oui, le pack peut inclure vos billets pour le Parc Disneyland, ou l'option Billet 2 Parcs (Disneyland + Walt Disney Studios), en plus du transport privé aller-retour."}},
+{"@type":"Question","name":"Quel véhicule pour une famille avec enfants et bagages ?","acceptedAnswer":{"@type":"Answer","text":"Le van Mercedes Classe V (jusqu'à 7-8 passagers) est idéal pour les familles, les groupes et les poussettes/bagages. Sièges enfant et rehausseurs disponibles sur demande."}},
+{"@type":"Question","name":"Le chauffeur me récupère-t-il à la fin de la journée ?","acceptedAnswer":{"@type":"Answer","text":"Oui. Vous choisissez l'heure de retour : votre chauffeur vous récupère à Disneyland Paris et vous raccompagne à votre hôtel ou à votre adresse."}}
+]}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,6 +57,7 @@ header.nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);backgroun
 .logo small{display:block;font-size:10px;letter-spacing:.26em;color:var(--muted-2);text-transform:uppercase;font-weight:500}
 .hero{position:relative;overflow:hidden;min-height:100dvh;display:flex;align-items:center}
 .hero-bg{position:absolute;inset:0;z-index:0}
+.hero-bg picture{position:absolute;inset:0;display:block;width:100%;height:100%}
 .hero-bg img{width:100%;height:100%;object-fit:cover;opacity:.92}
 .hero-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#070a12 8%,rgba(7,10,18,.78) 42%,rgba(7,10,18,.25) 75%,rgba(7,10,18,.55))}
 .hero-bg::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(7,10,18,.6),transparent 30%,transparent 70%,#070a12)}
@@ -95,7 +108,10 @@ footer a{color:var(--gold-2)}
 </div></header>
 
 <section class="hero">
-  <div class="hero-bg"><img src="disney-hero.jpg" alt="Disneyland Paris" onerror="this.src='https://picsum.photos/seed/disneylandparis/1600/900'"></div>
+  <div class="hero-bg"><picture>
+    <source media="(max-width:720px)" srcset="hero-disney-mobile.jpg">
+    <img src="hero-disney.jpg" alt="Château de Disneyland Paris avec des visiteurs au coucher du soleil">
+  </picture></div>
   <div class="hero-inner wrap">
     <img src="pack-disney.png" alt="" style="width:84px;height:84px;object-fit:contain;display:block;margin-bottom:10px;filter:drop-shadow(0 6px 16px rgba(201,162,74,.45))">
     <span class="eyebrow" data-i18n="pk_loisir">Pack Loisir &amp; Visite</span>
@@ -154,7 +170,19 @@ footer a{color:var(--gold-2)}
   </div>
 </div></section>
 
-<footer><div class="wrap">© 2026 ParisVTCDriver — <span data-i18n="foot_copy">Chauffeur Premium · Paris &amp; France</span> · <a href="index.html" data-i18n="backsite">Retour au site</a></div></footer>
+<section class="sec" id="faq" style="padding-top:0"><div class="wrap" style="max-width:860px">
+  <span class="eyebrow">FAQ</span>
+  <h2 class="title">Transfert Disneyland Paris : questions fréquentes</h2>
+  <div style="margin-top:28px;display:flex;flex-direction:column;gap:12px">
+    <details style="background:linear-gradient(165deg,var(--panel-2),var(--panel));border:1px solid var(--line-soft);border-radius:14px;padding:6px 20px"><summary style="cursor:pointer;font-weight:600;font-size:16px;padding:14px 0;color:var(--txt)">Combien coûte un transfert VTC pour Disneyland Paris ?</summary><p style="color:var(--muted);padding-bottom:14px;margin:0">Le transfert privé vers Disneyland Paris est à prix fixe, communiqué et confirmé avant la réservation via notre devis en ligne. Le pack peut inclure le transport aller-retour et, en option, les billets du parc.</p></details>
+    <details style="background:linear-gradient(165deg,var(--panel-2),var(--panel));border:1px solid var(--line-soft);border-radius:14px;padding:6px 20px"><summary style="cursor:pointer;font-weight:600;font-size:16px;padding:14px 0;color:var(--txt)">Combien de temps dure le trajet Paris → Disneyland ?</summary><p style="color:var(--muted);padding-bottom:14px;margin:0">Comptez généralement 40 à 50 minutes entre Paris et Disneyland Paris (Marne-la-Vallée) selon la circulation. Au départ des aéroports CDG ou Orly, le trajet est également direct.</p></details>
+    <details style="background:linear-gradient(165deg,var(--panel-2),var(--panel));border:1px solid var(--line-soft);border-radius:14px;padding:6px 20px"><summary style="cursor:pointer;font-weight:600;font-size:16px;padding:14px 0;color:var(--txt)">Le pack Disneyland inclut-il les billets du parc ?</summary><p style="color:var(--muted);padding-bottom:14px;margin:0">Oui, le pack peut inclure vos billets pour le Parc Disneyland, ou l'option Billet 2 Parcs (Disneyland + Walt Disney Studios), en plus du transport privé aller-retour.</p></details>
+    <details style="background:linear-gradient(165deg,var(--panel-2),var(--panel));border:1px solid var(--line-soft);border-radius:14px;padding:6px 20px"><summary style="cursor:pointer;font-weight:600;font-size:16px;padding:14px 0;color:var(--txt)">Quel véhicule pour une famille avec enfants et bagages ?</summary><p style="color:var(--muted);padding-bottom:14px;margin:0">Le van Mercedes Classe V (jusqu'à 7-8 passagers) est idéal pour les familles, les groupes et les poussettes/bagages. Sièges enfant et rehausseurs disponibles sur demande.</p></details>
+    <details style="background:linear-gradient(165deg,var(--panel-2),var(--panel));border:1px solid var(--line-soft);border-radius:14px;padding:6px 20px"><summary style="cursor:pointer;font-weight:600;font-size:16px;padding:14px 0;color:var(--txt)">Le chauffeur me récupère-t-il à la fin de la journée ?</summary><p style="color:var(--muted);padding-bottom:14px;margin:0">Oui. Vous choisissez l'heure de retour : votre chauffeur vous récupère à Disneyland Paris et vous raccompagne à votre hôtel ou à votre adresse.</p></details>
+  </div>
+</div></section>
+
+<footer><div class="wrap">© 2026 ParisVTCDriver — <span data-i18n="foot_copy">Chauffeur Premium · Paris &amp; France</span> · <a href="transfert-cdg.html">Transfert CDG</a> · <a href="transfert-orly.html">Transfert Orly</a> · <a href="index.html" data-i18n="backsite">Retour au site</a></div></footer>
 
 <script>
 window.PAGE_I18N={
