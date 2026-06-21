@@ -169,5 +169,9 @@ footer a{color:var(--gold-2)}
 <footer><div class="wrap">© 2026 ParisVTCDriver — <span data-i18n="foot_copy">Chauffeur Premium · Paris &amp; France</span> · <a href="index.html" data-i18n="backsite">Retour au site</a></div></footer>
 
 <script src="pack.js"></script>
+<script>
+window.PAGE_ALT={fr:"transfert-beauvais.html",en:"beauvais-airport-transfer.html"};
+window.addEventListener("load",function(){document.querySelectorAll(".lang [data-lang]").forEach(function(b){b.onclick=function(){var l=b.dataset.lang,cur=(location.pathname.split("/").pop()||"index.html");try{localStorage.setItem("pvtc_lang",l);}catch(e){}if(PAGE_ALT[l]){if(PAGE_ALT[l]!==cur)location.href=PAGE_ALT[l];return;}location.href="index.html";};});});
+</script>
 </body>
 </html>
