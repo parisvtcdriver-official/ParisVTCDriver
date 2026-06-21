@@ -102,7 +102,10 @@ footer a{color:var(--gold-2)}
 </div></header>
 
 <section class="hero">
-  <div class="hero-bg"><img src="hero-beauvais.jpg" alt="Berline VTC ParisVTCDriver devant l'aéroport de Beauvais-Tillé au coucher du soleil" onerror="this.src='https://picsum.photos/seed/beauvaisairport/1600/900'"></div>
+  <div class="hero-bg"><picture>
+    <source media="(max-width:720px)" srcset="hero-beauvais-mobile.jpg">
+    <img src="hero-beauvais.jpg" alt="Berline VTC ParisVTCDriver devant l'aéroport de Beauvais-Tillé au coucher du soleil">
+  </picture></div>
   <div class="hero-inner wrap">
     <span class="eyebrow">Transfert aéroport · Beauvais-Tillé</span>
     <h1>Transfert VTC <em>aéroport de Beauvais</em> ↔ Paris</h1>
