@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParisVTCDriver — Tableau de bord Admin (Maquette)</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070a12;--navy:#0d1730;--panel:#0e1626;--panel-2:#121d33;--line:rgba(201,162,74,.16);--line-soft:rgba(255,255,255,.07);--gold:#c9a24a;--gold-2:#e7c878;--gold-bright:#f1d894;--txt:#eef2fb;--muted:#9aa6bf;--muted-2:#6f7c97;--green:#34d399;--amber:#e7b04a;--red:#f87171;--blue:#60a5fa}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',system-ui,sans-serif;background:radial-gradient(1000px 500px at 88% -8%,rgba(201,162,74,.08),transparent 60%),radial-gradient(700px 420px at -5% 5%,rgba(20,40,90,.4),transparent 55%),linear-gradient(180deg,#070a12,#080d18 40%,#070a12);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.mono{font-family:'Space Grotesk',sans-serif}
+/* banner */
+.banner{background:linear-gradient(90deg,rgba(201,162,74,.18),rgba(201,162,74,.05));border-bottom:1px solid var(--line);color:var(--gold-2);font-size:12.5px;text-align:center;padding:7px 14px;letter-spacing:.02em}
+/* layout */
+.app{display:grid;grid-template-columns:248px 1fr;min-height:calc(100vh - 33px)}
+/* sidebar */
+.side{background:linear-gradient(180deg,rgba(13,23,48,.55),rgba(7,10,18,.4));border-right:1px solid var(--line-soft);padding:22px 16px;display:flex;flex-direction:column;gap:6px}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 18px;border-bottom:1px solid var(--line-soft);margin-bottom:12px}
+.brand .mk{width:40px;height:40px;border-radius:11px;overflow:hidden;border:1px solid var(--line);display:grid;place-items:center;flex:none}
+.brand .mk img{width:100%;height:100%;object-fit:cover;display:block}
+.brand b{font-size:15.5px;display:block;line-height:1.1}
+.brand b span{color:var(--gold-2)}
+.brand small{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted-2)}
+.nav-i{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;transition:.18s;border:1px solid transparent}
+.nav-i svg{width:18px;height:18px;flex:none;stroke:currentColor}
+.nav-i:hover{background:rgba(255,255,255,.04);color:var(--txt)}
+.nav-i.active{background:linear-gradient(145deg,rgba(201,162,74,.2),rgba(201,162,74,.06));color:var(--gold-2);border-color:var(--line)}
+.nav-i .badge{margin-left:auto;background:var(--gold);color:#1c1604;font-size:11px;font-weight:700;border-radius:20px;padding:1px 8px}
+.side-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--line-soft);display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.side-foot .av{width:34px;height:34px;border-radius:50%;background:linear-gradient(145deg,#26324d,#16203a);display:grid;place-items:center;color:var(--gold-2);font-weight:700;font-size:13px;border:1px solid var(--line)}
+/* main */
+.main{padding:26px 30px 40px;overflow:auto}
+.top{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.top h1{font-size:23px;font-weight:700;letter-spacing:-.01em}
+.top .sub{color:var(--muted-2);font-size:13px;margin-top:2px}
+.search{margin-left:auto;display:flex;align-items:center;gap:9px;background:rgba(7,11,20,.7);border:1px solid var(--line-soft);border-radius:11px;padding:9px 13px;width:240px;color:var(--muted-2);font-size:13px}
+.search svg{width:15px;height:15px;stroke:var(--muted-2)}
+.btn{font-family:inherit;font-weight:600;cursor:pointer;border:none;border-radius:11px;padding:10px 18px;font-size:13.5px;display:inline-flex;align-items:center;gap:8px}
+.btn-gold{background:linear-gradient(135deg,var(--gold-bright),var(--gold) 55%,#a9842f);color:#1c1604;box-shadow:0 8px 22px -12px rgba(201,162,74,.7)}
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi{padding:18px 20px;border:1px solid var(--line-soft);border-radius:16px;background:linear-gradient(165deg,var(--panel-2),var(--panel));position:relative;overflow:hidden}
+.kpi .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:rgba(201,162,74,.12);border:1px solid var(--line);color:var(--gold-2);margin-bottom:14px}
+.kpi .ic svg{width:19px;height:19px;stroke:currentColor}
+.kpi .lbl{color:var(--muted-2);font-size:12.5px;font-weight:500}
+.kpi .val{font-family:'Space Grotesk';font-size:26px;font-weight:700;color:var(--txt);margin-top:3px}
+.kpi .chg{font-size:12px;margin-top:6px;font-weight:600}
+.chg.up{color:var(--green)} .chg.down{color:var(--red)}
+/* grid panels */
+.cols{display:grid;grid-template-columns:1fr 340px;gap:20px}
+.card{border:1px solid var(--line-soft);border-radius:16px;background:linear-gradient(165deg,var(--panel-2),var(--panel));overflow:hidden}
+.card-h{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line-soft)}
+.card-h h2{font-size:15px;font-weight:600}
+.card-h .link{margin-left:auto;font-size:12.5px;color:var(--gold-2);cursor:pointer}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid var(--line-soft);color:var(--muted);cursor:pointer;background:none;font-family:inherit}
+.chip.on{background:linear-gradient(145deg,rgba(201,162,74,.2),rgba(201,162,74,.06));color:var(--gold-2);border-color:var(--line)}
+/* table */
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-2);font-weight:600;padding:12px 20px;border-bottom:1px solid var(--line-soft)}
+tbody td{padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:13.5px;color:var(--muted);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+.cli{color:var(--txt);font-weight:600}
+.sub2{color:var(--muted-2);font-size:11.5px;margin-top:2px}
+.amt{font-family:'Space Grotesk';color:var(--gold-bright);font-weight:600;white-space:nowrap}
+.st{font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.st::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.st.conf{color:var(--green);background:rgba(52,211,153,.12)}
+.st.att{color:var(--amber);background:rgba(231,176,74,.14)}
+.st.term{color:var(--blue);background:rgba(96,165,250,.12)}
+.st.ann{color:var(--red);background:rgba(248,113,113,.12)}
+.act{display:flex;gap:7px}
+.ico-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--line-soft);background:rgba(255,255,255,.03);display:grid;place-items:center;color:var(--muted);cursor:pointer}
+.ico-btn:hover{color:var(--gold-2);border-color:var(--line)}
+.ico-btn svg{width:14px;height:14px;stroke:currentColor;fill:none}
+/* side list */
+.list-i{display:flex;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line-soft);align-items:flex-start}
+.list-i:last-child{border-bottom:none}
+.dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex:none}
+.li-main b{color:var(--txt);font-size:13.5px;font-weight:600}
+.li-main small{display:block;color:var(--muted-2);font-size:11.5px;margin-top:2px}
+.li-amt{margin-left:auto;font-family:'Space Grotesk';color:var(--gold-2);font-size:13px;font-weight:600;white-space:nowrap}
+/* chart */
+.chart{padding:18px 20px}
+.bars{display:flex;align-items:flex-end;gap:14px;height:150px;padding-top:10px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+.bar .b{width:100%;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,var(--gold-2),var(--gold) 60%,#8f6d28);min-height:6px}
+.bar small{font-size:11px;color:var(--muted-2)}
+/* views */
+.view{display:none}.view.show{display:block}
+.medal{width:15px;height:15px;display:inline-block;vertical-align:-3px;margin-right:6px;flex:none}
+.medal-plat{width:21px;height:21px;vertical-align:-6px;margin-right:4px}
+.m-bronze{color:#c08a57}.m-argent{color:#aab2bf}.m-or{color:#e7c878}
+.pbadge{width:18px;height:18px;border-radius:5px;object-fit:cover;vertical-align:-4px;margin-right:7px;border:1px solid var(--line);flex:none}
+.promo-code{font-family:'Space Grotesk';color:var(--gold-bright);font-weight:600;letter-spacing:.04em}
+@media(max-width:1080px){.app{grid-template-columns:1fr}.side{display:none}.kpis{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="banner">● Maquette visuelle — données fictives, sans backend. Visualisation du rendu avant développement.</div>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="side">
+    <div class="brand"><div class="mk"><img src="logo.png" alt="ParisVTCDriver"></div><div><b>Paris<span>VTC</span>Driver</b><small>Espace Admin</small></div></div>
+    <div class="nav-i active" data-v="dash"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg> Tableau de bord</div>
+    <div class="nav-i" data-v="resa"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg> Réservations <span class="badge">5</span></div>
+    <div class="nav-i" data-v="fact"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg> Devis &amp; Factures</div>
+    <div class="nav-i" data-v="promo"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M20 12V7H4v5M2 7l2-4h16l2 4M12 22V7M9 11l3-2 3 2"/></svg> Codes promo</div>
+    <div class="nav-i" data-v="cli"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 11l2 2 3-3"/></svg> Clients</div>
+    <div class="nav-i" data-v="fidel"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z"/></svg> Fidélité</div>
+    <div class="nav-i" data-v="part"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M16 11a4 4 0 1 0-8 0M2 21v-1a5 5 0 0 1 5-5h2M22 21v-1a5 5 0 0 0-5-5h-2M12 15l2 2 4-4"/></svg> Partenaires <span class="badge">2</span></div>
+    <div class="nav-i" data-v="stats"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><path d="M3 3v18h18"/><path d="M7 14l3-4 3 3 4-6"/></svg> Statistiques</div>
+    <div class="nav-i" data-v="param"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg> Paramètres</div>
+    <div class="side-foot"><div class="av">PC</div><div><b style="color:var(--txt);font-size:13px">Philippe Cassel</b><div style="font-size:11px;color:var(--muted-2)">Administrateur</div></div>
+      <a href="connexion-maquette.html" title="Déconnexion" style="margin-left:auto;width:32px;height:32px;border-radius:8px;border:1px solid var(--line-soft);display:grid;place-items:center;color:var(--muted-2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- DASHBOARD -->
+    <section class="view show" id="dash">
+      <div class="top">
+        <div><h1>Bonjour Philippe 👋</h1><div class="sub">Voici l'activité de ParisVTCDriver — Dimanche 7 juin 2026</div></div>
+        <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg> Rechercher…</div>
+        <button class="btn btn-gold">+ Nouvelle course</button>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="lbl">CA du mois (TTC)</div><div class="val">8 940 €</div><div class="chg up">▲ 12,4 % vs mai</div></div>
+        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M5 17h14l-1.5-6.5a2 2 0 0 0-2-1.5h-7a2 2 0 0 0-2 1.5z"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="16.5" cy="17.5" r="1.6"/></svg></div><div class="lbl">Courses ce mois</div><div class="val">63</div><div class="chg up">▲ 8 courses</div></div>
+        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div class="lbl">En attente de confirmation</div><div class="val">5</div><div class="chg down">à traiter</div></div>
+        <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M20 6 9 17l-5-5"/></svg></div><div class="lbl">Taux de confirmation</div><div class="val">94 %</div><div class="chg up">▲ 2 pts</div></div>
+      </div>
+
+      <div class="cols">
+        <div class="card">
+          <div class="card-h"><h2>Réservations récentes</h2>
+            <div class="chips" style="margin-left:auto">
+              <button class="chip on">Toutes</button><button class="chip">En attente</button><button class="chip">Confirmées</button>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>N°</th><th>Client</th><th>Service</th><th>Rendez-vous</th><th>Montant</th><th>Statut</th><th></th></tr></thead>
+            <tbody>
+              <tr><td class="mono">2026-0007</td><td><div class="cli">Amélie Rousseau</div><div class="sub2">Atelier Vermeil</div></td><td>Paris → CDG<div class="sub2">Berline Premium · 2 pax</div></td><td>08/06 · 06:30</td><td class="amt">120,00 €</td><td><span class="st att">En attente</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div></td></tr>
+              <tr><td class="mono">2026-0006</td><td><div class="cli">James Whitfield</div><div class="sub2">Particulier</div></td><td>Pack Disneyland — 1 Parc<div class="sub2">Van Mercedes · 4 pax</div></td><td>09/06 · 09:00</td><td class="amt">260,00 €</td><td><span class="st conf">Confirmée</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/></svg></span><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div></td></tr>
+              <tr><td class="mono">2026-0005</td><td><div class="cli">Sofia Marchetti</div><div class="sub2">Maison Lévêque</div></td><td>Mise à disposition · 4h<div class="sub2">Berline Premium · 3 pax</div></td><td>10/06 · 14:00</td><td class="amt">288,00 €</td><td><span class="st conf">Confirmée</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/></svg></span><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div></td></tr>
+              <tr><td class="mono">2026-0004</td><td><div class="cli">Liu Wei</div><div class="sub2">Particulier</div></td><td>Pack Château de Versailles<div class="sub2">Van Mercedes · 6 pax</div></td><td>06/06 · 10:30</td><td class="amt">790,00 €</td><td><span class="st term">Terminée</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/></svg></span><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div></td></tr>
+              <tr><td class="mono">2026-0003</td><td><div class="cli">Karim Benali</div><div class="sub2">Particulier</div></td><td>Orly → Paris 8e<div class="sub2">Éco Green Hybride · 2 pax</div></td><td>05/06 · 18:15</td><td class="amt">75,00 €</td><td><span class="st ann">Annulée</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/></svg></span><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></span></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div class="card">
+            <div class="card-h"><h2>Prochaines courses</h2><span class="link">Calendrier</span></div>
+            <div class="list-i"><span class="dot" style="background:var(--amber)"></span><div class="li-main"><b>Amélie Rousseau</b><small>Demain 06:30 · Paris → CDG</small></div><span class="li-amt">120 €</span></div>
+            <div class="list-i"><span class="dot" style="background:var(--green)"></span><div class="li-main"><b>James Whitfield</b><small>09/06 09:00 · Disneyland</small></div><span class="li-amt">260 €</span></div>
+            <div class="list-i"><span class="dot" style="background:var(--green)"></span><div class="li-main"><b>Sofia Marchetti</b><small>10/06 14:00 · Mise à dispo.</small></div><span class="li-amt">288 €</span></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><h2>CA par mois</h2><span class="link">2026</span></div>
+            <div class="chart"><div class="bars">
+              <div class="bar"><div class="b" style="height:42%"></div><small>Jan</small></div>
+              <div class="bar"><div class="b" style="height:55%"></div><small>Fév</small></div>
+              <div class="bar"><div class="b" style="height:48%"></div><small>Mar</small></div>
+              <div class="bar"><div class="b" style="height:70%"></div><small>Avr</small></div>
+              <div class="bar"><div class="b" style="height:78%"></div><small>Mai</small></div>
+              <div class="bar"><div class="b" style="height:92%"></div><small>Juin</small></div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESERVATIONS -->
+    <section class="view" id="resa">
+      <div class="top"><div><h1>Réservations</h1><div class="sub">Toutes les demandes entrantes et courses planifiées</div></div>
+        <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg> Rechercher…</div>
+        <button class="btn btn-gold">+ Nouvelle course</button></div>
+      <div class="chips" style="margin-bottom:18px"><button class="chip on">Toutes (63)</button><button class="chip">En attente (5)</button><button class="chip">Confirmées (48)</button><button class="chip">Terminées (8)</button><button class="chip">Annulées (2)</button></div>
+      <div class="card"><table>
+        <thead><tr><th>N°</th><th>Client</th><th>Service</th><th>Rendez-vous</th><th>Véhicule</th><th>Montant TTC</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+          <tr><td class="mono">2026-0007</td><td class="cli">Amélie Rousseau</td><td>Paris → Aéroport CDG</td><td>08/06 · 06:30</td><td>Berline Premium</td><td class="amt">120,00 €</td><td><span class="st att">En attente</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span></div></td></tr>
+          <tr><td class="mono">2026-0006</td><td class="cli">James Whitfield</td><td>Pack Disneyland — 1 Parc</td><td>09/06 · 09:00</td><td>Van Mercedes V</td><td class="amt">260,00 €</td><td><span class="st conf">Confirmée</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/></svg></span></div></td></tr>
+          <tr><td class="mono">2026-0005</td><td class="cli">Sofia Marchetti</td><td>Mise à disposition · 4h</td><td>10/06 · 14:00</td><td>Berline Premium</td><td class="amt">288,00 €</td><td><span class="st conf">Confirmée</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/></svg></span></div></td></tr>
+          <tr><td class="mono">2026-0004</td><td class="cli">Liu Wei</td><td>Pack Château de Versailles</td><td>06/06 · 10:30</td><td>Van Mercedes V</td><td class="amt">790,00 €</td><td><span class="st term">Terminée</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/></svg></span></div></td></tr>
+          <tr><td class="mono">2026-0003</td><td class="cli">Karim Benali</td><td>Aéroport Orly → Paris 8e</td><td>05/06 · 18:15</td><td>Éco Green Hybride</td><td class="amt">75,00 €</td><td><span class="st ann">Annulée</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/></svg></span></div></td></tr>
+          <tr><td class="mono">2026-0002</td><td class="cli">Elena Petrova</td><td>Pack Circuit Visite Paris</td><td>04/06 · 13:00</td><td>Berline Premium</td><td class="amt">340,00 €</td><td><span class="st term">Terminée</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/></svg></span></div></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- FACTURES -->
+    <section class="view" id="fact">
+      <div class="top"><div><h1>Devis &amp; Factures</h1><div class="sub">Numérotation centralisée · archivage automatique</div></div>
+        <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg> Rechercher…</div>
+        <button class="btn btn-gold">Exporter (CSV)</button></div>
+      <div class="card"><table>
+        <thead><tr><th>N° Facture</th><th>Client</th><th>Date</th><th>HT</th><th>TVA</th><th>TTC</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+          <tr><td class="mono">2026-0006</td><td class="cli">James Whitfield</td><td>06/06/2026</td><td>236,36 €</td><td>23,64 €</td><td class="amt">260,00 €</td><td><span class="st conf">Payée</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></span></div></td></tr>
+          <tr><td class="mono">2026-0005</td><td class="cli">Sofia Marchetti</td><td>05/06/2026</td><td>240,00 €</td><td>48,00 €</td><td class="amt">288,00 €</td><td><span class="st att">En attente</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></span></div></td></tr>
+          <tr><td class="mono">2026-0004</td><td class="cli">Liu Wei</td><td>03/06/2026</td><td>718,18 €</td><td>71,82 €</td><td class="amt">790,00 €</td><td><span class="st conf">Payée</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></span></div></td></tr>
+          <tr><td class="mono">2026-0002</td><td class="cli">Elena Petrova</td><td>02/06/2026</td><td>309,09 €</td><td>30,91 €</td><td class="amt">340,00 €</td><td><span class="st conf">Payée</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></span></div></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- CODES PROMO -->
+    <section class="view" id="promo">
+      <div class="top"><div><h1>Codes promo</h1><div class="sub">Usage unique contrôlé côté serveur</div></div>
+        <button class="btn btn-gold" style="margin-left:auto">+ Générer des codes</button></div>
+      <div class="card"><table>
+        <thead><tr><th>Code</th><th>Montant</th><th>Créé le</th><th>Utilisé par</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td class="promo-code">R5-48213</td><td class="amt">−5,00 €</td><td>01/06/2026</td><td class="cli">Elena Petrova</td><td><span class="st term">Utilisé</span></td></tr>
+          <tr><td class="promo-code">R10-77024</td><td class="amt">−10,00 €</td><td>01/06/2026</td><td>—</td><td><span class="st conf">Disponible</span></td></tr>
+          <tr><td class="promo-code">R5-31980</td><td class="amt">−5,00 €</td><td>01/06/2026</td><td>—</td><td><span class="st conf">Disponible</span></td></tr>
+          <tr><td class="promo-code">R10-60517</td><td class="amt">−10,00 €</td><td>28/05/2026</td><td class="cli">Liu Wei</td><td><span class="st term">Utilisé</span></td></tr>
+          <tr><td class="promo-code">R5-19446</td><td class="amt">−5,00 €</td><td>28/05/2026</td><td>—</td><td><span class="st conf">Disponible</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- CLIENTS -->
+    <section class="view" id="cli">
+      <div class="top"><div><h1>Clients</h1><div class="sub">Fiches, historique et facturation</div></div>
+        <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg> Rechercher…</div></div>
+      <div class="card"><table>
+        <thead><tr><th>Client</th><th>Type</th><th>Courses</th><th>Total dépensé</th><th>Dernière course</th></tr></thead>
+        <tbody>
+          <tr><td class="cli">Amélie Rousseau<div class="sub2">Atelier Vermeil · Pro</div></td><td>Société</td><td>14</td><td class="amt">2 480,00 €</td><td>08/06/2026</td></tr>
+          <tr><td class="cli">Sofia Marchetti<div class="sub2">Maison Lévêque · Pro</div></td><td>Société</td><td>9</td><td class="amt">1 932,00 €</td><td>10/06/2026</td></tr>
+          <tr><td class="cli">James Whitfield<div class="sub2">Particulier</div></td><td>Particulier</td><td>3</td><td class="amt">620,00 €</td><td>09/06/2026</td></tr>
+          <tr><td class="cli">Liu Wei<div class="sub2">Particulier</div></td><td>Particulier</td><td>2</td><td class="amt">1 130,00 €</td><td>06/06/2026</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- FIDELITE -->
+    <section class="view" id="fidel">
+      <div class="top"><div><h1>Programme de fidélité</h1><div class="sub">Points, niveaux et échéances de vos clients</div></div>
+        <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg> Rechercher un client…</div></div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="lbl">Membres fidélité</div><div class="val">87</div><div class="chg up">▲ 12 ce mois</div></div>
+        <div class="kpi"><div class="lbl">Points distribués (juin)</div><div class="val">8 940</div><div class="chg up">▲ 12,4 %</div></div>
+        <div class="kpi"><div class="lbl">Réduction moyenne</div><div class="val">11 %</div><div class="chg up">fidélité active</div></div>
+        <div class="kpi"><div class="lbl">Rappels à envoyer</div><div class="val">3</div><div class="chg down">échéance &lt; 2 sem.</div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px"><div class="card-h"><h2>Répartition par niveau</h2></div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;padding:18px 20px">
+          <div style="flex:1;min-width:130px;padding:14px 16px;border:1px solid var(--line-soft);border-radius:12px;background:rgba(255,255,255,.02)"><div style="font-weight:600;color:var(--txt);font-size:13.5px"><b data-medal="platine"></b>Diamant</div><div class="mono" style="font-size:22px;font-weight:700;color:var(--gold-bright);margin-top:4px">3</div><div class="sub2">−20 % · dès 5000 pts</div></div>
+          <div style="flex:1;min-width:130px;padding:14px 16px;border:1px solid var(--line-soft);border-radius:12px;background:rgba(255,255,255,.02)"><div style="font-weight:600;color:var(--txt);font-size:13.5px"><b data-medal="or"></b>Or</div><div class="mono" style="font-size:22px;font-weight:700;color:var(--gold-bright);margin-top:4px">14</div><div class="sub2">−15 % · dès 1000 pts</div></div>
+          <div style="flex:1;min-width:130px;padding:14px 16px;border:1px solid var(--line-soft);border-radius:12px;background:rgba(255,255,255,.02)"><div style="font-weight:600;color:var(--txt);font-size:13.5px"><b data-medal="argent"></b>Argent</div><div class="mono" style="font-size:22px;font-weight:700;color:var(--gold-bright);margin-top:4px">28</div><div class="sub2">−10 % · dès 500 pts</div></div>
+          <div style="flex:1;min-width:130px;padding:14px 16px;border:1px solid var(--line-soft);border-radius:12px;background:rgba(255,255,255,.02)"><div style="font-weight:600;color:var(--txt);font-size:13.5px"><b data-medal="bronze"></b>Bronze</div><div class="mono" style="font-size:22px;font-weight:700;color:var(--gold-bright);margin-top:4px">42</div><div class="sub2">−5 % · dès 100 pts</div></div>
+        </div>
+      </div>
+
+      <div class="card"><div class="card-h"><h2>Clients &amp; fidélité</h2><span class="link">Exporter</span></div>
+        <table>
+          <thead><tr><th>Client</th><th>Points</th><th>Niveau</th><th>Réduction</th><th>Valable jusqu'au</th><th>Échéance</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="cli">Amélie Rousseau</td><td class="amt">5 240</td><td>Diamant</td><td>−20 %</td><td>12/08/2026</td><td><span class="st conf">Actif</span></td><td><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> Ajuster</span></td></tr>
+            <tr><td class="cli">Sofia Marchetti</td><td class="amt">1 932</td><td>Or</td><td>−15 %</td><td>10/08/2026</td><td><span class="st conf">Actif</span></td><td><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> Ajuster</span></td></tr>
+            <tr><td class="cli">Liu Wei</td><td class="amt">1 130</td><td>Or</td><td>−15 %</td><td>24/07/2026</td><td><span class="st att">Rappel envoyé</span></td><td><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> Ajuster</span></td></tr>
+            <tr><td class="cli">James Whitfield</td><td class="amt">620</td><td>Argent</td><td>−10 %</td><td>06/08/2026</td><td><span class="st conf">Actif</span></td><td><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> Ajuster</span></td></tr>
+            <tr><td class="cli">Elena Petrova</td><td class="amt">340</td><td>Bronze</td><td>−5 %</td><td>18/07/2026</td><td><span class="st ann">Bientôt expiré</span></td><td><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> Ajuster</span></td></tr>
+            <tr><td class="cli">Karim Benali</td><td class="amt">110</td><td>Bronze</td><td>−5 %</td><td>15/07/2026</td><td><span class="st conf">Actif</span></td><td><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg> Ajuster</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card" style="margin-top:18px;padding:16px 20px;color:var(--muted);font-size:12.5px;line-height:1.6">
+        <b style="color:var(--gold-2)">Automatique :</b> les points se cumulent (1 € = 1 pt) sur les courses terminées. Les réductions de fidélité ne s'appliquent qu'aux prestations d'un montant minimum de 60 €. Un rappel est envoyé 2 semaines avant l'échéance des 2 mois ; sans nouvelle réservation, le client perd un niveau (points ramenés au minimum du niveau inférieur). L'ajustement manuel reste possible pour un geste commercial.
+      </div>
+    </section>
+
+    <!-- PARTENAIRES -->
+    <section class="view" id="part">
+      <div class="top"><div><h1>Demandes de partenariat</h1><div class="sub">Reçues depuis le formulaire « Devenir partenaire »</div></div>
+        <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg> Rechercher…</div></div>
+      <div class="chips" style="margin-bottom:18px"><button class="chip on">Toutes (18)</button><button class="chip">À traiter (2)</button><button class="chip">Acceptées (14)</button><button class="chip">Refusées (2)</button></div>
+      <div class="card"><table>
+        <thead><tr><th>Société</th><th>Contact</th><th>Secteur</th><th>Besoins</th><th>Reçu le</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+          <tr><td class="cli">Hôtel Plaza Athénée</td><td>Claire Dubois<div class="sub2">Conciergerie</div></td><td>Hôtellerie</td><td>Transferts aéroport · Mise à dispo.</td><td>06/06/2026</td><td><span class="st att">À traiter</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H7l-3 3z"/></svg> Répondre</span></div></td></tr>
+          <tr><td class="cli">Agence Évasion Voyages</td><td>Marc Petit<div class="sub2">Directeur</div></td><td>Agence de voyage</td><td>Packs tourisme · Événements</td><td>05/06/2026</td><td><span class="st att">À traiter</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H7l-3 3z"/></svg> Répondre</span></div></td></tr>
+          <tr><td class="cli">Maison Lévêque SAS</td><td>Sofia Marchetti<div class="sub2">Office Manager</div></td><td>Entreprise</td><td>Trajets affaires</td><td>02/06/2026</td><td><span class="st conf">Accepté · −12 %</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg> Voir</span></div></td></tr>
+          <tr><td class="cli">Le Bristol Paris</td><td>Antoine Mercier<div class="sub2">Chef concierge</div></td><td>Hôtellerie</td><td>Transferts aéroport · VIP</td><td>28/05/2026</td><td><span class="st conf">Accepté · −15 %</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg> Voir</span></div></td></tr>
+          <tr><td class="cli">Conciergerie Lumière</td><td>Léa Fontaine<div class="sub2">Gérante</div></td><td>Conciergerie</td><td>Mise à disposition · Navette</td><td>20/05/2026</td><td><span class="st ann">Refusé</span></td><td><div class="act"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg> Voir</span></div></td></tr>
+        </tbody>
+      </table></div>
+      <div class="card" style="margin-top:18px;padding:16px 20px;color:var(--muted);font-size:12.5px;line-height:1.6">
+        <b style="color:var(--gold-2)">Workflow :</b> chaque demande reçue via le formulaire « Devenir partenaire » arrive ici. Vous pouvez l'accepter (et attribuer un tarif préférentiel / une remise), la refuser, ou répondre directement. Un e-mail d'accusé de réception est envoyé automatiquement au partenaire.
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="view" id="stats">
+      <div class="top"><div><h1>Statistiques</h1><div class="sub">Vue d'ensemble de l'activité 2026</div></div></div>
+      <div class="card" style="margin-bottom:20px;padding:22px 26px;display:flex;align-items:center;gap:24px;background:linear-gradient(135deg,rgba(201,162,74,.16),rgba(201,162,74,.04));border-color:var(--line)">
+        <div class="ic" style="width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:rgba(201,162,74,.16);border:1px solid var(--line);color:var(--gold-2);flex:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:24px;height:24px"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <div><div class="lbl" style="color:var(--muted-2);font-size:13px">Chiffre d'affaires annuel 2026</div><div class="val mono" style="font-size:34px;font-weight:700;color:var(--gold-bright);margin-top:2px">41 270 €</div></div>
+        <div style="margin-left:auto;text-align:right"><div class="lbl" style="color:var(--muted-2);font-size:12.5px">Projection fin d'année</div><div class="mono" style="font-size:20px;font-weight:600;color:var(--gold-2);margin-top:3px">≈ 88 500 €</div><div class="chg up" style="color:var(--green);font-size:12px;font-weight:600;margin-top:3px">▲ 18 % vs 2025</div></div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="lbl">CA du mois (juin)</div><div class="val">8 940 €</div><div class="chg up">▲ 12,4 %</div></div>
+        <div class="kpi"><div class="lbl">Courses totales</div><div class="val">312</div><div class="chg up">▲ 41</div></div>
+        <div class="kpi"><div class="lbl">Panier moyen</div><div class="val">132 €</div><div class="chg up">▲ 4 €</div></div>
+        <div class="kpi"><div class="lbl">Clients actifs</div><div class="val">87</div><div class="chg up">▲ 12</div></div>
+      </div>
+      <div class="cols">
+        <div class="card"><div class="card-h"><h2>Chiffre d'affaires mensuel</h2></div>
+          <div class="chart"><div class="bars">
+            <div class="bar"><div class="b" style="height:40%"></div><small>Jan</small></div>
+            <div class="bar"><div class="b" style="height:52%"></div><small>Fév</small></div>
+            <div class="bar"><div class="b" style="height:46%"></div><small>Mar</small></div>
+            <div class="bar"><div class="b" style="height:68%"></div><small>Avr</small></div>
+            <div class="bar"><div class="b" style="height:76%"></div><small>Mai</small></div>
+            <div class="bar"><div class="b" style="height:90%"></div><small>Juin</small></div>
+          </div></div>
+        </div>
+        <div class="card"><div class="card-h"><h2>Répartition par véhicule</h2></div>
+          <div class="list-i"><span class="dot" style="background:var(--green)"></span><div class="li-main"><b>Berline Premium</b><small>Mercedes Classe E</small></div><span class="li-amt">46 %</span></div>
+          <div class="list-i"><span class="dot" style="background:var(--gold)"></span><div class="li-main"><b>Van Mercedes Classe V</b><small>Groupes &amp; bagages</small></div><span class="li-amt">31 %</span></div>
+          <div class="list-i"><span class="dot" style="background:var(--blue)"></span><div class="li-main"><b>Éco Green Hybride</b><small>Toyota hybride</small></div><span class="li-amt">23 %</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PARAM -->
+    <section class="view" id="param">
+      <div class="top"><div><h1>Paramètres</h1><div class="sub">Société, tarifs, comptes administrateurs</div></div></div>
+      <div class="card" style="padding:22px 24px;color:var(--muted);font-size:14px;line-height:1.7">
+        Gestion de la société (SIRET, TVA intracom., coordonnées bancaires), des tarifs de la flotte et des packs,
+        des comptes administrateurs et des modèles d'e-mails. <span style="color:var(--gold-2)">— Section à détailler lors du développement.</span>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+document.querySelectorAll('.nav-i').forEach(n=>n.addEventListener('click',()=>{
+  document.querySelectorAll('.nav-i').forEach(x=>x.classList.remove('active'));
+  n.classList.add('active');
+  const v=n.dataset.v;
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.id===v));
+  window.scrollTo(0,0);
+}));
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
+  const sibs=c.parentElement.querySelectorAll('.chip');sibs.forEach(s=>s.classList.remove('on'));c.classList.add('on');
+}));
+// médaille de niveau devant chaque nom de client
+const LEVELS={"Amélie Rousseau":"platine","Sofia Marchetti":"or","Liu Wei":"or","James Whitfield":"argent","Elena Petrova":"bronze","Karim Benali":"bronze"};
+const LBL={or:"Or",argent:"Argent",bronze:"Bronze",platine:"Diamant"};
+function medal(lvl){
+  const STAR="M12 2.4l2.95 5.98 6.6.96-4.78 4.66 1.13 6.58L12 17.45l-5.9 3.1 1.13-6.58L2.45 9.34l6.6-.96z";
+  if(lvl==='platine'){
+    return `<svg class="medal" viewBox="0 0 24 24"><defs><linearGradient id="dia" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfeaff"/><stop offset=".5" stop-color="#60a5fa"/><stop offset="1" stop-color="#2f6fd0"/></linearGradient></defs><path fill="url(#dia)" stroke="#dff0ff" stroke-width=".5" stroke-linejoin="round" d="M6 4H18L22 9.5 12 21.5 2 9.5Z"/><path fill="none" stroke="#eaf6ff" stroke-width=".7" stroke-linejoin="round" d="M2 9.5H22M6 4 8.5 9.5 12 21.5 15.5 9.5 18 4M8.5 9.5H15.5"/></svg>`;
+  }
+  if(lvl==='bronze'){
+    return `<svg class="medal" viewBox="0 0 24 24"><path fill="none" stroke="#b3743f" stroke-width="1.7" stroke-linejoin="round" d="${STAR}"/></svg>`;
+  }
+  return `<svg class="medal m-${lvl}" viewBox="0 0 24 24" fill="currentColor"><path d="${STAR}"/></svg>`;
+}
+document.querySelectorAll('.cli').forEach(el=>{
+  const name=(el.childNodes[0] && el.childNodes[0].textContent || el.textContent).trim();
+  const lvl=LEVELS[name];
+  if(lvl) el.insertAdjacentHTML('afterbegin', medal(lvl));
+});
+document.querySelectorAll('[data-medal]').forEach(el=>el.insertAdjacentHTML('afterbegin', medal(el.dataset.medal)));
+// badge partenaire (logo société) devant chaque société dans l'onglet Partenaires
+document.querySelectorAll('#part .cli').forEach(el=>el.insertAdjacentHTML('afterbegin','<img class="pbadge" src="partner-badge.png" alt="" title="Partenaire">'));
+</script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParisVTCDriver — Espace client (Maquette)</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070a12;--navy:#0d1730;--panel:#0e1626;--panel-2:#121d33;--line:rgba(201,162,74,.16);--line-soft:rgba(255,255,255,.07);--gold:#c9a24a;--gold-2:#e7c878;--gold-bright:#f1d894;--txt:#eef2fb;--muted:#9aa6bf;--muted-2:#6f7c97;--green:#34d399;--amber:#e7b04a;--red:#f87171;--blue:#60a5fa}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',system-ui,sans-serif;background:radial-gradient(1000px 500px at 88% -8%,rgba(201,162,74,.08),transparent 60%),radial-gradient(700px 420px at -5% 5%,rgba(20,40,90,.4),transparent 55%),linear-gradient(180deg,#070a12,#080d18 40%,#070a12);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.mono{font-family:'Space Grotesk',sans-serif}
+.banner{background:linear-gradient(90deg,rgba(201,162,74,.18),rgba(201,162,74,.05));border-bottom:1px solid var(--line);color:var(--gold-2);font-size:12.5px;text-align:center;padding:7px 14px}
+.app{display:grid;grid-template-columns:248px 1fr;min-height:calc(100vh - 33px)}
+.side{background:linear-gradient(180deg,rgba(13,23,48,.55),rgba(7,10,18,.4));border-right:1px solid var(--line-soft);padding:22px 16px;display:flex;flex-direction:column;gap:6px}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 18px;border-bottom:1px solid var(--line-soft);margin-bottom:12px}
+.brand .mk{width:40px;height:40px;border-radius:11px;overflow:hidden;border:1px solid var(--line);display:grid;place-items:center;flex:none}
+.brand .mk img{width:100%;height:100%;object-fit:cover;display:block}
+.brand b{font-size:15.5px;display:block;line-height:1.1}.brand b span{color:var(--gold-2)}
+.brand small{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted-2)}
+.nav-i{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;transition:.18s;border:1px solid transparent}
+.nav-i svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none}
+.nav-i:hover{background:rgba(255,255,255,.04);color:var(--txt)}
+.nav-i.active{background:linear-gradient(145deg,rgba(201,162,74,.2),rgba(201,162,74,.06));color:var(--gold-2);border-color:var(--line)}
+.side-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--line-soft);display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.side-foot .av{width:34px;height:34px;border-radius:50%;background:linear-gradient(145deg,#26324d,#16203a);display:grid;place-items:center;color:var(--gold-2);font-weight:700;font-size:13px;border:1px solid var(--line)}
+.main{padding:26px 30px 40px;overflow:auto}
+.top{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.top h1{font-size:23px;font-weight:700;letter-spacing:-.01em}
+.top .sub{color:var(--muted-2);font-size:13px;margin-top:2px}
+.btn{font-family:inherit;font-weight:600;cursor:pointer;border:none;border-radius:11px;padding:10px 18px;font-size:13.5px;display:inline-flex;align-items:center;gap:8px}
+.btn-gold{background:linear-gradient(135deg,var(--gold-bright),var(--gold) 55%,#a9842f);color:#1c1604;box-shadow:0 8px 22px -12px rgba(201,162,74,.7)}
+.btn-ghost{background:rgba(255,255,255,.04);color:var(--txt);border:1px solid var(--line-soft)}
+.btn-sm{padding:7px 13px;font-size:12.5px;border-radius:9px}
+.card{border:1px solid var(--line-soft);border-radius:16px;background:linear-gradient(165deg,var(--panel-2),var(--panel));overflow:hidden}
+.card-h{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line-soft)}
+.card-h h2{font-size:15px;font-weight:600}
+.card-h .link{margin-left:auto;font-size:12.5px;color:var(--gold-2);cursor:pointer}
+/* hero next ride */
+.next{display:flex;gap:22px;align-items:center;padding:24px 26px;margin-bottom:22px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,rgba(201,162,74,.14),rgba(201,162,74,.03))}
+.next .big{width:58px;height:58px;border-radius:14px;background:rgba(201,162,74,.16);border:1px solid var(--line);display:grid;place-items:center;color:var(--gold-2);flex:none}
+.next .big svg{width:28px;height:28px;stroke:currentColor;fill:none}
+.next .lbl{color:var(--muted-2);font-size:12.5px}
+.next .ttl{font-size:18px;font-weight:700;margin-top:2px}
+.next .meta{color:var(--muted);font-size:13px;margin-top:4px}
+.next .right{margin-left:auto;text-align:right}
+.next .amt{font-family:'Space Grotesk';font-size:24px;font-weight:700;color:var(--gold-bright)}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-2);font-weight:600;padding:12px 20px;border-bottom:1px solid var(--line-soft)}
+tbody td{padding:14px 20px;border-bottom:1px solid var(--line-soft);font-size:13.5px;color:var(--muted);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+.cli{color:var(--txt);font-weight:600}
+.sub2{color:var(--muted-2);font-size:11.5px;margin-top:2px}
+.amt{font-family:'Space Grotesk';color:var(--gold-bright);font-weight:600;white-space:nowrap}
+.st{font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.st::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.st.conf{color:var(--green);background:rgba(52,211,153,.12)}
+.st.att{color:var(--amber);background:rgba(231,176,74,.14)}
+.st.term{color:var(--blue);background:rgba(96,165,250,.12)}
+.st.ann{color:var(--red);background:rgba(248,113,113,.12)}
+.ico-btn{height:30px;padding:0 11px;border-radius:8px;border:1px solid var(--line-soft);background:rgba(255,255,255,.03);display:inline-flex;align-items:center;gap:6px;color:var(--muted);cursor:pointer;font-size:12px;font-family:inherit;font-weight:500}
+.ico-btn:hover{color:var(--gold-2);border-color:var(--line)}
+.ico-btn svg{width:13px;height:13px;stroke:currentColor;fill:none}
+.ico-btn.danger:hover{color:var(--red);border-color:rgba(248,113,113,.4)}
+.view{display:none}.view.show{display:block}
+.medal{width:15px;height:15px;display:inline-block;vertical-align:-3px;margin-right:6px;flex:none}
+.medal-plat{width:21px;height:21px;vertical-align:-6px;margin-right:4px}
+.m-bronze{color:#c08a57}.m-argent{color:#aab2bf}.m-or{color:#e7c878}
+.lvl-badge{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;background:linear-gradient(145deg,var(--gold),var(--gold-2));color:#1c1604}
+.prog{height:9px;border-radius:20px;background:rgba(255,255,255,.07);overflow:hidden;margin:10px 0 6px}
+.prog .fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--gold-2),var(--gold))}
+.lvl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:4px}
+.lvl{padding:16px;border:1px solid var(--line-soft);border-radius:14px;background:rgba(255,255,255,.02);text-align:center}
+.lvl.cur{border-color:var(--gold);background:rgba(201,162,74,.08)}
+.lvl .n{font-size:12.5px;color:var(--muted-2);font-weight:600}
+.lvl .pct{font-family:'Space Grotesk';font-size:24px;font-weight:700;color:var(--gold-bright);margin:6px 0 2px}
+.lvl .th{font-size:11.5px;color:var(--muted)}
+@media(max-width:760px){.lvl-grid{grid-template-columns:1fr 1fr}}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.avoir{padding:20px;border:1px dashed var(--line);border-radius:14px;background:rgba(201,162,74,.05)}
+.avoir .v{font-family:'Space Grotesk';font-size:26px;font-weight:700;color:var(--gold-bright)}
+.avoir .x{color:var(--muted-2);font-size:12px;margin-top:4px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--muted-2);margin-bottom:6px;font-weight:500}
+.field input,.field select{width:100%;background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:var(--txt);font-family:inherit;font-size:14px;border-radius:10px;padding:11px 13px}
+.note-box{padding:12px 15px;border:1px solid var(--line-soft);border-radius:11px;background:rgba(96,165,250,.06);color:var(--muted);font-size:12.5px;line-height:1.5;margin-top:6px}
+@media(max-width:1080px){.app{grid-template-columns:1fr}.side{display:none}.grid2{grid-template-columns:1fr}.next{flex-wrap:wrap}.next .right{margin-left:0;text-align:left}}
+</style>
+</head>
+<body>
+<div class="banner">● Maquette visuelle — espace client (données fictives, sans backend).</div>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="mk"><img src="logo.png" alt="ParisVTCDriver"></div><div><b>Paris<span>VTC</span>Driver</b><small>Espace client</small></div></div>
+    <div class="nav-i active" data-v="home"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg> Accueil</div>
+    <div class="nav-i" data-v="resa"><svg viewBox="0 0 24 24" stroke-width="1.7"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg> Mes réservations</div>
+    <div class="nav-i" data-v="fact"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg> Devis &amp; factures</div>
+    <div class="nav-i" data-v="avoir"><svg viewBox="0 0 24 24" stroke-width="1.7"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h4"/></svg> Mes avoirs</div>
+    <div class="nav-i" data-v="fid"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z"/></svg> Fidélité</div>
+    <div class="nav-i" data-v="prof"><svg viewBox="0 0 24 24" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg> Mon profil</div>
+    <div class="side-foot"><div class="av">JW</div><div><b style="color:var(--txt);font-size:13px">James Whitfield</b><div style="font-size:11px;color:var(--muted-2)">Client</div></div>
+      <a href="connexion-maquette.html" title="Déconnexion" style="margin-left:auto;width:32px;height:32px;border-radius:8px;border:1px solid var(--line-soft);display:grid;place-items:center;color:var(--muted-2)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:16px;height:16px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></a></div>
+  </aside>
+
+  <main class="main">
+    <!-- HOME -->
+    <section class="view show" id="home">
+      <div class="top"><div><h1>Bonjour James 👋</h1><div class="sub">Bienvenue dans votre espace ParisVTCDriver</div></div>
+        <button class="btn btn-gold" style="margin-left:auto">+ Nouvelle réservation</button></div>
+
+      <div class="next">
+        <div class="big"><svg viewBox="0 0 24 24"><path d="M5 17h14l-1.5-6.5a2 2 0 0 0-2-1.5h-7a2 2 0 0 0-2 1.5z"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="16.5" cy="17.5" r="1.6"/></svg></div>
+        <div><div class="lbl">Votre prochaine course · confirmée</div><div class="ttl">Pack Disneyland Paris — 1 Parc</div><div class="meta">Lundi 9 juin · 09:00 · Van Mercedes Classe V · 4 passagers<br>Prise en charge : Hôtel Plaza Athénée, 25 Av. Montaigne, 75008 Paris</div></div>
+        <div class="right"><div class="lbl">Montant TTC</div><div class="amt">260,00 €</div><div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end"><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg> Facture</span><span class="ico-btn danger"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg> Annuler</span></div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:22px;padding:20px 24px;display:flex;align-items:center;gap:22px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(201,162,74,.12),rgba(201,162,74,.03));border-color:var(--line)">
+        <div style="flex:none"><div class="lbl" style="color:var(--muted-2);font-size:12.5px">Programme fidélité</div><div style="display:flex;align-items:center;gap:10px;margin-top:4px"><span class="mono" style="font-size:26px;font-weight:700;color:var(--gold-bright)">620 pts</span><span class="lvl-badge">★ Argent · −10 %</span></div></div>
+        <div style="flex:1;min-width:200px"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted-2)"><span>Argent</span><span>Or — 1000 pts</span></div><div class="prog"><div class="fill" style="width:62%"></div></div><div style="font-size:11.5px;color:var(--muted)">Plus que <b style="color:var(--gold-2)">380 pts</b> pour −15 %</div></div>
+        <button class="btn btn-ghost btn-sm" data-go="fid" style="margin-left:auto">Voir mon programme</button>
+      </div>
+      <div class="grid2">
+        <div class="card"><div class="card-h"><h2>Mes dernières réservations</h2><span class="link" data-go="resa">Tout voir</span></div>
+          <table><tbody>
+            <tr><td><div class="cli">Pack Disneyland — 1 Parc</div><div class="sub2">09/06 · 09:00</div></td><td class="amt">260,00 €</td><td><span class="st conf">Confirmée</span></td></tr>
+            <tr><td><div class="cli">Paris 8e → Aéroport CDG</div><div class="sub2">22/05 · 06:30</div></td><td class="amt">120,00 €</td><td><span class="st term">Terminée</span></td></tr>
+            <tr><td><div class="cli">Mise à disposition · 3h</div><div class="sub2">14/05 · 19:00</div></td><td class="amt">240,00 €</td><td><span class="st term">Terminée</span></td></tr>
+          </tbody></table>
+        </div>
+        <div class="card"><div class="card-h"><h2>Avoir disponible</h2></div>
+          <div style="padding:20px">
+            <div class="avoir"><div class="lbl" style="color:var(--muted-2);font-size:12.5px">Avoir #A-2026-002</div><div class="v">10,00 €</div><div class="x">Valable jusqu'au 28/07/2026 · utilisable sur une prochaine réservation</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESERVATIONS -->
+    <section class="view" id="resa">
+      <div class="top"><div><h1>Mes réservations</h1><div class="sub">Suivi de vos courses et demandes</div></div>
+        <button class="btn btn-gold" style="margin-left:auto">+ Nouvelle réservation</button></div>
+      <div class="card"><table>
+        <thead><tr><th>Réservation</th><th>Rendez-vous</th><th>Véhicule</th><th>Montant</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+          <tr><td class="cli">Pack Disneyland — 1 Parc</td><td>09/06 · 09:00</td><td>Van Mercedes V</td><td class="amt">260,00 €</td><td><span class="st conf">Confirmée</span></td><td><span class="ico-btn danger"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg> Annuler</span></td></tr>
+          <tr><td class="cli">Paris 8e → Aéroport CDG</td><td>22/05 · 06:30</td><td>Berline Premium</td><td class="amt">120,00 €</td><td><span class="st term">Terminée</span></td><td><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg> Facture</span></td></tr>
+          <tr><td class="cli">Mise à disposition · 3h</td><td>14/05 · 19:00</td><td>Berline Premium</td><td class="amt">240,00 €</td><td><span class="st term">Terminée</span></td><td><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg> Facture</span></td></tr>
+          <tr><td class="cli">Orly → Paris 16e</td><td>02/05 · 12:00</td><td>Éco Green Hybride</td><td class="amt">75,00 €</td><td><span class="st ann">Annulée</span></td><td><span class="sub2">Avoir émis</span></td></tr>
+        </tbody>
+      </table></div>
+      <div class="card" style="margin-top:18px;padding:18px 22px">
+        <h2 style="font-size:14px;margin-bottom:10px">Demander une annulation</h2>
+        <div class="grid2">
+          <div class="field"><label>Réservation concernée</label><select><option>Pack Disneyland — 1 Parc · 09/06</option></select></div>
+          <div class="field"><label>Motif (facultatif)</label><input placeholder="Changement de programme…"></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn btn-ghost btn-sm">Envoyer la demande</button><span class="sub2">Soumise à validation de l'administrateur.</span></div>
+        <div class="note-box">Conditions : annulation plus de 24 h avant → remboursement intégral. Entre 24 h et 2 h avant → avoir valable 2 mois. Moins de 2 h avant ou non-présentation → aucun remboursement ni avoir.</div>
+      </div>
+    </section>
+
+    <!-- FACTURES -->
+    <section class="view" id="fact">
+      <div class="top"><div><h1>Devis &amp; factures</h1><div class="sub">Vos documents, téléchargeables à tout moment</div></div></div>
+      <div class="card"><table>
+        <thead><tr><th>N°</th><th>Objet</th><th>Date</th><th>TTC</th><th>Type</th><th></th></tr></thead>
+        <tbody>
+          <tr><td class="mono">2026-0006</td><td class="cli">Pack Disneyland — 1 Parc</td><td>06/06/2026</td><td class="amt">260,00 €</td><td><span class="st att">Devis</span></td><td><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg> PDF</span></td></tr>
+          <tr><td class="mono">2026-0001</td><td class="cli">Paris 8e → Aéroport CDG</td><td>22/05/2026</td><td class="amt">120,00 €</td><td><span class="st conf">Facture</span></td><td><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg> PDF</span></td></tr>
+          <tr><td class="mono">2026-0000</td><td class="cli">Mise à disposition · 3h</td><td>14/05/2026</td><td class="amt">240,00 €</td><td><span class="st conf">Facture</span></td><td><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg> PDF</span></td></tr>
+          <tr><td class="mono">2025-0312</td><td class="cli">Orly → Paris 16e — ANNULATION</td><td>02/05/2026</td><td class="amt">0,00 €</td><td><span class="st ann">Annulation</span></td><td><span class="ico-btn"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg> PDF</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- AVOIRS -->
+    <section class="view" id="avoir">
+      <div class="top"><div><h1>Mes avoirs</h1><div class="sub">Montants à valoir sur vos prochaines réservations</div></div></div>
+      <div class="grid2">
+        <div class="avoir"><div class="lbl" style="color:var(--muted-2);font-size:12.5px">Avoir #A-2026-002</div><div class="v">10,00 €</div><div class="x">Émis le 02/05/2026 · valable jusqu'au 28/07/2026</div><div style="margin-top:12px"><span class="st conf">Disponible</span></div></div>
+        <div class="avoir" style="opacity:.6"><div class="lbl" style="color:var(--muted-2);font-size:12.5px">Avoir #A-2026-001</div><div class="v">5,00 €</div><div class="x">Émis le 10/03/2026 · expiré le 10/05/2026</div><div style="margin-top:12px"><span class="st ann">Expiré</span></div></div>
+      </div>
+    </section>
+
+    <!-- FIDELITE -->
+    <section class="view" id="fid">
+      <div class="top"><div><h1>Programme de fidélité</h1><div class="sub">1 € dépensé = 1 point · cumulables sur vos courses</div></div></div>
+      <div class="card" style="padding:26px;margin-bottom:20px;background:linear-gradient(135deg,rgba(201,162,74,.14),rgba(201,162,74,.03));border-color:var(--line)">
+        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+          <div><div class="lbl" style="color:var(--muted-2);font-size:12.5px">Vos points</div><div class="mono" style="font-size:38px;font-weight:700;color:var(--gold-bright);line-height:1">620</div></div>
+          <div style="margin-left:6px"><span class="lvl-badge" style="font-size:13px;padding:7px 14px">★ Argent — réduction de 10 %</span><div style="font-size:12px;color:var(--muted);margin-top:8px">Appliquée automatiquement à vos prochaines réservations, sur les prestations d'au moins 60 €.</div></div>
+          <div style="margin-left:auto;text-align:right"><div class="lbl" style="color:var(--muted-2);font-size:12px">Niveau valable jusqu'au</div><div class="mono" style="font-size:16px;font-weight:600;color:var(--gold-2);margin-top:3px">06/08/2026</div></div>
+        </div>
+        <div style="margin-top:18px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted-2)"><span>Argent (500)</span><span>Or — 1000 pts</span></div><div class="prog"><div class="fill" style="width:62%"></div></div><div style="font-size:12px;color:var(--muted)">Plus que <b style="color:var(--gold-2)">380 points</b> pour atteindre −15 %.</div></div>
+      </div>
+
+      <div class="card" style="padding:22px"><h2 style="font-size:14px;margin-bottom:14px">Les niveaux</h2>
+        <div class="lvl-grid">
+          <div class="lvl"><div class="n">Bronze</div><div class="pct">−5 %</div><div class="th">dès 100 pts</div></div>
+          <div class="lvl cur"><div class="n">Argent · actuel</div><div class="pct">−10 %</div><div class="th">dès 500 pts</div></div>
+          <div class="lvl"><div class="n">Or</div><div class="pct">−15 %</div><div class="th">dès 1000 pts</div></div>
+          <div class="lvl"><div class="n">Diamant</div><div class="pct">−20 %</div><div class="th">dès 5000 pts</div></div>
+        </div>
+      </div>
+
+      <div class="note-box" style="margin-top:18px;background:rgba(231,176,74,.07);border-color:rgba(231,176,74,.25)">
+        <b style="color:var(--gold-2)">Maintien des niveaux :</b> votre niveau est conservé 2 mois après votre dernière réservation terminée.
+        Un rappel vous est envoyé 2 semaines avant l'échéance. Sans nouvelle réservation, vous perdez un seul niveau
+        (vos points sont ramenés au minimum du niveau inférieur), et ainsi de suite niveau par niveau.
+      </div>
+    </section>
+
+    <!-- PROFIL -->
+    <section class="view" id="prof">
+      <div class="top"><div><h1>Mon profil</h1><div class="sub">Vos informations sont reprises automatiquement dans vos réservations</div></div></div>
+      <div class="card" style="padding:24px 26px">
+        <div class="grid2">
+          <div class="field"><label>Nom complet</label><input value="James Whitfield"></div>
+          <div class="field"><label>Société (optionnel)</label><input placeholder="—"></div>
+          <div class="field"><label>E-mail</label><input value="j.whitfield@email.com"></div>
+          <div class="field"><label>Téléphone</label><input value="+44 7700 900123"></div>
+          <div class="field"><label>Adresse</label><input value="25 Avenue Montaigne"></div>
+          <div class="field"><label>Ville / Code postal</label><input value="Paris · 75008"></div>
+        </div>
+        <button class="btn btn-gold btn-sm" style="margin-top:6px">Enregistrer</button>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+function show(v){document.querySelectorAll('.nav-i').forEach(x=>x.classList.toggle('active',x.dataset.v===v));document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.id===v));window.scrollTo(0,0);}
+document.querySelectorAll('.nav-i').forEach(n=>n.addEventListener('click',()=>show(n.dataset.v)));
+document.querySelectorAll('[data-go]').forEach(l=>l.addEventListener('click',()=>show(l.dataset.go)));
+function medal(lvl){
+  const STAR="M12 2.4l2.95 5.98 6.6.96-4.78 4.66 1.13 6.58L12 17.45l-5.9 3.1 1.13-6.58L2.45 9.34l6.6-.96z";
+  if(lvl==='platine'){
+    return `<svg class="medal" viewBox="0 0 24 24"><defs><linearGradient id="dia" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfeaff"/><stop offset=".5" stop-color="#60a5fa"/><stop offset="1" stop-color="#2f6fd0"/></linearGradient></defs><path fill="url(#dia)" stroke="#dff0ff" stroke-width=".5" stroke-linejoin="round" d="M6 4H18L22 9.5 12 21.5 2 9.5Z"/><path fill="none" stroke="#eaf6ff" stroke-width=".7" stroke-linejoin="round" d="M2 9.5H22M6 4 8.5 9.5 12 21.5 15.5 9.5 18 4M8.5 9.5H15.5"/></svg>`;
+  }
+  if(lvl==='bronze'){
+    return `<svg class="medal" viewBox="0 0 24 24"><path fill="none" stroke="#b3743f" stroke-width="1.7" stroke-linejoin="round" d="${STAR}"/></svg>`;
+  }
+  return `<svg class="medal m-${lvl}" viewBox="0 0 24 24" fill="currentColor"><path d="${STAR}"/></svg>`;
+}
+// niveau du client connecté
+var b=document.querySelector('.side-foot b'); if(b) b.insertAdjacentHTML('afterbegin', medal('argent'));
+// étoiles sur les cartes de niveaux
+document.querySelectorAll('#fid .lvl .n').forEach(nn=>{const tx=nn.textContent.toLowerCase();const lvl=tx.includes('bronze')?'bronze':tx.includes('argent')?'argent':(tx.includes('diamant')||tx.includes('platine'))?'platine':tx.includes('or')?'or':null;if(lvl)nn.insertAdjacentHTML('afterbegin',medal(lvl));});
+</script>
+</body>
+</html>
