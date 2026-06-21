@@ -7,21 +7,23 @@ const COMMON={
  it:{back:"← Torna alla prenotazione",pk_loisir:"Pack Svago e Visite",book:"Prenota questo pack",see:"Vedi dettagli",howto:"Come funziona",gal_eyebrow:"Immagini",cont:"Continua la prenotazione",cont_note:"La tua prenotazione in corso sul sito viene conservata.",foot_copy:"Autista Premium · Parigi e Francia",backsite:"Torna al sito",brandtag:"Autista Premium · Parigi",photonote:"Foto illustrative — sostituisci i file immagine con i tuoi visual."},
  pt:{back:"← Voltar à minha reserva",pk_loisir:"Pack Lazer e Visitas",book:"Reservar este pack",see:"Ver detalhes",howto:"Como funciona",gal_eyebrow:"Em imagens",cont:"Continuar minha reserva",cont_note:"Sua reserva em curso no site é mantida.",foot_copy:"Motorista Premium · Paris e França",backsite:"Voltar ao site",brandtag:"Motorista Premium · Paris",photonote:"Fotos ilustrativas — substitua os arquivos de imagem pelos seus visuais."},
  tr:{back:"← Rezervasyonuma dön",pk_loisir:"Eğlence ve Gezi Paketi",book:"Bu paketi ayırt",see:"Ayrıntıları gör",howto:"Nasıl çalışır",gal_eyebrow:"Görsellerle",cont:"Rezervasyonuma devam et",cont_note:"Sitedeki mevcut rezervasyonunuz korunur.",foot_copy:"Premium Şoför · Paris ve Fransa",backsite:"Siteye dön",brandtag:"Premium Şoför · Paris",photonote:"Örnek görseller — görsel dosyalarını kendi fotoğraflarınızla değiştirin."},
- zh:{back:"← 返回我的预订",pk_loisir:"休闲与观光套餐",book:"预订此套餐",see:"查看详情",howto:"如何运作",gal_eyebrow:"图片展示",cont:"继续我的预订",cont_note:"您在网站上正在进行的预订将被保留。",foot_copy:"高级专属司机 · 巴黎及法国",backsite:"返回网站",brandtag:"高级专属司机 · 巴黎",photonote:"示意图 — 请用您自己的图片替换图像文件。"}
+ zh:{back:"← 返回我的预订",pk_loisir:"休闲与观光套餐",book:"预订此套餐",see:"查看详情",howto:"如何运作",gal_eyebrow:"图片展示",cont:"继续我的预订",cont_note:"您在网站上正在进行的预订将被保留。",foot_copy:"高级专属司机 · 巴黎及法国",backsite:"返回网站",brandtag:"高级专属司机 · 巴黎",photonote:"示意图 — 请用您自己的图片替换图像文件。"},
+ ar:{back:"← العودة إلى حجزي",pk_loisir:"باقة ترفيه وسياحة",book:"احجز هذه الباقة",see:"عرض التفاصيل",howto:"كيف تعمل",gal_eyebrow:"بالصور",cont:"متابعة حجزي",cont_note:"يبقى حجزك الحالي على الموقع محفوظاً.",foot_copy:"سائق خاص فاخر · باريس وفرنسا",backsite:"العودة إلى الموقع",brandtag:"سائق خاص فاخر · باريس",photonote:"صور توضيحية — استبدل ملفات الصور بصورك الخاصة."}
 };
-const LANGS=["fr","en","tr","es","it","pt","zh"];
-const NATIVE={tr:["TR","Türkçe"],es:["ES","Español"],it:["IT","Italiano"],pt:["PT","Português"],zh:["中","中文"]};
+const LANGS=["fr","en","tr","es","it","pt","zh","ar"];
+const NATIVE={tr:["TR","Türkçe"],es:["ES","Español"],it:["IT","Italiano"],pt:["PT","Português"],zh:["中","中文"],ar:["ع","العربية"]};
 let DICT={};LANGS.forEach(l=>{DICT[l]=Object.assign({},COMMON[l]||{},(window.PAGE_I18N&&window.PAGE_I18N[l])||{});});
 let LANG="fr";
 function pt(k){return (DICT[LANG]&&DICT[LANG][k])||DICT.en[k]||k;}
 window.packT=pt;
 window.packSetLang=function(l){
   if(!DICT[l])l="en";LANG=l;document.documentElement.lang=l;
+  document.documentElement.dir=(l==="ar")?"rtl":"ltr";
   try{localStorage.setItem("pvtc_lang",l);}catch(e){}
   document.querySelectorAll("[data-lang]").forEach(b=>b.classList.toggle("active",b.dataset.lang===l));
   document.querySelectorAll("[data-i18n]").forEach(el=>{el.innerHTML=pt(el.dataset.i18n);});
   document.querySelectorAll("[data-i18n-ph]").forEach(el=>{el.placeholder=pt(el.dataset.i18nPh);});
-  const more=document.getElementById("langMore");if(more)more.classList.toggle("active",["tr","es","it","pt","zh"].includes(l));
+  const more=document.getElementById("langMore");if(more)more.classList.toggle("active",["tr","es","it","pt","zh","ar"].includes(l));
   const menu=document.getElementById("langMenu");if(menu)menu.classList.remove("open");
 };
 window.packToggleMenu=function(e){e.stopPropagation();const m=document.getElementById("langMenu");if(m)m.classList.toggle("open");};
@@ -38,7 +40,13 @@ function injectCSS(){
   .lang-menu button.active{background:rgba(201,162,74,.16);color:var(--gold-2)}
   .lang-menu button span{display:inline-grid;place-items:center;width:24px;height:20px;font-size:11px;font-weight:700;border-radius:5px;background:rgba(255,255,255,.06);color:var(--gold-2)}
   .nav-inner .lang{margin-left:auto}
-  .nav-inner .lang + .btn{margin-left:14px}`;
+  .nav-inner .lang + .btn{margin-left:14px}
+  [dir="rtl"] body{font-family:'Outfit','Noto Sans Arabic','Segoe UI','Tahoma',system-ui,sans-serif}
+  [dir="rtl"] .lang-menu{right:auto;left:0}
+  [dir="rtl"] .nav-inner .lang{margin-left:0;margin-right:auto}
+  [dir="rtl"] .nav-inner .lang + .btn{margin-left:0;margin-right:14px}
+  [dir="rtl"] .eyebrow::before{margin-right:0;margin-left:10px;transform:scaleX(-1)}
+  [dir="rtl"] .hero h1 em{font-style:normal}`;
   const s=document.createElement("style");s.textContent=css;document.head.appendChild(s);
 }
 function buildSwitcher(){
@@ -54,7 +62,8 @@ function initLang(){
   if(!l||!DICT[l])l="fr";
   packSetLang(l);
 }
-function start(){injectCSS();buildSwitcher();initLang();
+function injectArabicFont(){try{var l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap";document.head.appendChild(l);}catch(e){}}
+function start(){injectCSS();injectArabicFont();buildSwitcher();initLang();
   document.addEventListener("click",e=>{if(!e.target.closest(".lang")){const m=document.getElementById("langMenu");if(m)m.classList.remove("open");}});
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start();

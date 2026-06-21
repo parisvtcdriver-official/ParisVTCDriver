@@ -118,7 +118,7 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -576,6 +576,14 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
 .rev-badge:hover{border-color:var(--gold);background:rgba(201,162,74,.16)}
 .rev-badge b{font-family:'Space Grotesk';color:var(--gold-bright)}
 .rev-badge small{color:var(--muted);font-weight:500;font-size:11.5px}
+/* ----- Arabe / RTL ----- */
+[dir="rtl"]{direction:rtl}
+[dir="rtl"] body{font-family:'Outfit','Noto Sans Arabic','Segoe UI','Tahoma',system-ui,sans-serif;letter-spacing:0}
+[dir="rtl"] .lang-menu{right:auto;left:0}
+[dir="rtl"] .eyebrow::before{margin-right:0;margin-left:10px;transform:scaleX(-1)}
+[dir="rtl"] .hero h1 em{font-style:normal}
+[dir="rtl"] input,[dir="rtl"] textarea,[dir="rtl"] select{text-align:right}
+[dir="rtl"] .addr-sug,[dir="rtl"] .code-msg{text-align:right}
 </style>
 </head>
 <body>
@@ -608,6 +616,7 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
           <button data-lang="it" onclick="setLang('it')"><span>IT</span> Italiano</button>
           <button data-lang="pt" onclick="setLang('pt')"><span>PT</span> Português</button>
           <button data-lang="zh" onclick="setLang('zh')"><span>中</span> 中文</button>
+          <button data-lang="ar" onclick="setLang('ar')"><span>ع</span> العربية</button>
         </div>
       </div>
       <a href="#booking" class="btn btn-gold" data-i18n="nav_cta">Book Now</a>
@@ -1251,6 +1260,35 @@ const I18N={
   vehicle:"Vehicle",chauffeur:"Chauffeur",kids:"Child under 10",babyseat:"Baby seat (0-2 yrs)",booster:"Booster seat (3 yrs +)",svc_type:"Service type",dt:"Date & time",pax:"Passengers",hours:"Hours",price:"Price",rdv:"Appointment",pk_sp_lbl:"Your special request",pk_sp_note:"No price: we send you a custom quote within 24 h.",pk_sp_ph:"Describe your need (occasion, route, number of people, requirements…).",remove:"Remove",service:"Service",
   added:"Service added",confirmed:"Reservation confirmed — an advisor will contact you within 15 min.",noServices:"Add at least one service.",date_min:"Bookings must be at least 30 min ahead.",pdfok:"PDF generated",
   quoteFor:"Quotation prepared for",noName:"Client",totalDue:"Total incl. VAT due"},
+ ar:{brand_tag:"سائق خاص فاخر · باريس",nav_quote:"عرض سعر جديد",nav_account:"حسابي",nav_res:"الحجوزات",nav_fleet:"الأسطول",nav_packs:"الباقات",nav_pricing:"الأسعار",nav_contact:"اتصل بنا",nav_cta:"احجز الآن",
+  hero_eyebrow:"تنقّلات الأعمال والسياحة · باريس وفرنسا",hero_h1:"خدمات سائق خاص<br>فاخرة <em>في باريس</em><br>وفرنسا",
+  hero_lead:"سائقون خاصون محترفون يتميّزون بالدقة والمظهر الأنيق، لنقل المطارات ورحلات الأعمال والرحلات المخصّصة في جميع أنحاء فرنسا.",
+  tag1:"الراحة",tag2:"الأمان",tag3:"الالتزام بالمواعيد",tag4:"التميّز",hero_cta1:"احصل على عرض سعر فوري",hero_cta2:"اكتشف الأسطول",
+  hc_title:"لماذا تختارنا",hc_sub:"مستوى خدمة يثق به رجال الأعمال والعائلات على حدّ سواء.",hc1:"ضمان الوصول في الموعد",hc2:"سائقون موثوقون",hc3:"رحلات منجَزة",hc4:"متوسط تقييم العملاء",hc5:"برنامج الولاء",
+  ss1:"التوفّر والإرسال",ss2:"عملاء الشركات",ss3:"متوسط وقت الانتظار",ss4:"تغطية في كامل فرنسا",
+  bk_eyebrow:"عرض سعر فوري",bk_title:"أنشئ حجزك",bk_lead:"أدخل بياناتك، أضف ما تحتاجه من خدمات، واحصل على عرض سعر دقيق وثابت في الوقت الحقيقي.",
+  bk_c_title:"معلومات العميل",f_name:"الاسم الكامل",f_company:"الشركة (اختياري)",f_email:"البريد الإلكتروني",f_phone:"الهاتف",f_addr:"الشارع / المكان",f_num:"رقم الشارع",f_city:"المدينة",f_zip:"الرمز البريدي",f_country:"البلد",
+  f_pro:"أحجز بصفتي شركة",f_siren:"رقم SIREN",f_vat:"رقم ضريبة القيمة المضافة داخل الاتحاد الأوروبي",
+  bk_s_title:"خدمات النقل",btn_add:"+ إضافة خدمة",bk_n_title:"ملاحظات وطلبات خاصة",f_flight:"رقم الرحلة / القطار",f_lug:"ملاحظة الأمتعة / الركاب",f_suitcase:"حقائب (المخزن)",f_cabin:"حقائب اليد",f_special:"متطلبات إضافية",
+  pickup:"عنوان الانطلاق",dropoff:"عنوان الوصول",addr_ph:"أدخل عنواناً…",on_quote:"حسب العرض",custom_note:"نقل مخصّص: سنتواصل معك خلال اليوم لإعداد عرض سعرك الشخصي.",
+  bk_p_title:"باقات الخدمات",pack_type:"نوع الباقة",btn_add_pack:"+ إضافة باقة",pack_word:"باقة",
+  sum_title:"ملخّص الحجز",sum_sub:"تقدير مباشر، وسعر نهائي ثابت.",sum_services:"الخدمات",sum_subtotal:"المجموع الفرعي",sum_discount:"رمز / قيمة الخصم (€)",sum_disc:"الخصم",sum_ht:"المجموع دون ضريبة",ht_lbl:"دون ضريبة",sum_tax:"شامل الضريبة",sum_total:"الإجمالي شامل الضريبة",
+  sum_code:"رمز الخصم",btn_apply:"تطبيق",code_ok:"تم تطبيق الرمز: −{v}",code_invalid:"رمز غير صالح",code_used:"الرمز مُستخدَم بالفعل",
+  btn_preview:"معاينة العرض",btn_sendq:"إرسال طلبي",btn_pdfq:"تنزيل عرض السعر PDF",btn_pdfi:"تنزيل الفاتورة PDF",btn_confirm:"تأكيد الحجز",sum_secure:"🔒 دفع آمن · لا خصم قبل التأكيد",
+  fl_eyebrow:"الأسطول",fl_title:"سيارة لكل مناسبة",fl_lead:"سيارات حديثة تُصان بعناية — تُنظَّف وتُجهَّز قبل كل رحلة.",
+  tr_eyebrow:"لماذا ParisVTCDriver",tr_title:"خدمة مصمَّمة من أجلك",tr_lead:"كل تفصيل مدروس كي يكون همّك الوحيد هو الوصول مرتاحاً وفي الموعد.",
+  pr_eyebrow:"أسعار تقديرية",pr_title:"تقديرات شفّافة بسعر ثابت",pr_lead:"أسعار إرشادية شاملة لأكثر رحلاتنا طلباً. يُؤكَّد السعر النهائي عند الحجز — دون زيادات أو رسوم خفية.",
+  pr_note:"تشمل التقديرات السائق والوقود و30 دقيقة انتظار في المحطات وساعة انتظار في المطار.",
+  pk_eyebrow:"تجارب",pk_title:"باقات الترفيه والسياحة",pk_lead:"تجارب جاهزة مع نقل خاص مشمول. انقر على باقة لرؤية التفاصيل — يبقى حجزك الحالي محفوظاً.",pk_disney:"باقة ديزني لاند باريس",pk_disney_d:"نقل خاص ذهاباً وإياباً، تذاكر الحديقة، مياه مشمولة — حسب الطلب.",pk_chateaux:"باقة القصور",pk_chateaux_d:"فرساي، فونتينبلو، اللوار… رحلات يومية مع سائق.",pk_circuit:"باقة جولة باريس",pk_circuit_d:"أبرز المعالم في سيارة سيدان خاصة وعلى وتيرتك.",pk_more:"اكتشف الباقة ←",
+  te_eyebrow:"آراء العملاء",te_title:"موضع ثقة المسافرين المميّزين",rv_eyebrow:"مراجعات موثّقة",rv_title:"معتمَدون ومقيَّمون على GetYourGuide وViator",rv_lead:"احجز بثقة: اطّلع على خدماتنا ومراجعاتنا الموثّقة وشهاداتنا على GetYourGuide وViator.",rv_p1:"نقل المطار باريس ↔ CDG / Orly",rv_p2:"باقة ديزني لاند باريس + نقل خاص",rv_p3:"نقل خاص من مطار CDG ← باريس",rv_p4:"مراجعات Google",rv_see:"عرض مراجعاتي ←",rv_note:"منظّم النشاط: ParisVtcDriver — مراجعات GetYourGuide وViator وGoogle.",
+  foot_about:"شركة سائق خاص تخدم باريس والمطارات وكامل فرنسا مع تركيز دائم على الراحة والأمان والالتزام بالمواعيد.",
+  foot_serv:"الخدمات",srv1:"نقل المطارات",srv2:"ديزني لاند باريس",srv3:"سائق بالساعة",srv4:"نقل مخصّص",srv5:"حسابات الشركات",
+  foot_comp:"الشركة",f_partner:"كن شريكاً",foot_contact:"اتصل بنا",foot_addr:"",foot_hours:"الإرسال متاح 24/7 · 365 يوماً",foot_rights:"جميع الحقوق محفوظة.",
+  g1:"أسعار ثابتة",g2:"إلغاء مجاني خلال 24 ساعة",g3:"مرخّص ومؤمَّن",
+  pv_title:"معاينة عرض السعر",pv_close:"إغلاق",vat_short:"ض.ق.م",vat_amt:"قيمة الضريبة",vat_incl:"مشمولة",pv_ref:"رقم العرض",
+  vehicle:"السيارة",chauffeur:"السائق",kids:"طفل دون 10 سنوات",babyseat:"مقعد رضيع (0-2 سنة)",booster:"مقعد داعم (3 سنوات+)",svc_type:"نوع الخدمة",dt:"التاريخ والوقت",pax:"الركاب",hours:"الساعات",price:"السعر",rdv:"الموعد",pk_sp_lbl:"طلبك الخاص",pk_sp_note:"بدون سعر: نرسل لك عرضاً مخصّصاً خلال 24 ساعة.",pk_sp_ph:"صف حاجتك (المناسبة، المسار، عدد الأشخاص، المتطلبات…).",remove:"حذف",service:"خدمة",
+  added:"تمت إضافة الخدمة",confirmed:"تم تأكيد الحجز — سيتواصل معك مستشار خلال 15 دقيقة.",noServices:"أضف خدمة واحدة على الأقل.",date_min:"يجب أن يكون الحجز قبل 30 دقيقة على الأقل.",pdfok:"تم إنشاء ملف PDF",
+  quoteFor:"عرض سعر مُعدّ لـ",noName:"العميل",totalDue:"الإجمالي المستحق شامل الضريبة"},
  tr:{brand_tag:"Premium Şoför · Paris",nav_quote:"Yeni Teklif",nav_account:"Hesabım",nav_res:"Rezervasyonlar",nav_fleet:"Filo",nav_pricing:"Fiyatlar",nav_contact:"İletişim",nav_cta:"Rezervasyon",
   hero_eyebrow:"İş & Tatil Seyahati · Paris & Fransa",hero_h1:"Paris ve Fransa'da<br><em>Premium</em> Şoför<br>Hizmetleri",
   hero_lead:"Havalimanı transferleri, iş seyahatleri ve Fransa genelinde özel güzergâhlar için diskret, dakik ve kusursuz görünümlü özel şoförler.",
@@ -1380,6 +1418,7 @@ const eur=n=>"€"+Number(n).toLocaleString(LANG==="fr"?"fr-FR":"en-GB",{minimum
 function setLang(l){
   LANG=l;
   document.documentElement.lang=l;
+  document.documentElement.dir=(l==="ar")?"rtl":"ltr";
   try{localStorage.setItem("pvtc_lang",l);}catch(e){}
   document.querySelectorAll("[data-lang]").forEach(b=>b.classList.toggle("active",b.dataset.lang===l));
   document.querySelectorAll("[data-i18n]").forEach(el=>{el.innerHTML=t(el.dataset.i18n)});
@@ -1388,7 +1427,7 @@ function setLang(l){
   packs.forEach(p=>refreshPackLabels(p.id));
   recalc();
   const more=document.getElementById("langMore");
-  if(more) more.classList.toggle("active",["tr","es","it","pt","zh"].includes(l));
+  if(more) more.classList.toggle("active",["tr","es","it","pt","zh","ar"].includes(l));
   const menu=document.getElementById("langMenu");if(menu) menu.classList.remove("open");
 }
 function toggleLangMenu(e){e.stopPropagation();const m=document.getElementById("langMenu");if(m)m.classList.toggle("open");}
