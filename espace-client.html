@@ -371,6 +371,7 @@ const T={
  bonus_sent:{fr:"Demande envoyée ✓",en:"Request sent ✓",es:"Solicitud enviada ✓",it:"Richiesta inviata ✓",pt:"Pedido enviado ✓",tr:"Talep gönderildi ✓",zh:"请求已发送 ✓",ar:"تم إرسال الطلب ✓"},
  resa_empty:{fr:"Aucune réservation pour le moment.",en:"No bookings yet.",es:"Ninguna reserva por ahora.",it:"Nessuna prenotazione al momento.",pt:"Nenhuma reserva de momento.",tr:"Henüz rezervasyon yok.",zh:"暂无预订。",ar:"لا حجوزات بعد."},
  docs_empty:{fr:"Aucun document pour le moment.",en:"No documents yet.",es:"Ningún documento por ahora.",it:"Nessun documento al momento.",pt:"Nenhum documento de momento.",tr:"Henüz belge yok.",zh:"暂无文件。",ar:"لا مستندات بعد."},
+ welcome_code:{fr:"🎁 Bienvenue ! Votre code cadeau {code} vous a été envoyé par e-mail.",en:"🎁 Welcome! Your gift code {code} has been emailed to you.",es:"🎁 ¡Bienvenido! Su código de regalo {code} se le ha enviado por correo.",it:"🎁 Benvenuto! Il tuo codice regalo {code} ti è stato inviato via e-mail.",pt:"🎁 Bem-vindo! O seu código oferta {code} foi enviado por e-mail.",tr:"🎁 Hoş geldiniz! {code} hediye kodunuz e-posta ile gönderildi.",zh:"🎁 欢迎！您的礼券码 {code} 已通过邮件发送给您。",ar:"🎁 مرحباً بك! تم إرسال رمز هديتك {code} إلى بريدك الإلكتروني."},
 };
 let LANG=(function(){try{return localStorage.getItem('pvtc_lang')||'fr';}catch(e){return 'fr';}})();
 if(!T.nav_home[LANG])LANG='fr';
@@ -420,6 +421,8 @@ async function load(){
   PROFILE = await getProfile();
   if(!PROFILE){ return; }
   if(PROFILE.role==='admin'){ location.replace('admin.html'); return; }
+  // Code de bienvenue (généré 1× par compte si activé par l'admin) — envoyé par e-mail
+  try{ const {data:wc}=await sb.functions.invoke('request-quote',{body:{action:'welcome-code',lang:LANG}}); if(wc&&wc.ok&&wc.code){ toast(t('welcome_code').replace('{code}',wc.code)); } }catch(e){}
 
   // entête / profil
   const fn = PROFILE.full_name || 'client';

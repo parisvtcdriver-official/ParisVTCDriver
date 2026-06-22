@@ -256,6 +256,16 @@ select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:
           <div class="kpi"><div class="lbl">BIC</div><div class="mono" style="font-size:15px;margin-top:4px">QNTOFRP1XXX</div></div>
         </div>
       </div>
+      <div class="card" style="padding:22px 26px">
+        <h2 style="font-size:15px;margin-bottom:6px">🎁 Code de bienvenue à l'inscription</h2>
+        <div class="sub2" style="margin-bottom:14px">Quand c'est activé, chaque nouveau client reçoit automatiquement par e-mail, à sa première connexion, un code cadeau utilisable <b>une seule fois</b>, sans date d'expiration. Un seul code par compte.</div>
+        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px"><input type="checkbox" id="wcEnabled" style="width:18px;height:18px;accent-color:var(--gold)"> Activer le code de bienvenue</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px">Montant <input type="number" id="wcAmount" min="1" max="100" value="5" style="width:74px;background:var(--navy-2);border:1px solid var(--line-soft);border-radius:8px;color:var(--txt);padding:6px 8px"> €</label>
+          <button class="btn-mini gold" onclick="saveWelcome()">Enregistrer</button>
+          <span id="wcMsg" class="sub2"></span>
+        </div>
+      </div>
       <div class="card infobox" style="font-size:13px;line-height:1.7">
         <b style="color:var(--gold-2)">Gestion :</b> les comptes clients se gèrent dans <b>Clients</b> (suppression) ; les rôles admin et les points dans <b>Fidélité</b> ; les codes promo et avoirs dans <b>Codes promo</b>.<br>
         Ces coordonnées sont celles imprimées sur les devis et factures. Pour les modifier, dis-le moi et je les mets à jour dans le code (un éditeur en ligne pourra être ajouté plus tard).
@@ -364,6 +374,9 @@ async function refresh(){
 
   // avis
   renderReviews(); setBadge('bAvis', REVIEWS.filter(r=>r.status==='pending').length);
+
+  // réglage code de bienvenue
+  loadWelcome();
 
   // stats
   document.getElementById('sYearCA').textContent=eur(caYear);
@@ -495,6 +508,31 @@ async function assignInvoiceNo(){
 function eLang(b){return (b&&b.details&&b.details.lang)||'fr';}
 function pickL(d,l){return (d&&(d[l]||d.fr))||'';}
 const FOOT_HTML='<p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>';
+async function loadWelcome(){
+  try{
+    const {data}=await sb.from('settings').select('value').eq('key','welcome_code').maybeSingle();
+    const v=(data&&data.value)||{};
+    const e=document.getElementById('wcEnabled'); if(e)e.checked=!!v.enabled;
+    const a=document.getElementById('wcAmount'); if(a&&v.amount)a.value=v.amount;
+  }catch(e){}
+}
+async function saveWelcome(){
+  const enabled=document.getElementById('wcEnabled').checked;
+  const amount=Math.max(1,Math.min(100,parseInt(document.getElementById('wcAmount').value,10)||5));
+  const now=new Date().toISOString();
+  // Récupère l'état précédent pour ne pas écraser la fenêtre d'activation lors d'un simple changement de montant
+  const {data:cur}=await sb.from('settings').select('value').eq('key','welcome_code').maybeSingle();
+  const prev=(cur&&cur.value)||{};
+  const value={enabled,amount,enabled_at:prev.enabled_at||null,disabled_at:prev.disabled_at||null};
+  if(enabled&&!prev.enabled) value.enabled_at=now;   // on vient d'activer → début d'une nouvelle fenêtre
+  if(!enabled&&prev.enabled) value.disabled_at=now;  // on vient de désactiver → fin de la fenêtre
+  if(enabled&&!value.enabled_at) value.enabled_at=now; // première activation
+  const {error}=await sb.from('settings').upsert({key:'welcome_code',value,updated_at:now},{onConflict:'key'});
+  const msg=document.getElementById('wcMsg');
+  if(error){ if(msg){msg.textContent='Erreur : '+error.message;msg.style.color='var(--red)';} return; }
+  if(msg){msg.textContent=enabled?('Activé ✓ — '+amount+' € offerts à chaque inscription'):'Désactivé ✓';msg.style.color='var(--green)';}
+  toast('Réglage enregistré ✓');
+}
 function stars(n){let s='';for(let i=1;i<=5;i++)s+=i<=n?'★':'☆';return s;}
 function renderReviews(){
   const el=document.getElementById('allAvis'); if(!el)return;
