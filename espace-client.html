@@ -414,6 +414,12 @@ function statusBadgeFull(b){
 }
 
 let PROFILE=null, ALLBK=[], AVOIRS=[], REVIEWED=new Set(), REVMAP={};
+// Identité société & coordonnées bancaires (source : table settings, défauts ci-dessous)
+const CO_DEFAULT={name:"ParisVTCDriver",form:"SASU",addr:"38 Av. Anc. Combattants Afrique Nord, 93420 Villepinte",siret:"934505702",tva:"FR32934505702",phone:"+33 7 49 19 83 18",site:"www.parisvtcdriver.com",email:"ParisVTCdriver@gmail.com"};
+const BK_DEFAULT={beneficiary:"PARISVTCDRIVER",iban:"FR7616958000014883777337715",bic:"QNTOFRP1XXX"};
+let CO=Object.assign({},CO_DEFAULT), BK=Object.assign({},BK_DEFAULT);
+function ibanFmt(s){return String(s||'').replace(/\s+/g,'').replace(/(.{4})/g,'$1 ').trim();}
+async function loadCompany(){try{const {data}=await sb.from('settings').select('key,value').in('key',['identity','bank']);(data||[]).forEach(r=>{if(r.key==='identity'&&r.value)CO=Object.assign({},CO_DEFAULT,r.value);if(r.key==='bank'&&r.value)BK=Object.assign({},BK_DEFAULT,r.value);});}catch(e){}}
 const GOOGLE_REVIEW_URL="https://g.page/r/Cevxxo_8M7oVEBM/review";
 
 async function load(){
@@ -421,6 +427,7 @@ async function load(){
   PROFILE = await getProfile();
   if(!PROFILE){ return; }
   if(PROFILE.role==='admin'){ location.replace('admin.html'); return; }
+  loadCompany();
   // Code de bienvenue (généré 1× par compte si activé par l'admin) — envoyé par e-mail
   try{ const {data:wc}=await sb.functions.invoke('request-quote',{body:{action:'welcome-code',lang:LANG}}); if(wc&&wc.ok&&wc.code){ toast(t('welcome_code').replace('{code}',wc.code)); } }catch(e){}
 
@@ -740,9 +747,9 @@ async function buildInvoiceDoc(b,opts){
   doc.setFillColor(7,10,18);doc.rect(0,0,W,134,'F');
   doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(22);doc.text('ParisVTCDriver',40,58);
   doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(8.5);
-  doc.text("Premium Chauffeur Services · +33 7 49 19 83 18 · ParisVTCdriver@gmail.com",40,74);
-  doc.text("Siège : 38 Av. des Combattants de l'Afrique du Nord, 93420 Villepinte",40,87);
-  doc.text("SIRET 934505702 · TVA intracom. FR32934505702",40,100);
+  doc.text("Premium Chauffeur Services · "+CO.phone+" · "+CO.email,40,74);
+  doc.text("Siège : "+CO.addr,40,87);
+  doc.text("SIRET "+CO.siret+" · TVA intracom. "+CO.tva,40,100);
   doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(15);
   doc.text(cancel?P('facture'):(isInv?(paid?P('facture'):P('proforma')):P('devis')),W-40,60,{align:'right'});
   let yh=76;
@@ -837,11 +844,11 @@ async function buildInvoiceDoc(b,opts){
     var _via=d.paid_via||'', _m=_via==='stripe'?P('m_card'):(_via==='virement'?P('m_wire'):((_via==='avoir'||_via==='code')?P('m_credit'):''));
     doc.text(paid?(_m?P('paidby').replace('{m}',_m):P('thanks')):P('bank'),40,y);y+=14;
     doc.setFont(F,'normal');doc.setTextColor(60,70,90);
-    doc.text('Bénéficiaire : PARISVTCDRIVER',40,y);y+=13;
-    doc.text('IBAN FR76 1695 8000 0148 8377 7337 715   ·   BIC QNTOFRP1XXX',40,y);
+    doc.text('Bénéficiaire : '+BK.beneficiary,40,y);y+=13;
+    doc.text('IBAN '+ibanFmt(BK.iban)+'   ·   BIC '+BK.bic,40,y);
   }
   doc.setFont(F,'normal');doc.setTextColor(150,158,172);doc.setFontSize(7.5);
-  doc.text(P('footer'),W/2,815,{align:'center'});
+  doc.text(P('footer').split('SIRET 934505702').join('SIRET '+CO.siret).split('FR32934505702').join(CO.tva),W/2,815,{align:'center'});
   return doc;
 }
 

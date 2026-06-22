@@ -2134,10 +2134,18 @@ async function ensurePdfFont(doc){
   }catch(e){return "helvetica";}  // repli (CDN indisponible)
 }
 
+/* ---------------- Identité société & coordonnées bancaires (source : settings) ---------------- */
+const CO_DEFAULT={name:"ParisVTCDriver",form:"SASU",addr:"38 Av. Anc. Combattants Afrique Nord, 93420 Villepinte",siret:"934505702",tva:"FR32934505702",phone:"+33 7 49 19 83 18",site:"www.parisvtcdriver.com",email:"ParisVTCdriver@gmail.com"};
+const BK_DEFAULT={beneficiary:"PARISVTCDRIVER",iban:"FR7616958000014883777337715",bic:"QNTOFRP1XXX"};
+let CO=Object.assign({},CO_DEFAULT), BK=Object.assign({},BK_DEFAULT);
+function ibanFmt(s){return String(s||'').replace(/\s+/g,'').replace(/(.{4})/g,'$1 ').trim();}
+async function loadCompany(){try{const {data}=await sb.from('settings').select('key,value').in('key',['identity','bank']);(data||[]).forEach(r=>{if(r.key==='identity'&&r.value)CO=Object.assign({},CO_DEFAULT,r.value);if(r.key==='bank'&&r.value)BK=Object.assign({},BK_DEFAULT,r.value);});}catch(e){}}
+
 /* ---------------- PDF ---------------- */
 async function downloadPDF(kind){
   if(!services.length&&!packs.length){toast(t("noServices"));return;}
   toast(LANG==="fr"?"Génération du PDF…":"Generating PDF…");
+  await loadCompany();
   const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:"pt",format:"a4"});
   const FONT=await ensurePdfFont(doc);
   const {ttc,disc,tax,vat10,vat20,total}=computeTotals();
@@ -2147,8 +2155,8 @@ async function downloadPDF(kind){
   doc.setTextColor(...gold);doc.setFont(FONT,"bold");doc.setFontSize(22);doc.text("ParisVTCDriver",40,58);
   doc.setTextColor(150,160,180);doc.setFont(FONT,"normal");doc.setFontSize(8.5);
   doc.text("Premium Chauffeur Services · +33 7 49 19 83 18 · "+SITE_EMAIL,40,74);
-  doc.text((LANG==="fr"?"Siège : ":"Head office: ")+"38 Av. des Combattants de l'Afrique du Nord, 93420 Villepinte",40,87);
-  doc.text("SIRET 934505702 · "+(LANG==="fr"?"TVA intracom. ":"Intra-EU VAT ")+"FR32934505702",40,100);
+  doc.text((LANG==="fr"?"Siège : ":"Head office: ")+CO.addr,40,87);
+  doc.text("SIRET "+CO.siret+" · "+(LANG==="fr"?"TVA intracom. ":"Intra-EU VAT ")+CO.tva,40,100);
   doc.setTextColor(...gold);doc.setFont(FONT,"bold");doc.setFontSize(15);
   doc.text((kind==="invoice"?(LANG==="fr"?"FACTURE":"INVOICE"):(LANG==="fr"?"DEVIS":"QUOTATION")),W-40,60,{align:"right"});
   doc.setTextColor(150,160,180);doc.setFontSize(9);doc.setFont(FONT,"normal");
@@ -2234,12 +2242,12 @@ async function downloadPDF(kind){
   doc.setFont(FONT,"bold");doc.setTextColor(...dark);doc.setFontSize(9);
   doc.text((LANG==="fr"?"Règlement : virement bancaire ou carte bancaire":"Payment: bank transfer or credit card"),50,y+2);
   doc.setFont(FONT,"normal");doc.setTextColor(70,80,100);doc.setFontSize(8.5);
-  doc.text((LANG==="fr"?"Bénéficiaire : ":"Beneficiary: ")+"PARISVTCDRIVER",50,y+16);
-  doc.text("IBAN FR76 1695 8000 0148 8377 7337 715   ·   BIC QNTOFRP1XXX",50,y+28);
+  doc.text((LANG==="fr"?"Bénéficiaire : ":"Beneficiary: ")+BK.beneficiary,50,y+16);
+  doc.text("IBAN "+ibanFmt(BK.iban)+"   ·   BIC "+BK.bic,50,y+28);
   doc.text((LANG==="fr"?"Carte bancaire : paiement sécurisé sur demande (lien de paiement ou à bord).":"Credit card: secure payment on request (payment link or on board)."),50,y+40);
   y+=58;
   doc.setTextColor(...grey);doc.setFontSize(8);
-  doc.text((LANG==="fr"?"Prix TTC garantis · SIRET 934505702 · TVA intracom. FR32934505702 · Disponible 24/7 · Merci de votre confiance.":"Guaranteed prices incl. VAT · SIRET 934505702 · Intra-EU VAT FR32934505702 · Available 24/7 · Thank you for your trust."),W/2,812,{align:"center"});
+  doc.text((LANG==="fr"?"Prix TTC garantis · SIRET 934505702 · TVA intracom. FR32934505702 · Disponible 24/7 · Merci de votre confiance.":"Guaranteed prices incl. VAT · SIRET 934505702 · Intra-EU VAT FR32934505702 · Available 24/7 · Thank you for your trust.").split("SIRET 934505702").join("SIRET "+CO.siret).split("FR32934505702").join(CO.tva),W/2,812,{align:"center"});
   doc.save("ParisVTCDriver-"+(kind==="invoice"?"Invoice":"Quote")+"-"+ref+".pdf");
   if(kind==="invoice" && appliedCode && currentDiscount()>0){
     markCodeUsed(appliedCode);
