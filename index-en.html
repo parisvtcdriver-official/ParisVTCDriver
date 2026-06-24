@@ -83,7 +83,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- jsPDF chargé à la demande (au clic « PDF ») pour ne pas bloquer l'affichage -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* Connexion Supabase minimale et isolée pour le site (bouton devis).
@@ -197,7 +197,7 @@ nav.links a:hover{color:var(--txt);background:rgba(255,255,255,.04)}
   color:var(--txt);font-family:inherit;font-size:14px;font-weight:500;padding:9px 11px;border-radius:8px;cursor:pointer;transition:background .15s}
 .lang-menu button:hover{background:rgba(201,162,74,.12)}
 .lang-menu button.active{background:rgba(201,162,74,.16);color:var(--gold-2)}
-.lang-menu button span{display:inline-grid;place-items:center;width:24px;height:20px;font-size:11px;font-weight:700;
+.lang-menu button span{display:inline-grid;place-items:center;width:24px;height:20px;font-size:12px;font-weight:700;
   border-radius:5px;background:rgba(255,255,255,.06);color:var(--gold-2)}
 .btn{
   font-family:inherit;font-weight:600;cursor:pointer;border:none;
@@ -279,7 +279,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);bo
 .addr-sug button:hover{background:rgba(201,162,74,.1)}
 .addr-sug svg{width:16px;height:16px;color:var(--gold-2);flex-shrink:0}
 .addr-sug small{display:block;color:var(--muted-2);font-size:12px}
-.addr-sug .pwr{padding:7px 14px;font-size:11px;color:var(--muted-2);background:rgba(255,255,255,.02)}
+.addr-sug .pwr{padding:7px 14px;font-size:12px;color:var(--muted-2);background:rgba(255,255,255,.02)}
 select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c9a24a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
 .phone-row{display:flex;gap:8px}
 .phone-row input{flex:1;min-width:0}
@@ -351,7 +351,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover{filter:inv
 .vcard .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,11,17,.15) 0%,transparent 30%,transparent 72%,rgba(8,11,17,.85));pointer-events:none}
 .vcard.eco{border-color:rgba(52,211,153,.28)}
 .vcard.eco:hover{border-color:rgba(52,211,153,.5)}
-.vcard .eco-badge{position:absolute;top:12px;left:12px;z-index:2;font-size:11px;font-weight:600;letter-spacing:.06em;color:#062a1d;background:linear-gradient(135deg,#6ee7b7,#10b981);padding:5px 11px;border-radius:999px;box-shadow:0 6px 16px -6px rgba(16,185,129,.7)}
+.vcard .eco-badge{position:absolute;top:12px;left:12px;z-index:2;font-size:12px;font-weight:600;letter-spacing:.06em;color:#062a1d;background:linear-gradient(135deg,#6ee7b7,#10b981);padding:5px 11px;border-radius:999px;box-shadow:0 6px 16px -6px rgba(16,185,129,.7)}
 .vcard.eco .price{color:#6ee7b7}
 .vcard .body{padding:20px}
 .vcard .body h4{font-size:17px;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -370,7 +370,7 @@ table.fares td.fare{font-family:'Space Grotesk';color:var(--gold-bright);font-we
 table.fares td.fare.eco{color:#6ee7b7}
 table.fares tbody tr{transition:background .2s}
 table.fares tbody tr:hover{background:rgba(255,255,255,.025)}
-table.fares th.veh small{display:block;color:var(--muted-2);font-size:11px;font-weight:400;text-transform:none;letter-spacing:0}
+table.fares th.veh small{display:block;color:var(--muted-2);font-size:12px;font-weight:400;text-transform:none;letter-spacing:0}
 /* packs */
 .pack-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
 .pack-card{display:flex;flex-direction:column;border-radius:18px;border:1px solid var(--line-soft);
@@ -452,7 +452,7 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
 .q-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:14px}
 .q-row span{color:var(--muted)}
 .q-table{width:100%;border-collapse:collapse;margin-bottom:10px}
-.q-table th{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-2);text-align:left;padding:4px 0 9px;border-bottom:1px solid var(--line-soft);font-weight:600}
+.q-table th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-2);text-align:left;padding:4px 0 9px;border-bottom:1px solid var(--line-soft);font-weight:600}
 .q-table td{padding:17px 0;border-bottom:1px solid var(--line-soft);font-size:13px;color:var(--muted);vertical-align:top}
 .q-table tbody tr:first-child td{padding-top:13px}
 .q-table .num{text-align:right;white-space:nowrap;padding-left:12px}
@@ -539,7 +539,7 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
 .rev-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:30px;background:rgba(201,162,74,.08);color:var(--gold-2);font-size:12.5px;font-weight:600;white-space:nowrap;transition:.2s}
 .rev-badge:hover{border-color:var(--gold);background:rgba(201,162,74,.16)}
 .rev-badge b{font-family:'Space Grotesk';color:var(--gold-bright)}
-.rev-badge small{color:var(--muted);font-weight:500;font-size:11.5px}
+.rev-badge small{color:var(--muted);font-weight:500;font-size:12px}
 </style>
 </head>
 <body>
@@ -1576,7 +1576,7 @@ function addService(data){
         <div><label class="label" data-l="f_suitcase">${t("f_suitcase")}</label><input type="number" min="0" max="20" placeholder="0" oninput="updSvc(${id},'suitcase',this.value)" onchange="updSvc(${id},'suitcase',this.value)"></div>
         <div><label class="label" data-l="f_cabin">${t("f_cabin")}</label><input type="number" min="0" max="20" placeholder="0" oninput="updSvc(${id},'cabin',this.value)" onchange="updSvc(${id},'cabin',this.value)"></div>
       </div>
-      <div data-lugnote style="font-size:11.5px;color:var(--gold-2);margin-top:6px">${LANG==='fr'?'Nombre de bagages requis pour les trajets aéroport / gare.':'Luggage count required for airport / station transfers.'}</div>
+      <div data-lugnote style="font-size:12px;color:var(--gold-2);margin-top:6px">${LANG==='fr'?'Nombre de bagages requis pour les trajets aéroport / gare.':'Luggage count required for airport / station transfers.'}</div>
     </div>
     <div class="si-line"><span data-l="price">${t("price")}</span><b id="svcprice-${id}">€0.00</b></div>`;
   document.getElementById("services").appendChild(wrap);
@@ -1723,7 +1723,7 @@ function addPack(data){
       <div style="position:relative;grid-column:1/-1"><label class="label" data-l="pickup">${t("pickup")}</label>
         <input id="addr-pickup-p${id}" autocomplete="off" placeholder="${LANG==='fr'?'Paris ou Île-de-France':'Paris / Île-de-France'}" oninput="svcAddr(${id},'pickup',this.value,'pack')" onfocus="svcAddr(${id},'pickup',this.value,'pack')">
         <div id="sug-pickup-p${id}" class="addr-sug"></div>
-        <div style="font-size:11.5px;color:var(--muted-2);margin-top:5px">${LANG==='fr'?'Départ uniquement à Paris ou en Île-de-France (75, 77, 78, 91, 92, 93, 94, 95).':'Departure in Paris / Île-de-France only (75, 77, 78, 91, 92, 93, 94, 95).'}</div></div>
+        <div style="font-size:12px;color:var(--muted-2);margin-top:5px">${LANG==='fr'?'Départ uniquement à Paris ou en Île-de-France (75, 77, 78, 91, 92, 93, 94, 95).':'Departure in Paris / Île-de-France only (75, 77, 78, 91, 92, 93, 94, 95).'}</div></div>
     </div>
     <div class="si-grid">
       <div><label class="label" data-l="pack_type">${t("pack_type")}</label>
@@ -1858,10 +1858,10 @@ function openPreview(){
     const ht=l.custom?"—":eur(l.ht);
     const vt=(l.custom||l.vat==null)?"—":l.vat+"%";
     const va=l.custom?"—":eur(Math.round((l.price-l.ht)*100)/100);
-    const rt=l.route?`<div style="color:var(--gold-2);font-size:11.5px;margin-top:3px">📍 ${l.route}</div>`:"";
-    const rv=l.dt?`<div style="color:var(--gold-2);font-size:11.5px;margin-top:3px">🕒 ${t("rdv")} : ${l.dt}</div>`:"";
-    const rqd=l.req?`<div style="color:var(--gold-2);font-size:11.5px;margin-top:3px">📝 ${l.req}</div>`:"";
-    rows+=`<tr><td><b style="color:var(--txt)">${l.label}</b><div style="color:var(--muted-2);font-size:11.5px;margin-top:2px">${l.detail}</div>${rv}${rt}${rqd}</td><td class="num">${ht}</td><td class="num">${vt}</td><td class="num">${va}</td><td class="num">${pr}</td></tr>`;});
+    const rt=l.route?`<div style="color:var(--gold-2);font-size:12px;margin-top:3px">📍 ${l.route}</div>`:"";
+    const rv=l.dt?`<div style="color:var(--gold-2);font-size:12px;margin-top:3px">🕒 ${t("rdv")} : ${l.dt}</div>`:"";
+    const rqd=l.req?`<div style="color:var(--gold-2);font-size:12px;margin-top:3px">📝 ${l.req}</div>`:"";
+    rows+=`<tr><td><b style="color:var(--txt)">${l.label}</b><div style="color:var(--muted-2);font-size:12px;margin-top:2px">${l.detail}</div>${rv}${rt}${rqd}</td><td class="num">${ht}</td><td class="num">${vt}</td><td class="num">${va}</td><td class="num">${pr}</td></tr>`;});
   html+=`<table class="q-table"><thead><tr><th>${t("service")}</th><th class="num">${t("ht_lbl")}</th><th class="num">${t("vat_short")}</th><th class="num">${t("vat_amt")}</th><th class="num">${t("price")}</th></tr></thead><tbody>${rows}</tbody></table>`;
   html+=`<div class="q-row"><span>${t("sum_subtotal")}</span><b>${eur(ttc)}</b></div>
     ${(()=>{let dp=[];if(loyaltyDiscount()>0)dp.push((LOYALTY.name||"Fidélité")+" −"+LOYALTY.off+"%");if(currentDiscount()>0&&appliedCode)dp.push((/^AV-/i.test(appliedCode)?"avoir ":"code ")+appliedCode);const lbl=dp.length?` <span style="color:var(--muted-2)">(${dp.join(" + ")})</span>`:"";return `<div class="q-row"><span>${t("sum_disc")}${lbl}</span><b>−${eur(disc)}</b></div>`;})()}
@@ -1871,7 +1871,7 @@ function openPreview(){
   html+=`<div class="q-row" style="border:none;margin-top:8px"><span style="font-size:16px;color:var(--gold-2)">${t("totalDue")}</span><b class="mono" style="font-size:22px;color:var(--gold-bright)">${eur(total)}</b></div>`;
   if(hasCustom) html+=`<p style="margin-top:14px;padding:12px 14px;border:1px solid rgba(52,211,153,.3);border-radius:10px;background:rgba(52,211,153,.07);color:#9fe9cd;font-size:12.5px">${t("custom_note")}</p>`;
   const LMSG={fr:"Astuce : connectez-vous à votre compte pour cumuler des points de fidélité et bénéficier d'avantages.",en:"Tip: log in to your account to earn loyalty points and unlock benefits.",es:"Consejo: inicie sesión en su cuenta para acumular puntos de fidelidad y obtener ventajas.",it:"Suggerimento: accedi al tuo account per accumulare punti fedeltà e vantaggi.",pt:"Dica: inicie sessão na sua conta para acumular pontos de fidelidade e benefícios.",tr:"İpucu: sadakat puanı kazanmak ve avantajlardan yararlanmak için hesabınıza giriş yapın.",zh:"提示：登录您的账户即可累积忠诚积分并享受专属优惠。"};
-  html+=`<p style="margin-top:16px;font-size:11.5px;color:var(--muted-2);text-align:center;border-top:1px solid var(--line-soft);padding-top:12px">${LMSG[LANG]||LMSG.fr}</p>`;
+  html+=`<p style="margin-top:16px;font-size:12px;color:var(--muted-2);text-align:center;border-top:1px solid var(--line-soft);padding-top:12px">${LMSG[LANG]||LMSG.fr}</p>`;
   document.getElementById("modalBody").innerHTML=html;
   document.getElementById("modal").classList.add("open");
 }
@@ -2029,12 +2029,15 @@ const BK_DEFAULT={beneficiary:"PARISVTCDRIVER",iban:"FR7616958000014883777337715
 let CO=Object.assign({},CO_DEFAULT), BK=Object.assign({},BK_DEFAULT);
 function ibanFmt(s){return String(s||'').replace(/\s+/g,'').replace(/(.{4})/g,'$1 ').trim();}
 async function loadCompany(){try{const {data}=await sb.from('settings').select('key,value').in('key',['identity','bank']);(data||[]).forEach(r=>{if(r.key==='identity'&&r.value)CO=Object.assign({},CO_DEFAULT,r.value);if(r.key==='bank'&&r.value)BK=Object.assign({},BK_DEFAULT,r.value);});}catch(e){}}
+// Charge jsPDF uniquement quand on en a besoin (au clic), pour ne pas bloquer le premier affichage
+function ensureJsPDF(){return window.jspdf?Promise.resolve():new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';s.onload=()=>res();s.onerror=rej;document.head.appendChild(s);});}
 
 /* ---------------- PDF ---------------- */
 async function downloadPDF(kind){
   if(!services.length&&!packs.length){toast(t("noServices"));return;}
   toast(LANG==="fr"?"Génération du PDF…":"Generating PDF…");
   await loadCompany();
+  await ensureJsPDF();
   const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:"pt",format:"a4"});
   const FONT=await ensurePdfFont(doc);
   const {ttc,disc,tax,vat10,vat20,total}=computeTotals();
