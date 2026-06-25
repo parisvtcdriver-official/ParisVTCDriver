@@ -1,6 +1,22 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<!-- Google Consent Mode v2 — par défaut refusé tant que le visiteur n'a pas accepté -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});
+  try{ if(localStorage.getItem('pvtc_consent')==='granted'){ gtag('consent','update',{ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',analytics_storage:'granted'}); } }catch(e){}
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LYT5MCF63Z"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-LYT5MCF63Z');
+</script>
+
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Transfert Orly ↔ Paris en VTC privé | ParisVTCDriver</title>
@@ -182,5 +198,6 @@ footer a{color:var(--gold-2)}
 window.PAGE_ALT={fr:"transfert-orly.html",en:"orly-airport-transfer.html"};
 window.addEventListener("load",function(){document.querySelectorAll(".lang [data-lang]").forEach(function(b){b.onclick=function(){var l=b.dataset.lang,cur=(location.pathname.split("/").pop()||"index.html");try{localStorage.setItem("pvtc_lang",l);}catch(e){}if(PAGE_ALT[l]){if(PAGE_ALT[l]!==cur)location.href=PAGE_ALT[l];return;}location.href="index.html";};});});
 </script>
+<script src="consent.js" defer></script>
 </body>
 </html>
