@@ -926,6 +926,19 @@ async function buildInvoiceDoc(b,opts){
       doc.setFontSize(7.5);doc.setTextColor(160,148,95);doc.text('Crédit client · valable 2 mois',W-230,y);doc.setFontSize(9.5);
     }
   }
+  // Notes & demandes spéciales du client (bloc séparé)
+  {
+    const _nf=(d.note_flight||'').trim(),_nl=(d.note_lug||'').trim(),_ns=(d.note_special||'').trim();
+    if(_nf||_nl||_ns){
+      y+=26; if(y>720){doc.addPage();y=60;}
+      doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
+      doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);doc.text('Notes & demandes spéciales',40,y);y+=14;
+      doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9);
+      if(_nf){doc.text('• N° de vol / train : '+_nf,40,y);y+=13;}
+      if(_nl){doc.text('• Nom sur la tablette : '+_nl,40,y);y+=13;}
+      if(_ns){const _w=doc.splitTextToSize('• Demandes spéciales : '+_ns,W-80);doc.text(_w,40,y);y+=13*_w.length;}
+    }
+  }
   y+=40;doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
   if(cancel){
     doc.setFont(F,'bold');doc.setTextColor(...red);doc.setFontSize(9.5);
