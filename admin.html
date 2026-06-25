@@ -279,6 +279,20 @@ select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:
           <span id="wcMsg" class="sub2"></span>
         </div>
       </div>
+      <div class="card" style="padding:22px 26px">
+        <h2 style="font-size:15px;margin-bottom:4px">Numérotation des factures</h2>
+        <div class="sub2" style="margin-bottom:16px">Numéro attribué à la <b>prochaine facture payée</b> (format AAAA-NNNN). À modifier avec prudence : choisir un numéro déjà utilisé créerait un doublon.</div>
+        <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+          <label class="fld" style="max-width:240px"><span>Prochaine facture</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="mono" id="invYear" style="color:var(--gold-2);font-size:15px">2026-</span>
+              <input id="invNext" type="number" min="1" style="width:120px;background:var(--navy-2);border:1px solid var(--line-soft);border-radius:8px;color:var(--txt);padding:8px 10px;font-size:14px">
+            </div>
+          </label>
+          <button class="btn-mini gold" onclick="saveInvoiceNo()">Enregistrer</button>
+          <span id="invMsg" class="sub2"></span>
+        </div>
+      </div>
       <div class="card infobox" style="font-size:13px;line-height:1.7">
         <b style="color:var(--gold-2)">Gestion :</b> les comptes clients se gèrent dans <b>Clients</b> (suppression) ; les rôles admin et les points dans <b>Fidélité</b> ; les codes promo et avoirs dans <b>Codes promo</b>.<br>
         Les modifications d'identité et de coordonnées bancaires ci-dessus s'appliquent immédiatement aux nouveaux devis, factures et e-mails de virement.
@@ -332,6 +346,22 @@ async function saveIdentity(){
   const m=document.getElementById('idMsg');
   if(error){ if(m){m.textContent='Erreur : '+error.message;m.style.color='var(--red)';} return; }
   CO=Object.assign({},CO_DEFAULT,value); if(m){m.textContent='Enregistré ✓';m.style.color='var(--green)';} toast('Identité mise à jour ✓');
+}
+async function loadInvoiceNo(){
+  const y=new Date().getFullYear();
+  const el=document.getElementById('invNext'), yr=document.getElementById('invYear');
+  if(yr) yr.textContent=y+'-';
+  try{ const {data,error}=await sb.rpc('get_counter',{p_name:'invoice-'+y}); if(!error&&el) el.value=(Number(data)||0)+1; }catch(e){}
+}
+async function saveInvoiceNo(){
+  const y=new Date().getFullYear();
+  const n=parseInt(document.getElementById('invNext').value,10);
+  const m=document.getElementById('invMsg');
+  if(isNaN(n)||n<1){ if(m){m.textContent='Numéro invalide';m.style.color='var(--red)';} return; }
+  const {error}=await sb.rpc('set_counter',{p_name:'invoice-'+y,p_value:n-1});
+  if(error){ if(m){m.textContent='Erreur : '+error.message;m.style.color='var(--red)';} return; }
+  if(m){m.textContent='Prochaine facture : '+y+'-'+String(n).padStart(4,'0')+' ✓';m.style.color='var(--green)';}
+  toast('Numérotation mise à jour ✓');
 }
 async function saveBank(){
   const g=id=>(document.getElementById(id).value||'').trim();
@@ -392,8 +422,9 @@ async function refresh(){
   setBadge('bResa',pend);
   setBadge('bPart',PARTS.filter(p=>p.status==='new').length);
 
-  // dashboard tables
-  renderResaTable('dashResa',BOOKINGS.slice(0,6),false);
+  // dashboard tables — réservations récentes : la plus récemment passée en haut
+  const _recent=BOOKINGS.slice().sort((a,b)=>(new Date(b.created_at||b.date_time||0))-(new Date(a.created_at||a.date_time||0))).slice(0,6);
+  renderResaTable('dashResa',_recent,false);
   renderDashNext();
   renderBars('dashBars',yr,dt,paid);
 
@@ -418,9 +449,10 @@ async function refresh(){
   // avis
   renderReviews(); setBadge('bAvis', REVIEWS.filter(r=>r.status==='pending').length);
 
-  // réglage code de bienvenue + identité/banque
+  // réglage code de bienvenue + identité/banque + numérotation
   loadWelcome();
   loadCompany();
+  loadInvoiceNo();
 
   // stats
   document.getElementById('sYearCA').textContent=eur(caYear);
@@ -848,6 +880,7 @@ async function buildInvoiceDoc(b,opts){
   if(cancel){doc.setTextColor(...red);doc.setFont(F,'bold');doc.setFontSize(11);doc.text('— ANNULATION —',W-40,yh,{align:'right'});yh+=15;}
   doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(9);
   doc.text((cancel?'Facture n° ':(isInv?(paid?'Facture n° ':'Facture proforma n° '):'Devis n° '))+(b.reference||'—'),W-40,yh,{align:'right'});yh+=14;
+  if(isInv&&b.quote_no&&b.quote_no!==b.reference){doc.setFontSize(8.5);doc.text('Réf. devis : '+b.quote_no,W-40,yh,{align:'right'});yh+=13;doc.setFontSize(9);}
   doc.text(b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):new Date().toLocaleDateString('fr-FR'),W-40,yh,{align:'right'});yh+=16;
   if(isInv&&!cancel){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?'PAYÉE':'EN ATTENTE DE PAIEMENT',W-40,yh,{align:'right'});}
   let y=160;

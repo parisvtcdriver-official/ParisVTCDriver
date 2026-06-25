@@ -711,6 +711,7 @@ async function buildInvoiceDoc(b,opts){
    cancel:{fr:'— ANNULATION —',en:'— CANCELLATION —',es:'— ANULACIÓN —',it:'— ANNULLAMENTO —',pt:'— ANULAÇÃO —',tr:'— İPTAL —',zh:'— 取消 —'},
    facno:{fr:'Facture n° ',en:'Invoice no. ',es:'Factura n.º ',it:'Fattura n. ',pt:'Fatura n.º ',tr:'Fatura no. ',zh:'发票编号 '},
    devno:{fr:'Devis n° ',en:'Quote no. ',es:'Presupuesto n.º ',it:'Preventivo n. ',pt:'Orçamento n.º ',tr:'Teklif no. ',zh:'报价编号 '},
+   refdev:{fr:'Réf. devis : ',en:'Quote ref.: ',es:'Ref. presupuesto: ',it:'Rif. preventivo: ',pt:'Ref. orçamento: ',tr:'Teklif ref.: ',zh:'报价参考：',ar:'مرجع عرض السعر: '},
    paidd:{fr:'PAYÉE',en:'PAID',es:'PAGADA',it:'PAGATA',pt:'PAGA',tr:'ÖDENDİ',zh:'已付款'},
    awaitp:{fr:'EN ATTENTE DE PAIEMENT',en:'AWAITING PAYMENT',es:'PENDIENTE DE PAGO',it:'IN ATTESA DI PAGAMENTO',pt:'A AGUARDAR PAGAMENTO',tr:'ÖDEME BEKLENİYOR',zh:'待付款'},
    clientt:{fr:'Client :',en:'Client:',es:'Cliente:',it:'Cliente:',pt:'Cliente:',tr:'Müşteri:',zh:'客户：'},
@@ -756,6 +757,7 @@ async function buildInvoiceDoc(b,opts){
   if(cancel){doc.setTextColor(...red);doc.setFont(F,'bold');doc.setFontSize(11);doc.text(P('cancel'),W-40,yh,{align:'right'});yh+=15;}
   doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(9);
   doc.text((cancel?P('facno'):(isInv?(paid?P('facno'):P('pfno')):P('devno')))+(b.reference||'—'),W-40,yh,{align:'right'});yh+=14;
+  if(isInv&&b.quote_no&&b.quote_no!==b.reference){doc.setFontSize(8.5);doc.text(P('refdev')+b.quote_no,W-40,yh,{align:'right'});yh+=13;doc.setFontSize(9);}
   doc.text(b.created_at?new Date(b.created_at).toLocaleDateString(ploc):new Date().toLocaleDateString(ploc),W-40,yh,{align:'right'});yh+=16;
   if(isInv&&!cancel){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?P('paidd'):P('awaitp'),W-40,yh,{align:'right'});}
   let y=160;
