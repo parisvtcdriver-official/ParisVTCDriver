@@ -1673,7 +1673,7 @@ window.addEventListener("resize",()=>{clearTimeout(window._carRz);window._carRz=
 /* ---------------- SERVICES ---------------- */
 function addService(data){
   const id=++svcSeq;
-  const s=Object.assign({type:"paris",veh:"eco",baby:0,boost:0,pax:1,hours:3,date:"",pickup:"",dropoff:"",suitcase:"",cabin:""}, data||{});
+  const s=Object.assign({type:"paris",veh:"eco",baby:0,boost:0,pax:1,hours:2,date:"",pickup:"",dropoff:"",suitcase:"",cabin:""}, data||{});
   s.id=id;services.push(s);
   const wrap=document.createElement("div");
   wrap.className="service-item";wrap.id="svc-"+id;
@@ -1684,7 +1684,7 @@ function addService(data){
       <div style="position:relative"><label class="label" data-l="pickup">${t("pickup")}</label>
         <input id="addr-pickup-${id}" autocomplete="off" placeholder="${t("addr_ph")}" oninput="svcAddr(${id},'pickup',this.value)" onfocus="svcAddr(${id},'pickup',this.value)">
         <div id="sug-pickup-${id}" class="addr-sug"></div></div>
-      <div style="position:relative"><label class="label" data-l="dropoff">${t("dropoff")}</label>
+      <div style="position:relative" data-dropoff><label class="label" data-l="dropoff">${t("dropoff")}</label>
         <input id="addr-dropoff-${id}" autocomplete="off" placeholder="${t("addr_ph")}" oninput="svcAddr(${id},'dropoff',this.value)" onfocus="svcAddr(${id},'dropoff',this.value)">
         <div id="sug-dropoff-${id}" class="addr-sug"></div></div>
     </div>
@@ -1696,7 +1696,7 @@ function addService(data){
       <div><label class="label" data-l="vehicle">${t("vehicle")}</label>
         <select onchange="updSvc(${id},'veh',this.value)">${VEHICLES.map(v=>`<option value="${v.id}">${PL(v.name)} (${v.seats}p)</option>`).join("")}</select></div>
       ${seatsCell('svc',id)}
-      <div data-hours style="display:none"><label class="label" data-l="hours">${t("hours")}</label><input type="number" min="2" max="12" value="3" onchange="updSvc(${id},'hours',this.value)"></div>
+      <div data-hours style="display:none"><label class="label" data-l="hours">${t("hours")}</label><input type="number" min="2" max="12" value="2" onchange="updSvc(${id},'hours',this.value)"></div>
     </div>
     <div data-lug style="display:none;margin-top:14px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
@@ -1717,6 +1717,7 @@ function addService(data){
   q("[data-lug] input[onchange*=\"'suitcase'\"]").value=(s.suitcase!=null?s.suitcase:"");
   q("[data-lug] input[onchange*=\"'cabin'\"]").value=(s.cabin!=null?s.cabin:"");
   const st=SERVICES.find(x=>x.id===s.type),hb=wrap.querySelector("[data-hours]");if(hb)hb.style.display=(st&&st.perH)?"":"none";
+  const db=wrap.querySelector("[data-dropoff]"),sa=wrap.querySelector(".si-addr");if(db)db.style.display=(st&&st.perH)?"none":"";if(sa)sa.style.gridTemplateColumns=(st&&st.perH)?"1fr":"";
   rebuildSvcVeh(s);syncSeats('svc',s);refreshServiceLabels(id);updateLug(id);recalc();saveForm();
 }
 function removeService(id){services=services.filter(s=>s.id!==id);document.getElementById("svc-"+id).remove();renumber();recalc();saveForm();}
@@ -1727,6 +1728,9 @@ function updSvc(id,k,v){const s=services.find(x=>x.id===id);if(!s)return;
   if(k==="pax"){s.pax=Math.min(8,Math.max(1,s.pax||1));const inp=document.querySelector("#svc-"+id+" input[onchange*=\"'pax'\"]");if(inp)inp.value=s.pax;rebuildSvcVeh(s);}
   const st=SERVICES.find(x=>x.id===s.type);
   const hoursBox=document.querySelector("#svc-"+id+" [data-hours]");if(hoursBox)hoursBox.style.display=(st&&st.perH)?"":"none";
+  const dropBox=document.querySelector("#svc-"+id+" [data-dropoff]");if(dropBox)dropBox.style.display=(st&&st.perH)?"none":"";
+  const saBox=document.querySelector("#svc-"+id+" .si-addr");if(saBox)saBox.style.gridTemplateColumns=(st&&st.perH)?"1fr":"";
+  if(k==="type"&&st&&st.perH){s.dropoff="";const di=document.querySelector("#addr-dropoff-"+id);if(di)di.value="";}
   if(k==="type")updateLug(id);
   recalc();saveForm();}
 const LUG_TYPES=["cdg","orly","beauvais"];
