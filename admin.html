@@ -1313,7 +1313,7 @@ function missionNote(id){
   L.push('🎫 Tenue correcte 🙏');
   L.push('📋 Suivi ER / SP / PEC ... Obligatoire');
   if(d.note_special) L.push('📝 '+d.note_special);
-  if(d.note_lug) L.push('🧳 '+d.note_lug);
+  if(d.note_lug) L.push('🪧 Nom sur la tablette : '+d.note_lug);
   L.push('Paiement en fin de course par Virement après Facture.');
   const text=L.join('\n');
   const blob=new Blob([text],{type:'text/plain;charset=utf-8'});

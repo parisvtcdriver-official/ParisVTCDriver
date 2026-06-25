@@ -820,7 +820,7 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
             <svg id="notesChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;margin-left:auto;color:var(--gold-2);transition:transform .25s;flex:none"><path d="M6 9l6 6 6-6"/></svg></div>
           <div class="field-grid" id="notesBody" style="display:none;margin-top:20px">
             <div><label class="label" data-i18n="f_flight">Flight / train number</label><input id="n_flight" placeholder="AF1180 — CDG T2E"></div>
-            <div><label class="label" data-i18n="f_lug">Luggage / passengers note</label><input id="n_lug" placeholder="1 child seat, ski bag…"></div>
+            <div><label class="label" data-i18n="f_lug">Name on the pickup sign</label><input id="n_lug" placeholder="Famille Lorenzo, Crew Turkish Airlines…"></div>
             <div style="grid-column:1/-1"><label class="label" data-i18n="f_special">Additional requirements</label><textarea id="n_special" rows="3" placeholder="Bottle of water on arrival, English-speaking chauffeur, discreet plates for VIP guest."></textarea></div>
           </div>
         </div>
@@ -1072,7 +1072,7 @@ const TRUST=[
   {ic:'<path d="M16 21v-2a4 4 0 0 0-8 0v2"/><circle cx="12" cy="7" r="4"/>', t:{fr:"Accueil Personnalisé",en:"Meet & Greet Service"}, d:{fr:"Pancarte nominative en zone d'arrivée.",en:"Personalised name sign at arrivals."}},
   {ic:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/>', t:{fr:"Tarifs Fixes",en:"Fixed Pricing"}, d:{fr:"Prix garanti, sans surprise ni surge.",en:"Guaranteed price, no surge, no surprises."}},
   {ic:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>', t:{fr:"Disponibilité 24/7",en:"24/7 Availability"}, d:{fr:"Réservation et dispatch à toute heure.",en:"Booking and dispatch around the clock."}},
-  {ic:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>', t:{fr:"Paiements Sécurisés",en:"Secure Payments"}, d:{fr:"Cryptage bancaire, paiement après course.",en:"Bank-grade encryption, pay after the ride."}},
+  {ic:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>', t:{fr:"Paiements Sécurisés",en:"Secure Payments"}, d:{fr:"Cryptage bancaire, carte ou virement.",en:"Bank-grade encryption, card or bank transfer."}},
   {ic:'<path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4L12 16.8 5.7 21.4 8 14 2 9.4h7.6z"/>', t:{fr:"Excellence Notée 4.9/5",en:"Rated 4.9/5 Excellence"}, d:{fr:"Des milliers de trajets, une exigence constante.",en:"Thousands of journeys, one constant standard."}},
 ];
 const TESTI=[
@@ -1132,7 +1132,7 @@ const I18N={
   bk_eyebrow:"Devis Instantané",bk_title:"Composez Votre Réservation",bk_lead:"Renseignez vos informations, ajoutez autant de services que nécessaire et recevez un devis précis à prix fixe, en temps réel.",
   bk_c_title:"Informations Client",f_name:"Nom complet",f_company:"Société (optionnel)",f_email:"Email",f_phone:"Téléphone",f_addr:"Rue / Lieu",f_num:"N° de rue",f_city:"Ville",f_zip:"Code postal",f_country:"Pays",
   f_pro:"Je réserve en tant que professionnel",f_siren:"N° SIREN",f_vat:"TVA intracommunautaire",
-  bk_s_title:"Services de Transport",btn_add:"+ Ajouter un service",bk_n_title:"Notes & Demandes Spéciales",f_flight:"N° de vol / train",f_lug:"Bagages / passagers",f_suitcase:"Valises (soute)",f_cabin:"Bagages cabine",f_special:"Exigences supplémentaires",
+  bk_s_title:"Services de Transport",btn_add:"+ Ajouter un service",bk_n_title:"Notes & Demandes Spéciales",f_flight:"N° de vol / train",f_lug:"Nom sur la tablette",f_suitcase:"Valises (soute)",f_cabin:"Bagages cabine",f_special:"Exigences supplémentaires",
   pickup:"Adresse de prise en charge",dropoff:"Adresse de destination",addr_ph:"Saisir une adresse…",on_quote:"Sur devis",custom_note:"Transfert sur-mesure : nous vous recontactons dans la journée pour établir votre devis personnalisé.",
   bk_p_title:"Services Pack",pack_type:"Type de pack",btn_add_pack:"+ Ajouter un pack",pack_word:"Pack",
   sum_title:"Récapitulatif",sum_sub:"Estimation en direct, prix final fixe.",sum_services:"Services",sum_subtotal:"Sous-total",sum_discount:"Code / remise (€)",sum_disc:"Remise",sum_ht:"Total HT",ht_lbl:"HT",sum_tax:"TVA incluse",sum_total:"Total TTC",
@@ -1161,7 +1161,7 @@ const I18N={
   bk_eyebrow:"Instant Quotation",bk_title:"Build Your Reservation",bk_lead:"Enter your details, add as many services as you need, and receive a precise, fixed-price quote in real time.",
   bk_c_title:"Customer Information",f_name:"Full name",f_company:"Company (optional)",f_email:"Email",f_phone:"Phone",f_addr:"Street / Place",f_num:"Street no.",f_city:"City",f_zip:"Postal code",f_country:"Country",
   f_pro:"I'm booking as a business",f_siren:"SIREN number",f_vat:"Intra-EU VAT number",
-  bk_s_title:"Transportation Services",btn_add:"+ Add Service",bk_n_title:"Notes & Special Requests",f_flight:"Flight / train number",f_lug:"Luggage / passengers note",f_suitcase:"Suitcases (hold)",f_cabin:"Cabin bags",f_special:"Additional requirements",
+  bk_s_title:"Transportation Services",btn_add:"+ Add Service",bk_n_title:"Notes & Special Requests",f_flight:"Flight / train number",f_lug:"Name on the pickup sign",f_suitcase:"Suitcases (hold)",f_cabin:"Cabin bags",f_special:"Additional requirements",
   pickup:"Pick-up address",dropoff:"Drop-off address",addr_ph:"Enter an address…",on_quote:"On quote",custom_note:"Custom transfer: we will contact you during the day to prepare your personalised quote.",
   bk_p_title:"Pack Services",pack_type:"Pack type",btn_add_pack:"+ Add pack",pack_word:"Pack",
   sum_title:"Booking Summary",sum_sub:"Live estimate, fixed final price.",sum_services:"Services",sum_subtotal:"Subtotal",sum_discount:"Discount code / amount (€)",sum_disc:"Discount",sum_ht:"Total excl. VAT",ht_lbl:"excl. VAT",sum_tax:"VAT included",sum_total:"Total incl. VAT",
@@ -1189,7 +1189,7 @@ const I18N={
   ss1:"Erişilebilirlik & sevkiyat",ss2:"Kurumsal müşteriler",ss3:"Ortalama bekleme süresi",ss4:"Ülke geneli kapsama",
   bk_eyebrow:"Anlık Teklif",bk_title:"Rezervasyonunuzu Oluşturun",bk_lead:"Bilgilerinizi girin, dilediğiniz kadar hizmet ekleyin ve gerçek zamanlı, sabit fiyatlı kesin bir teklif alın.",
   bk_c_title:"Müşteri Bilgileri",f_name:"Ad soyad",f_company:"Şirket (isteğe bağlı)",f_email:"E-posta",f_phone:"Telefon",f_addr:"Sokak / Yer",f_num:"Kapı no.",f_city:"Şehir",f_zip:"Posta kodu",f_country:"Ülke",
-  bk_s_title:"Ulaşım Hizmetleri",btn_add:"+ Hizmet Ekle",bk_n_title:"Notlar & Özel İstekler",f_flight:"Uçuş / tren numarası",f_lug:"Bagaj / yolcu notu",f_special:"Ek gereksinimler",
+  bk_s_title:"Ulaşım Hizmetleri",btn_add:"+ Hizmet Ekle",bk_n_title:"Notlar & Özel İstekler",f_flight:"Uçuş / tren numarası",f_lug:"Karşılama tabelası adı",f_special:"Ek gereksinimler",
   sum_title:"Rezervasyon Özeti",sum_sub:"Canlı tahmin, sabit nihai fiyat.",sum_services:"Hizmetler",sum_subtotal:"Ara toplam",sum_discount:"İndirim kodu / tutarı (€)",sum_disc:"İndirim",sum_ht:"Toplam (KDV hariç)",ht_lbl:"KDV hariç",sum_tax:"KDV dahil",sum_total:"Toplam (KDV dahil)",
   btn_preview:"Teklifi Önizle",btn_sendq:"Talebimi gönder",btn_pdfq:"PDF Teklifi İndir",btn_pdfi:"PDF Faturayı İndir",btn_confirm:"Rezervasyonu Onayla",sum_secure:"🔒 Güvenli ödeme · Onaya kadar ücret alınmaz",
   fl_eyebrow:"Filo",fl_title:"Her Durum İçin Bir Araç",fl_lead:"Her yolculuktan önce özenle bakımı yapılan ve temizlenen yeni model araçlar.",
@@ -1213,7 +1213,7 @@ const I18N={
   ss1:"Disponibilidad y despacho",ss2:"Clientes corporativos",ss3:"Tiempo medio de espera",ss4:"Cobertura nacional",
   bk_eyebrow:"Presupuesto Instantáneo",bk_title:"Cree su Reserva",bk_lead:"Introduzca sus datos, añada todos los servicios que necesite y reciba un presupuesto preciso a precio fijo, en tiempo real.",
   bk_c_title:"Datos del Cliente",f_name:"Nombre completo",f_company:"Empresa (opcional)",f_email:"Correo electrónico",f_phone:"Teléfono",f_addr:"Calle / Lugar",f_num:"N.º",f_city:"Ciudad",f_zip:"Código postal",f_country:"País",
-  bk_s_title:"Servicios de Transporte",btn_add:"+ Añadir servicio",bk_n_title:"Notas y Peticiones Especiales",f_flight:"N.º de vuelo / tren",f_lug:"Equipaje / pasajeros",f_special:"Requisitos adicionales",
+  bk_s_title:"Servicios de Transporte",btn_add:"+ Añadir servicio",bk_n_title:"Notas y Peticiones Especiales",f_flight:"N.º de vuelo / tren",f_lug:"Nombre en el cartel",f_special:"Requisitos adicionales",
   sum_title:"Resumen de la Reserva",sum_sub:"Estimación en directo, precio final fijo.",sum_services:"Servicios",sum_subtotal:"Subtotal",sum_discount:"Código / importe de descuento (€)",sum_disc:"Descuento",sum_ht:"Total sin IVA",ht_lbl:"sin IVA",sum_tax:"IVA incluido",sum_total:"Total con IVA",
   btn_preview:"Vista previa",btn_sendq:"Enviar mi solicitud",btn_pdfq:"Descargar presupuesto PDF",btn_pdfi:"Descargar factura PDF",btn_confirm:"Confirmar reserva",sum_secure:"🔒 Pago seguro · Sin cargo hasta la confirmación",
   fl_eyebrow:"La Flota",fl_title:"Un Vehículo para Cada Ocasión",fl_lead:"Vehículos recientes, meticulosamente mantenidos y limpiados antes de cada trayecto.",
@@ -1237,7 +1237,7 @@ const I18N={
   ss1:"Disponibilità e dispatch",ss2:"Clienti aziendali",ss3:"Tempo medio di attesa",ss4:"Copertura nazionale",
   bk_eyebrow:"Preventivo Istantaneo",bk_title:"Crea la Tua Prenotazione",bk_lead:"Inserisci i tuoi dati, aggiungi tutti i servizi che desideri e ricevi un preventivo preciso a prezzo fisso, in tempo reale.",
   bk_c_title:"Dati del Cliente",f_name:"Nome completo",f_company:"Azienda (facoltativo)",f_email:"Email",f_phone:"Telefono",f_addr:"Via / Luogo",f_num:"Civico",f_city:"Città",f_zip:"CAP",f_country:"Paese",
-  bk_s_title:"Servizi di Trasporto",btn_add:"+ Aggiungi servizio",bk_n_title:"Note e Richieste Speciali",f_flight:"Numero volo / treno",f_lug:"Bagagli / passeggeri",f_special:"Requisiti aggiuntivi",
+  bk_s_title:"Servizi di Trasporto",btn_add:"+ Aggiungi servizio",bk_n_title:"Note e Richieste Speciali",f_flight:"Numero volo / treno",f_lug:"Nome sul cartello",f_special:"Requisiti aggiuntivi",
   sum_title:"Riepilogo Prenotazione",sum_sub:"Stima in tempo reale, prezzo finale fisso.",sum_services:"Servizi",sum_subtotal:"Subtotale",sum_discount:"Codice / importo sconto (€)",sum_disc:"Sconto",sum_ht:"Totale IVA esclusa",ht_lbl:"IVA escl.",sum_tax:"IVA inclusa",sum_total:"Totale IVA inclusa",
   btn_preview:"Anteprima preventivo",btn_sendq:"Invia la richiesta",btn_pdfq:"Scarica preventivo PDF",btn_pdfi:"Scarica fattura PDF",btn_confirm:"Conferma prenotazione",sum_secure:"🔒 Pagamento sicuro · Nessun addebito fino alla conferma",
   fl_eyebrow:"La Flotta",fl_title:"Un Veicolo per Ogni Occasione",fl_lead:"Veicoli recenti, curati meticolosamente e puliti prima di ogni viaggio.",
@@ -1261,7 +1261,7 @@ const I18N={
   ss1:"Disponibilidade e despacho",ss2:"Clientes corporativos",ss3:"Tempo médio de espera",ss4:"Cobertura nacional",
   bk_eyebrow:"Orçamento Instantâneo",bk_title:"Monte a Sua Reserva",bk_lead:"Insira seus dados, adicione quantos serviços precisar e receba um orçamento preciso a preço fixo, em tempo real.",
   bk_c_title:"Dados do Cliente",f_name:"Nome completo",f_company:"Empresa (opcional)",f_email:"E-mail",f_phone:"Telefone",f_addr:"Rua / Local",f_num:"N.º",f_city:"Cidade",f_zip:"Código postal",f_country:"País",
-  bk_s_title:"Serviços de Transporte",btn_add:"+ Adicionar serviço",bk_n_title:"Notas e Pedidos Especiais",f_flight:"Nº do voo / trem",f_lug:"Bagagem / passageiros",f_special:"Requisitos adicionais",
+  bk_s_title:"Serviços de Transporte",btn_add:"+ Adicionar serviço",bk_n_title:"Notas e Pedidos Especiais",f_flight:"Nº do voo / trem",f_lug:"Nome no cartaz de receção",f_special:"Requisitos adicionais",
   sum_title:"Resumo da Reserva",sum_sub:"Estimativa ao vivo, preço final fixo.",sum_services:"Serviços",sum_subtotal:"Subtotal",sum_discount:"Código / valor de desconto (€)",sum_disc:"Desconto",sum_ht:"Total sem IVA",ht_lbl:"sem IVA",sum_tax:"IVA incluído",sum_total:"Total com IVA",
   btn_preview:"Pré-visualizar orçamento",btn_sendq:"Enviar o meu pedido",btn_pdfq:"Baixar orçamento PDF",btn_pdfi:"Baixar fatura PDF",btn_confirm:"Confirmar reserva",sum_secure:"🔒 Pagamento seguro · Sem cobrança até a confirmação",
   fl_eyebrow:"A Frota",fl_title:"Um Veículo para Cada Ocasião",fl_lead:"Veículos recentes, meticulosamente mantidos e limpos antes de cada viagem.",
@@ -1285,7 +1285,7 @@ const I18N={
   ss1:"全天候调度",ss2:"企业客户",ss3:"平均等待时间",ss4:"全国覆盖",
   bk_eyebrow:"即时报价",bk_title:"创建您的预订",bk_lead:"填写您的信息，按需添加任意数量的服务，实时获取精确的固定价格报价。",
   bk_c_title:"客户信息",f_name:"全名",f_company:"公司（可选）",f_email:"电子邮箱",f_phone:"电话",f_addr:"街道 / 地点",f_num:"门牌号",f_city:"城市",f_zip:"邮政编码",f_country:"国家",
-  bk_s_title:"出行服务",btn_add:"+ 添加服务",bk_n_title:"备注与特别要求",f_flight:"航班 / 火车号",f_lug:"行李 / 乘客备注",f_special:"额外需求",
+  bk_s_title:"出行服务",btn_add:"+ 添加服务",bk_n_title:"备注与特别要求",f_flight:"航班 / 火车号",f_lug:"接机牌姓名",f_special:"额外需求",
   sum_title:"预订摘要",sum_sub:"实时估算，最终价格固定。",sum_services:"服务",sum_subtotal:"小计",sum_discount:"优惠码 / 金额 (€)",sum_disc:"优惠",sum_ht:"不含税总计",ht_lbl:"不含税",sum_tax:"含增值税",sum_total:"含税总计",
   btn_preview:"预览报价",btn_sendq:"提交我的申请",btn_pdfq:"下载报价 PDF",btn_pdfi:"下载发票 PDF",btn_confirm:"确认预订",sum_secure:"🔒 安全支付 · 确认前不收费",
   fl_eyebrow:"车队",fl_title:"为每种场合提供车辆",fl_lead:"近新车型，每次行程前都经过精心保养与清洁。",
@@ -2113,10 +2113,12 @@ async function downloadPDF(kind){
   const sp=document.getElementById("n_special").value,fl=document.getElementById("n_flight").value,lg=document.getElementById("n_lug").value;
   const nbS=services.reduce((a,s)=>a+(+s.suitcase||0),0),nbC=services.reduce((a,s)=>a+(+s.cabin||0),0);
   const bag=[];if(nbS)bag.push(nbS+" "+(LANG==="fr"?"valise(s) soute":"suitcase(s) hold"));if(nbC)bag.push(nbC+" "+(LANG==="fr"?"bagage(s) cabine":"cabin bag(s)"));
-  const bagStr=[bag.join(", "),lg].filter(Boolean).join(" · ");
-  if(sp||fl||bagStr){y+=14;doc.setFont(FONT,"bold");doc.setTextColor(...dark);doc.setFontSize(9.5);doc.text((LANG==="fr"?"Notes :":"Notes:"),40,y);
+  const bagStr=bag.join(", ");
+  const signLbl=(LANG==="fr"?"Pancarte : ":"Name sign: ");
+  if(sp||fl||bagStr||lg){y+=14;doc.setFont(FONT,"bold");doc.setTextColor(...dark);doc.setFontSize(9.5);doc.text((LANG==="fr"?"Notes :":"Notes:"),40,y);
     doc.setFont(FONT,"normal");doc.setTextColor(90,100,120);y+=14;
     if(fl){doc.text("• "+fl,40,y);y+=13;}
+    if(lg){doc.text("• "+signLbl+lg,40,y);y+=13;}
     if(bagStr){doc.text("• "+bagStr,40,y);y+=13;}
     if(sp){doc.text(doc.splitTextToSize("• "+sp,W-80),40,y);y+=13;}}
   if(hasCustom){
