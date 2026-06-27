@@ -737,6 +737,7 @@ async function buildInvoiceDoc(b,opts){
    m_card:{fr:'carte bancaire',en:'card',es:'tarjeta bancaria',it:'carta',pt:'cartão',tr:'kart',zh:'银行卡'},
    m_wire:{fr:'virement bancaire',en:'bank transfer',es:'transferencia',it:'bonifico',pt:'transferência',tr:'havale',zh:'银行转账'},
    m_credit:{fr:'avoir / code de réduction',en:'credit / discount code',es:'vale / código',it:'buono / codice',pt:'vale / código',tr:'kupon / kod',zh:'代金券/折扣码'},
+   m_cash:{fr:'espèces',en:'cash',es:'efectivo',it:'contanti',pt:'dinheiro',tr:'nakit',zh:'现金',ar:'نقداً'},
    bank:{fr:'Coordonnées bancaires — Règlement par virement',en:'Bank details — Payment by transfer',es:'Datos bancarios — Pago por transferencia',it:'Coordinate bancarie — Pagamento con bonifico',pt:'Dados bancários — Pagamento por transferência',tr:'Banka bilgileri — Havale ile ödeme',zh:'银行信息 — 转账付款'},
    svcRef:{fr:'Service remboursé — −{a} (remise incluse)',en:'Service refunded — −{a} (discount incl.)',es:'Servicio reembolsado — −{a} (desc. incl.)',it:'Servizio rimborsato — −{a} (sconto incl.)',pt:'Serviço reembolsado — −{a} (desc. incl.)',tr:'Hizmet iade edildi — −{a} (indirim dahil)',zh:'服务已退款 — −{a}（含折扣）'},
    svcCanc:{fr:'Service annulé — −{a} (remise incluse)',en:'Service cancelled — −{a} (discount incl.)',es:'Servicio anulado — −{a} (desc. incl.)',it:'Servizio annullato — −{a} (sconto incl.)',pt:'Serviço anulado — −{a} (desc. incl.)',tr:'Hizmet iptal — −{a} (indirim dahil)',zh:'服务已取消 — −{a}（含折扣）'},
@@ -861,7 +862,7 @@ async function buildInvoiceDoc(b,opts){
     else doc.text(P('cancelReg'),40,y);
   } else {
     doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);
-    var _via=d.paid_via||'', _m=_via==='stripe'?P('m_card'):(_via==='virement'?P('m_wire'):((_via==='avoir'||_via==='code')?P('m_credit'):''));
+    var _via=d.paid_via||'', _m=_via==='stripe'?P('m_card'):(_via==='virement'?P('m_wire'):(_via==='especes'?P('m_cash'):((_via==='avoir'||_via==='code')?P('m_credit'):'')));
     doc.text(paid?(_m?P('paidby').replace('{m}',_m):P('thanks')):P('bank'),40,y);y+=14;
     doc.setFont(F,'normal');doc.setTextColor(60,70,90);
     doc.text('Bénéficiaire : '+BK.beneficiary,40,y);y+=13;

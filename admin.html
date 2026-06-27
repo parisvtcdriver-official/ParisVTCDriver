@@ -829,7 +829,7 @@ function renderDocs(){
       :`<button class="btn-mini" onclick="archiveBooking('${b.id}')" title="Archiver (masqué des listes, points et compteur du client conservés)">Archiver</button>`;
     let act=`<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> <button class="btn-mini" onclick="missionNote('${b.id}')" title="Télécharger la note de course">Note</button> ${archBtn} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer définitivement (réduit le compteur de courses)">✕</button>`;
     if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
-    else if(b.type==='facture'&&b.pay_status!=='paid') act=`<button class="btn-mini gold" onclick="validatePayment('${b.id}')">Valider paiement</button> <button class="btn-mini" onclick="resendPayLink('${b.id}')" title="Créer/renvoyer le lien de paiement carte">Renvoyer lien</button> `+act;
+    else if(b.type==='facture'&&b.pay_status!=='paid') act=`<button class="btn-mini gold" onclick="validatePayment('${b.id}')" title="Paiement reçu par virement">Valider paiement</button> <button class="btn-mini gold" onclick="validatePayment('${b.id}','especes')" title="Paiement reçu en espèces à bord">💶 Espèces</button> <button class="btn-mini" onclick="resendPayLink('${b.id}')" title="Créer/renvoyer le lien de paiement carte">Renvoyer lien</button> `+act;
     return `<tr${arch?' style="opacity:.6"':''}><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(bookingClient(b))}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td>${eur(b.amount_ht)}</td><td>${eur(b.vat)}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${typeCell}</td><td>${act}</td></tr>`;
   }).join('');
 }
@@ -983,7 +983,7 @@ async function buildInvoiceDoc(b,opts){
     else{doc.text('Annulation enregistrée.',40,y);}
   } else {
     doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);
-    var _via=(b.details&&b.details.paid_via)||'', _m=_via==='stripe'?'carte bancaire':(_via==='virement'?'virement bancaire':((_via==='avoir'||_via==='code')?'avoir / code de réduction':''));
+    var _via=(b.details&&b.details.paid_via)||'', _m=_via==='stripe'?'carte bancaire':(_via==='virement'?'virement bancaire':(_via==='especes'?'espèces':((_via==='avoir'||_via==='code')?'avoir / code de réduction':'')));
     doc.text(paid?(_m?('Paiement reçu par '+_m+' — merci.'):'Paiement reçu — merci.'):'Coordonnées bancaires — Règlement par virement',40,y);y+=14;
     doc.setFont(F,'normal');doc.setTextColor(60,70,90);
     doc.text('Bénéficiaire : '+BK.beneficiary,40,y);y+=13;
@@ -1079,15 +1079,18 @@ async function resendPayLink(id){
   await emailInvoice(BOOKINGS.find(x=>x.id===id),'awaiting');
   toast('Lien créé ✓ e-mail renvoyé');
 }
-async function validatePayment(id){
+async function validatePayment(id, via){
+  via = via || 'virement';
   const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
-  if(!confirm('Confirmer la réception du paiement ? La facture payée sera envoyée au client.'))return;
-  const _d=Object.assign({},b.details||{}); _d.paid_via='virement';
+  const VL={virement:'virement bancaire', especes:'espèces', stripe:'carte bancaire'};
+  const lbl=VL[via]||via;
+  if(!confirm('Confirmer la réception du paiement par '+lbl+' ? La facture payée sera envoyée au client.'))return;
+  const _d=Object.assign({},b.details||{}); _d.paid_via=via;
   const upd={pay_status:'paid',paid_at:new Date().toISOString(),details:_d};
   if(!b.invoice_no){ const inv=await assignInvoiceNo(); if(inv){ upd.invoice_no=inv; upd.reference=inv; } }   // n° de facture au paiement
   const {error}=await sb.from('bookings').update(upd).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
-  toast('Paiement validé ✓ (la course reste à passer en « Terminée » après réalisation)');
+  toast('Paiement validé ✓ — '+lbl+' (la course reste à passer en « Terminée » après réalisation)');
   await refresh();
   await emailInvoice(BOOKINGS.find(x=>x.id===id),'paid');
 }
