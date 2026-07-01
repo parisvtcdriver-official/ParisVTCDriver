@@ -293,6 +293,20 @@ select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:
           <span id="invMsg" class="sub2"></span>
         </div>
       </div>
+      <div class="card" style="padding:22px 26px">
+        <h2 style="font-size:15px;margin-bottom:4px">Facturation mensuelle partenaires</h2>
+        <div class="sub2" style="margin-bottom:16px">Génère un document unique regroupant les <b>courses terminées</b> d'un partenaire sur un mois (facturation centralisée). Active « Fact. mensuelle » sur le partenaire dans <b>Clients</b> pour qu'il apparaisse ici.</div>
+        <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+          <label class="fld" style="min-width:220px"><span>Partenaire</span>
+            <select id="mbPartner" style="background:var(--navy-2);border:1px solid var(--line-soft);border-radius:8px;color:var(--txt);padding:8px 10px;font-size:14px"></select></label>
+          <label class="fld"><span>Mois</span>
+            <input id="mbMonth" type="month" style="background:var(--navy-2);border:1px solid var(--line-soft);border-radius:8px;color:var(--txt);padding:8px 10px;font-size:14px"></label>
+          <label class="fld"><span>Document</span>
+            <select id="mbType" style="background:var(--navy-2);border:1px solid var(--line-soft);border-radius:8px;color:var(--txt);padding:8px 10px;font-size:14px"><option value="facture">Facture mensuelle</option><option value="devis">Devis groupé</option></select></label>
+          <button class="btn-mini gold" onclick="genMonthlyDoc()">Générer le PDF</button>
+          <span id="mbMsg" class="sub2"></span>
+        </div>
+      </div>
       <div class="card infobox" style="font-size:13px;line-height:1.7">
         <b style="color:var(--gold-2)">Gestion :</b> les comptes clients se gèrent dans <b>Clients</b> (suppression) ; les rôles admin et les points dans <b>Fidélité</b> ; les codes promo et avoirs dans <b>Codes promo</b>.<br>
         Les modifications d'identité et de coordonnées bancaires ci-dessus s'appliquent immédiatement aux nouveaux devis, factures et e-mails de virement.
@@ -346,6 +360,93 @@ async function saveIdentity(){
   const m=document.getElementById('idMsg');
   if(error){ if(m){m.textContent='Erreur : '+error.message;m.style.color='var(--red)';} return; }
   CO=Object.assign({},CO_DEFAULT,value); if(m){m.textContent='Enregistré ✓';m.style.color='var(--green)';} toast('Identité mise à jour ✓');
+}
+// ---- Facturation simplifiée partenaires ----
+async function toggleMonthly(id,cur){
+  cur=!!cur;
+  const {error}=await sb.from('profiles').update({monthly_billing:!cur}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast(!cur?'Facturation mensuelle activée ✓':'Facturation mensuelle désactivée');
+  await refresh();
+}
+function loadMonthlyPartners(){
+  const sel=document.getElementById('mbPartner'); if(!sel)return;
+  const list=Object.values(PROFILES).filter(p=>p.monthly_billing);
+  sel.innerHTML=list.length?list.map(p=>`<option value="${p.id}">${escapeHtml(p.full_name||p.email||'—')}</option>`).join(''):'<option value="">— aucun partenaire activé —</option>';
+  const mo=document.getElementById('mbMonth'); if(mo&&!mo.value){const d=new Date();mo.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+}
+async function genMonthlyDoc(){
+  const pid=document.getElementById('mbPartner').value, ym=document.getElementById('mbMonth').value, type=document.getElementById('mbType').value;
+  const msg=document.getElementById('mbMsg'); const setMsg=(t,ok)=>{if(msg){msg.textContent=t;msg.style.color=ok?'var(--green)':'var(--red)';}};
+  if(!pid){setMsg('Sélectionnez un partenaire.',false);return;}
+  if(!ym){setMsg('Sélectionnez un mois.',false);return;}
+  if(!window.jspdf){toast('PDF indisponible, réessayez');return;}
+  const prof=PROFILES[pid]; if(!prof){setMsg('Partenaire introuvable.',false);return;}
+  const rows=BOOKINGS.filter(b=>b.user_id===pid && b.status==='completed' && String(b.date_time||b.created_at||'').slice(0,7)===ym);
+  if(!rows.length){setMsg('Aucune course terminée ce mois-ci pour ce partenaire.',false);return;}
+  const isInv=(type==='facture'); let no=null;
+  if(isInv){ no=await assignInvoiceNo(); }
+  const doc=await buildMonthlyDoc(prof,ym,rows,{isInvoice:isInv,number:no});
+  doc.save((isInv?'facture-mensuelle-':'devis-groupe-')+String(prof.full_name||'partenaire').replace(/[^a-zA-Z0-9]/g,'-')+'-'+ym+'.pdf');
+  if(isInv && no){ for(const b of rows){ try{ await sb.from('bookings').update({monthly_invoice_no:no}).eq('id',b.id); }catch(e){} } }
+  setMsg((isInv?'Facture ':'Devis ')+(no?no+' ':'')+'généré ✓ ('+rows.length+' course'+(rows.length>1?'s':'')+')',true);
+  await refresh();
+}
+async function buildMonthlyDoc(prof,ym,rows,opts){
+  opts=opts||{}; const isInv=!!opts.isInvoice, no=opts.number;
+  const {jsPDF}=window.jspdf; const doc=new jsPDF({unit:'pt',format:'a4'});
+  const F=await pdfFont(doc); const gold=[201,162,74],dark=[20,28,46]; const W=595;
+  const ML=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const parts=ym.split('-'); const monthLabel=(ML[(+parts[1])-1]||parts[1])+' '+parts[0];
+  doc.setFillColor(7,10,18);doc.rect(0,0,W,134,'F');
+  doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(22);doc.text('ParisVTCDriver',40,58);
+  doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(8.5);
+  doc.text("Premium Chauffeur Services · "+CO.phone+" · "+CO.email,40,74);
+  doc.text("Siège : "+CO.addr,40,87);
+  doc.text("SIRET "+CO.siret+" · TVA intracom. "+CO.tva,40,100);
+  doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(15);
+  doc.text(isInv?'FACTURE MENSUELLE':'DEVIS GROUPÉ',W-40,60,{align:'right'});
+  let yh=76; doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(9);
+  if(isInv&&no){doc.text('Facture n° '+no,W-40,yh,{align:'right'});yh+=13;}
+  doc.text('Période : '+monthLabel,W-40,yh,{align:'right'});yh+=13;
+  doc.text(new Date().toLocaleDateString('fr-FR'),W-40,yh,{align:'right'});yh+=13;
+  doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(9);doc.text('Compte partenaire',W-40,yh,{align:'right'});
+  let y=160; doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(10);doc.text('Partenaire :',40,y);
+  doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
+  const cl=[prof.full_name||prof.email||'—']; if(prof.company)cl.push(prof.company); if(prof.email)cl.push(prof.email); if(prof.phone)cl.push(String(prof.phone));
+  cl.forEach((line,i)=>doc.text(String(line),40,y+15+i*13)); y=y+15+cl.length*13+18;
+  const xTtc=W-48, xVat=W-118, xHt=W-185, xServX=124;
+  doc.setFillColor(20,28,46);doc.rect(40,y,W-80,24,'F');
+  doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(8.5);
+  doc.text('DATE',48,y+16);doc.text('SERVICE',xServX,y+16);doc.text('HT',xHt,y+16,{align:'right'});doc.text('TVA',xVat,y+16,{align:'right'});doc.text('TTC',xTtc,y+16,{align:'right'});
+  y+=40; let tHt=0,tVat=0,tTtc=0; const servW=xHt-xServX-10;
+  rows.sort((a,b)=>String(a.date_time||'').localeCompare(String(b.date_time||'')));
+  rows.forEach(b=>{
+    const ttc=Number(b.amount_ttc)||0, ht=Number(b.amount_ht)||Math.round(ttc/1.1*100)/100, vat=Number(b.vat)||Math.round((ttc-ht)*100)/100;
+    tHt+=ht;tVat+=vat;tTtc+=ttc;
+    const dt=b.date_time?new Date(b.date_time).toLocaleDateString('fr-FR'):'—';
+    const lab=String(b.service||b.reference||'Course');
+    doc.setFont(F,'normal');doc.setTextColor(70,80,100);doc.setFontSize(8.5);doc.text(dt,48,y);
+    doc.setTextColor(30,38,56);doc.text(doc.splitTextToSize(lab,servW)[0],xServX,y);
+    doc.setTextColor(95,105,125);doc.text(eur(ht),xHt,y,{align:'right'});doc.text(eur(vat),xVat,y,{align:'right'});
+    doc.setFont(F,'bold');doc.setTextColor(...gold);doc.text(eur(ttc),xTtc,y,{align:'right'});
+    y+=18; if(y>770){doc.addPage();y=60;}
+  });
+  y+=6;doc.setDrawColor(210);doc.line(W-250,y,W-40,y);y+=16;
+  doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
+  doc.text('Total HT',W-250,y);doc.text(eur(tHt),W-40,y,{align:'right'});y+=14;
+  doc.text('TVA',W-250,y);doc.text(eur(tVat),W-40,y,{align:'right'});y+=16;
+  doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
+  doc.text('Total TTC',W-250,y);doc.text(eur(tTtc),W-40,y,{align:'right'});
+  y+=40;doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
+  doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);
+  doc.text(isInv?'Règlement par virement — facturation mensuelle centralisée':'Devis groupé — sur acceptation',40,y);y+=14;
+  doc.setFont(F,'normal');doc.setTextColor(60,70,90);
+  doc.text('Bénéficiaire : '+BK.beneficiary,40,y);y+=13;
+  doc.text('IBAN '+ibanFmt(BK.iban)+'   ·   BIC '+BK.bic,40,y);
+  doc.setFont(F,'normal');doc.setTextColor(150,158,172);doc.setFontSize(7.5);
+  doc.text('SIRET '+CO.siret+' · TVA intracom. '+CO.tva+' · Compte partenaire · Merci de votre confiance.',W/2,815,{align:'center'});
+  return doc;
 }
 async function loadInvoiceNo(){
   const y=new Date().getFullYear();
@@ -453,6 +554,7 @@ async function refresh(){
   loadWelcome();
   loadCompany();
   loadInvoiceNo();
+  loadMonthlyPartners();
 
   // stats
   document.getElementById('sYearCA').textContent=eur(caYear);
@@ -882,6 +984,8 @@ async function buildInvoiceDoc(b,opts){
   doc.text((cancel?'Facture n° ':(isInv?(paid?'Facture n° ':'Facture proforma n° '):'Devis n° '))+(b.reference||'—'),W-40,yh,{align:'right'});yh+=14;
   if(isInv&&b.quote_no&&b.quote_no!==b.reference){doc.setFontSize(8.5);doc.text('Réf. devis : '+b.quote_no,W-40,yh,{align:'right'});yh+=13;doc.setFontSize(9);}
   doc.text(b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):new Date().toLocaleDateString('fr-FR'),W-40,yh,{align:'right'});yh+=16;
+  const _isPart=!!(b.user_id&&PROFILES[b.user_id]&&(PROFILES[b.user_id].is_partner||Number(PROFILES[b.user_id].partner_discount)>0));
+  if(_isPart){doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(9);doc.text('Compte partenaire',W-40,yh,{align:'right'});yh+=15;}
   if(isInv&&!cancel){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?'PAYÉE':'EN ATTENTE DE PAIEMENT',W-40,yh,{align:'right'});}
   let y=160;
   doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(10);doc.text('Client :',40,y);
@@ -1172,7 +1276,7 @@ function renderFidelity(profs){
       <td><span class="lvl-tag">★ ${L.name}</span></td>
       <td>${L.off?'−'+L.off+' %':'—'}${Number(p.partner_discount)>0?'<div class="sub2" style="color:var(--gold-2)">Partenaire −'+p.partner_discount+'%</div>':''}</td>
       <td><span class="tagrole ${p.role}">${p.role}</span></td>
-      <td><button class="btn-mini" onclick="editPoints('${p.id}',${p.loyalty_points||0})">Ajuster pts</button> <button class="btn-mini" onclick="setPartnerDiscount('${p.id}',${Number(p.partner_discount)||0})">Partenaire %</button> ${isMe?'<span class="sub2">vous</span>':'<button class="btn-mini" onclick="toggleRole(\''+p.id+'\',\''+p.role+'\')">'+(p.role==='admin'?'Rétrograder':'Admin')+'</button>'}</td></tr>`;
+      <td><button class="btn-mini" onclick="editPoints('${p.id}',${p.loyalty_points||0})">Ajuster pts</button> <button class="btn-mini" onclick="setPartnerDiscount('${p.id}',${Number(p.partner_discount)||0})">Partenaire %</button> ${(p.is_partner||Number(p.partner_discount)>0)?`<button class="btn-mini${p.monthly_billing?' gold':''}" onclick="toggleMonthly('${p.id}',${p.monthly_billing?1:0})" title="Facturation mensuelle centralisée">${p.monthly_billing?'✓ Fact. mensuelle':'Fact. mensuelle'}</button> `:''}${isMe?'<span class="sub2">vous</span>':'<button class="btn-mini" onclick="toggleRole(\''+p.id+'\',\''+p.role+'\')">'+(p.role==='admin'?'Rétrograder':'Admin')+'</button>'}</td></tr>`;
   }).join('');
 }
 function renderPartChips(){
