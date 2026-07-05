@@ -114,12 +114,12 @@ footer a{color:var(--gold-2)}
 </head>
 <body>
 <header class="nav"><div class="wrap nav-inner">
-  <a href="index.html" class="logo">
+  <a href="/" class="logo">
     <span class="mark"><img src="logo.png" alt="ParisVTCDriver"></span>
     <span><b>Paris<span>VTC</span>Driver</b><small data-i18n="brandtag">Chauffeur Premium · Paris</small></span>
   </a>
   <div id="langSlot" style="margin-left:auto"></div>
-  <a href="index.html#booking" class="btn btn-ghost" data-i18n="back">← Retour à ma réservation</a>
+  <a href="/#booking" class="btn btn-ghost" data-i18n="back">← Retour à ma réservation</a>
 </div></header>
 
 <section class="hero">
@@ -132,7 +132,7 @@ footer a{color:var(--gold-2)}
     <h1>Transfert VTC <em>gares de Paris</em></h1>
     <p>Votre chauffeur privé vous accueille à votre gare parisienne (Gare du Nord, Gare de Lyon, Montparnasse, Est, Austerlitz, Saint-Lazare…), prend vos bagages et vous conduit à destination — à prix fixe, 24h/24.</p>
     <div class="hero-cta">
-      <a href="index.html#booking" class="btn btn-gold">Réserver mon transfert gare</a>
+      <a href="/#booking" class="btn btn-gold">Réserver mon transfert gare</a>
       <a href="#faq" class="btn btn-ghost">Questions fréquentes</a>
     </div>
   </div>
@@ -179,17 +179,17 @@ footer a{color:var(--gold-2)}
   <div class="cta">
     <h2>Réservez votre transfert gare</h2>
     <p>Accueil en gare, bagages et prix fixe. Découvrez aussi nos transferts <a href="transfert-cdg.html" style="color:var(--gold-2)">CDG</a> et <a href="transfert-orly.html" style="color:var(--gold-2)">Orly</a>.</p>
-    <a href="index.html#booking" class="btn btn-gold">Obtenir mon prix &amp; réserver</a>
+    <a href="/#booking" class="btn btn-gold">Obtenir mon prix &amp; réserver</a>
     <p class="note">Réservation en ligne 24/7 · Paiement carte ou virement.</p>
   </div>
 </div></section>
 
-<footer><div class="wrap">© 2026 ParisVTCDriver — <span data-i18n="foot_copy">Chauffeur Premium · Paris &amp; France</span> · <a href="index.html" data-i18n="backsite">Retour au site</a></div></footer>
+<footer><div class="wrap">© 2026 ParisVTCDriver — <span data-i18n="foot_copy">Chauffeur Premium · Paris &amp; France</span> · <a href="/" data-i18n="backsite">Retour au site</a></div></footer>
 
 <script src="pack.js"></script>
 <script>
 window.PAGE_ALT={fr:"gares-paris.html",en:"paris-train-stations.html"};
-window.addEventListener("load",function(){document.querySelectorAll(".lang [data-lang]").forEach(function(b){b.onclick=function(){var l=b.dataset.lang,cur=(location.pathname.split("/").pop()||"index.html");try{localStorage.setItem("pvtc_lang",l);}catch(e){}if(PAGE_ALT[l]){if(PAGE_ALT[l]!==cur)location.href=PAGE_ALT[l];return;}location.href="index.html";};});});
+window.addEventListener("load",function(){document.querySelectorAll(".lang [data-lang]").forEach(function(b){b.onclick=function(){var l=b.dataset.lang,cur=(location.pathname.split("/").pop()||"index.html");try{localStorage.setItem("pvtc_lang",l);}catch(e){}if(PAGE_ALT[l]){if(PAGE_ALT[l]!==cur)location.href=PAGE_ALT[l];return;}location.href="/";};});});
 </script>
 <script src="consent.js" defer></script>
 </body>

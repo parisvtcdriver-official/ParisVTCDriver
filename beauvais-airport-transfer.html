@@ -115,12 +115,12 @@ footer a{color:var(--gold-2)}
 </head>
 <body>
 <header class="nav"><div class="wrap nav-inner">
-  <a href="index.html" class="logo">
+  <a href="/" class="logo">
     <span class="mark"><img src="logo.png" alt="ParisVTCDriver"></span>
     <span><b>Paris<span>VTC</span>Driver</b><small data-i18n="brandtag">Premium Chauffeur · Paris</small></span>
   </a>
   <div id="langSlot" style="margin-left:auto"></div>
-  <a href="index.html#booking" class="btn btn-ghost" data-i18n="back">← Back to my booking</a>
+  <a href="/#booking" class="btn btn-ghost" data-i18n="back">← Back to my booking</a>
 </div></header>
 
 <section class="hero">
@@ -133,7 +133,7 @@ footer a{color:var(--gold-2)}
     <h1>Private <em>Beauvais airport transfer</em> ↔ Paris</h1>
     <p>Your private chauffeur greets you at Beauvais-Tille airport with a name sign, tracks your flight and drives you to Paris or the Ile-de-France — at a fixed price, 24/7.</p>
     <div class="hero-cta">
-      <a href="index.html#booking" class="btn btn-gold">Book my Beauvais transfer</a>
+      <a href="/#booking" class="btn btn-gold">Book my Beauvais transfer</a>
       <a href="#faq" class="btn btn-ghost">FAQ</a>
     </div>
   </div>
@@ -180,18 +180,18 @@ footer a{color:var(--gold-2)}
   <div class="cta">
     <h2>Book your Beauvais transfer</h2>
     <p>Instant fixed price, professional chauffeur, meet & greet and flight tracking. Also available to <a href="cdg-airport-transfer.html" style="color:var(--gold-2)">CDG</a>, <a href="orly-airport-transfer.html" style="color:var(--gold-2)">Orly</a> and <a href="disneyland-paris-transfer.html" style="color:var(--gold-2)">Disneyland Paris</a>.</p>
-    <a href="index.html#booking" class="btn btn-gold">Get my price &amp; book</a>
+    <a href="/#booking" class="btn btn-gold">Get my price &amp; book</a>
     <p class="note">Online booking 24/7 · Pay by card or bank transfer.</p>
   </div>
 </div></section>
 
-<footer><div class="wrap">© 2026 ParisVTCDriver — <span data-i18n="foot_copy">Premium Chauffeur · Paris &amp; France</span> · <a href="transfert-beauvais.html">Version française</a> · <a href="index.html" data-i18n="backsite">Back to site</a></div></footer>
+<footer><div class="wrap">© 2026 ParisVTCDriver — <span data-i18n="foot_copy">Premium Chauffeur · Paris &amp; France</span> · <a href="transfert-beauvais.html">Version française</a> · <a href="/" data-i18n="backsite">Back to site</a></div></footer>
 
 <script src="pack.js"></script>
 <script>try{window.addEventListener('load',function(){if(window.packSetLang)packSetLang('en');});}catch(e){}</script>
 <script>
 window.PAGE_ALT={fr:"transfert-beauvais.html",en:"beauvais-airport-transfer.html"};
-window.addEventListener("load",function(){document.querySelectorAll(".lang [data-lang]").forEach(function(b){b.onclick=function(){var l=b.dataset.lang,cur=(location.pathname.split("/").pop()||"index.html");try{localStorage.setItem("pvtc_lang",l);}catch(e){}if(PAGE_ALT[l]){if(PAGE_ALT[l]!==cur)location.href=PAGE_ALT[l];return;}location.href="index.html";};});});
+window.addEventListener("load",function(){document.querySelectorAll(".lang [data-lang]").forEach(function(b){b.onclick=function(){var l=b.dataset.lang,cur=(location.pathname.split("/").pop()||"index.html");try{localStorage.setItem("pvtc_lang",l);}catch(e){}if(PAGE_ALT[l]){if(PAGE_ALT[l]!==cur)location.href=PAGE_ALT[l];return;}location.href="/";};});});
 </script>
 <script src="consent.js" defer></script>
 </body>
