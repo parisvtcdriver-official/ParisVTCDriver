@@ -736,13 +736,16 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
     <div class="booking-grid">
       <!-- LEFT -->
       <div>
-        <!-- Services -->
+        <!-- Services (repliable) -->
         <div class="panel card-pad">
-          <div class="block-head" style="justify-content:space-between">
+          <div class="block-head" onclick="toggleServices()" style="cursor:pointer;user-select:none;justify-content:space-between;margin-bottom:0">
             <div style="display:flex;align-items:center;gap:12px"><span class="num">1</span><h3 data-i18n="bk_s_title">Transportation Services</h3></div>
-            <button class="btn btn-gold" onclick="addService()" data-i18n="btn_add">+ Add Service</button>
+            <svg id="svcChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;margin-left:auto;color:var(--gold-2);transition:transform .25s;flex:none;transform:rotate(180deg)"><path d="M6 9l6 6 6-6"/></svg>
           </div>
-          <div id="services"></div>
+          <div id="servicesBody" style="margin-top:20px">
+            <button class="btn btn-gold" onclick="addService()" data-i18n="btn_add">+ Add Service</button>
+            <div id="services" style="margin-top:16px"></div>
+          </div>
         </div>
 
         <!-- Pack services (réduit par défaut, déplié au clic) -->
@@ -1619,7 +1622,7 @@ function addService(data){
   q("[data-lug] input[onchange*=\"'cabin'\"]").value=(s.cabin!=null?s.cabin:"");
   const st=SERVICES.find(x=>x.id===s.type),hb=wrap.querySelector("[data-hours]");if(hb)hb.style.display=(st&&st.perH)?"":"none";
   const db=wrap.querySelector("[data-dropoff]"),sa=wrap.querySelector(".si-addr");if(db)db.style.display=(st&&st.perH)?"none":"";if(sa)sa.style.gridTemplateColumns=(st&&st.perH)?"1fr":"";
-  rebuildSvcVeh(s);syncSeats('svc',s);refreshServiceLabels(id);updateLug(id);recalc();saveForm();
+  rebuildSvcVeh(s);syncSeats('svc',s);refreshServiceLabels(id);updateLug(id);recalc();saveForm(); toggleServices(true);
 }
 function removeService(id){services=services.filter(s=>s.id!==id);document.getElementById("svc-"+id).remove();renumber();recalc();saveForm();}
 function renumber(){document.querySelectorAll("#services .service-item [data-tag]").forEach((el,i)=>el.textContent=`${t("service")} #${i+1}`);}
@@ -1853,6 +1856,11 @@ function toggleNotes(open){
   const b=document.getElementById("notesBody"), c=document.getElementById("notesChev"); if(!b)return;
   const willOpen=(open===undefined)?(b.style.display==="none"):open;
   b.style.display=willOpen?"grid":"none"; if(c)c.style.transform=willOpen?"rotate(180deg)":"";
+}
+function toggleServices(open){
+  const b=document.getElementById("servicesBody"), c=document.getElementById("svcChev"); if(!b)return;
+  const willOpen=(open===undefined)?(b.style.display==="none"):open;
+  b.style.display=willOpen?"block":"none"; if(c)c.style.transform=willOpen?"rotate(180deg)":"";
 }
 function togglePacks(open){
   const b=document.getElementById("packsBody"), c=document.getElementById("packsChev"); if(!b)return;
@@ -2443,14 +2451,17 @@ if("scrollRestoration" in history) history.scrollRestoration="manual";   // open
 })();
 renderFleet();renderTrust();renderTesti();renderFares();
 loadForm();   // restore an in-progress booking only if it's recent (kept while visiting pack pages); a fresh visit starts empty
-if(!services.length) addService();   // ouvre automatiquement une premiere prestation
-try{var _pk=new URLSearchParams(location.search).get('pack');
-  if(_pk && typeof PACKTYPES!=='undefined' && PACKTYPES.some(function(x){return x.id===_pk;})){
-    addPack({type:_pk});
-    var _h=location.hash; try{history.replaceState(null,'',location.pathname+_h);}catch(e){}
-    setTimeout(function(){var b=document.getElementById('booking');if(b)b.scrollIntoView({behavior:'smooth',block:'start'});},120);
-  }
-}catch(e){}
+var _pk=null;
+try{_pk=new URLSearchParams(location.search).get('pack'); if(!(_pk && typeof PACKTYPES!=='undefined' && PACKTYPES.some(function(x){return x.id===_pk;}))) _pk=null;}catch(e){_pk=null;}
+if(_pk){
+  // Arrivée via un lien « Réserver ce pack » : on ouvre le pack et on replie les Services de transport
+  addPack({type:_pk});
+  toggleServices(false);
+  var _h=location.hash; try{history.replaceState(null,'',location.pathname+_h);}catch(e){}
+  setTimeout(function(){var b=document.getElementById('booking');if(b)b.scrollIntoView({behavior:'smooth',block:'start'});},120);
+}else{
+  if(!services.length) addService();   // visite normale : ouvre automatiquement une premiere prestation
+}
 openNotesIfFilled();   // déplier la section Notes si le client l'avait remplie
 // E-mail assemblé en JS (jamais en clair dans le HTML : protection anti-robots/spam)
 var SITE_EMAIL=["ParisVTCdriver","gmail.com"].join(String.fromCharCode(64));
