@@ -689,15 +689,6 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
   </div>
 </section>
 
-<!-- ================= STATS STRIP ================= -->
-<section class="wrap" style="padding:40px 28px">
-  <div class="panel stats-strip" style="padding:38px 28px">
-    <div class="stat"><b>24/7</b><span data-i18n="ss1">Availability &amp; dispatch</span></div>
-    <div class="stat"><b>500+</b><span data-i18n="ss2">Corporate clients</span></div>
-    <div class="stat"><b>5 min</b><span data-i18n="ss3">Average wait time</span></div>
-    <div class="stat"><b>FR</b><span data-i18n="ss4">Nationwide coverage</span></div>
-  </div>
-</section>
 
 <!-- ================= PACKS LOISIR & VISITE ================= -->
 <section class="sec-pad" id="packs" style="background:linear-gradient(180deg,transparent,rgba(13,23,48,.4),transparent)">
@@ -744,78 +735,10 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
     <div class="booking-grid">
       <!-- LEFT -->
       <div>
-        <!-- Customer info -->
-        <div class="panel card-pad" style="margin-bottom:28px">
-          <div class="block-head"><span class="num">1</span><h3 data-i18n="bk_c_title">Customer Information</h3></div>
-          <div class="field-grid">
-            <div><label class="label" data-i18n="f_name">Full name</label><input id="c_name" placeholder="Jean-Baptiste Caron"></div>
-            <div><label class="label" data-i18n="f_company">Company (optional)</label><input id="c_company" placeholder="Maison Lévêque SAS"></div>
-            <div><label class="label" data-i18n="f_email">Email</label><input id="c_email" type="email" placeholder="jb.caron@maison-leveque.fr"></div>
-            <div><label class="label" data-i18n="f_phone">Phone</label>
-              <div class="phone-row">
-                <span class="dialwrap"><span class="dial-disp" id="dialDisp">+33</span>
-                <select id="c_dialcode" class="dialcode" aria-label="Indicatif" onchange="updDial()">
-                  <optgroup label="France & Outre-mer">
-                    <option value="+33" selected>France +33</option>
-                    <option value="+590">Guadeloupe +590</option>
-                    <option value="+596">Martinique +596</option>
-                    <option value="+594">Guyane +594</option>
-                    <option value="+262">La Réunion +262</option>
-                    <option value="+262">Mayotte +262</option>
-                    <option value="+590">Saint-Martin +590</option>
-                    <option value="+590">Saint-Barthélemy +590</option>
-                    <option value="+508">St-Pierre-et-Miquelon +508</option>
-                    <option value="+689">Polynésie française +689</option>
-                    <option value="+687">Nouvelle-Calédonie +687</option>
-                    <option value="+681">Wallis-et-Futuna +681</option>
-                  </optgroup>
-                  <optgroup label="International">
-                    <option value="+32">Belgique +32</option>
-                    <option value="+41">Suisse +41</option>
-                    <option value="+44">Royaume-Uni +44</option>
-                    <option value="+49">Allemagne +49</option>
-                    <option value="+34">Espagne +34</option>
-                    <option value="+39">Italie +39</option>
-                    <option value="+351">Portugal +351</option>
-                    <option value="+90">Turquie +90</option>
-                    <option value="+1">USA / Canada +1</option>
-                    <option value="+52">Mexique +52</option>
-                    <option value="+81">Japon +81</option>
-                    <option value="+86">Chine +86</option>
-                    <option value="+507">Panama +507</option>
-                  </optgroup>
-                </select></span>
-                <input id="c_phone" placeholder="6 71 24 88 02">
-              </div>
-            </div>
-            <div style="grid-column:1/-1;display:grid;grid-template-columns:120px 1fr;gap:16px">
-              <div><label class="label" data-i18n="f_num">Street no.</label><input id="c_num" placeholder="48"></div>
-              <div style="position:relative">
-                <label class="label" data-i18n="f_addr">Address</label>
-                <input id="c_addr" autocomplete="off" placeholder="Avenue Montaigne" oninput="addrSearch(this.value)" onfocus="addrSearch(this.value)">
-                <div id="addrSug" class="addr-sug"></div>
-              </div>
-            </div>
-            <div><label class="label" data-i18n="f_city">City</label><input id="c_city" placeholder="Paris"></div>
-            <div><label class="label" data-i18n="f_zip">Postal code</label><input id="c_zip" placeholder="75008"></div>
-            <div style="grid-column:1/-1"><label class="label" data-i18n="f_country">Country</label>
-              <select id="c_country"><option>France</option><option>Belgium</option><option>Switzerland</option><option>United Kingdom</option><option>Germany</option><option>Spain</option><option>Italy</option><option>Portugal</option><option>Turkey</option><option>United States</option><option>Mexico</option><option>Japan</option><option>China</option><option>Panama</option><option>Other</option></select>
-            </div>
-            <div style="grid-column:1/-1;display:flex;align-items:center;gap:9px;margin-top:2px">
-              <input type="checkbox" id="c_pro" onchange="document.getElementById('proFields').style.display=this.checked?'grid':'none'" style="width:auto;accent-color:var(--gold)">
-              <label for="c_pro" class="label" style="margin:0;cursor:pointer" data-i18n="f_pro">I'm booking as a business</label>
-            </div>
-            <div id="proFields" style="grid-column:1/-1;display:none;grid-template-columns:1fr 1fr;gap:16px">
-              <div><label class="label" data-i18n="f_siren">SIREN number</label><input id="c_siren" placeholder="934 505 702"></div>
-              <div><label class="label" data-i18n="f_vat">Intra-EU VAT number</label><input id="c_vat" placeholder="FR00 934505702"></div>
-            </div>
-          </div>
-        </div>
-
         <!-- Services -->
         <div class="panel card-pad">
           <div class="block-head" style="justify-content:space-between">
-            <div style="display:flex;align-items:center;gap:12px"><span class="num">2</span><h3 data-i18n="bk_s_title">Transportation Services</h3></div>
+            <div style="display:flex;align-items:center;gap:12px"><span class="num">1</span><h3 data-i18n="bk_s_title">Transportation Services</h3></div>
             <button class="btn btn-gold" onclick="addService()" data-i18n="btn_add">+ Add Service</button>
           </div>
           <div id="services"></div>
@@ -824,7 +747,7 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
         <!-- Pack services -->
         <div class="panel card-pad" style="margin-top:28px">
           <div class="block-head" style="justify-content:space-between">
-            <div style="display:flex;align-items:center;gap:12px"><span class="num">3</span><h3 data-i18n="bk_p_title">Pack Services</h3></div>
+            <div style="display:flex;align-items:center;gap:12px"><span class="num">2</span><h3 data-i18n="bk_p_title">Pack Services</h3></div>
             <button class="btn btn-gold" onclick="addPack()" data-i18n="btn_add_pack">+ Add pack</button>
           </div>
           <div id="packServices"></div>
@@ -832,7 +755,7 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
 
         <!-- Notes -->
         <div class="panel card-pad" style="margin-top:28px">
-          <div class="block-head" onclick="toggleNotes()" style="cursor:pointer;user-select:none;margin-bottom:0"><span class="num">4</span><h3 data-i18n="bk_n_title">Notes &amp; Special Requests</h3>
+          <div class="block-head" onclick="toggleNotes()" style="cursor:pointer;user-select:none;margin-bottom:0"><span class="num">3</span><h3 data-i18n="bk_n_title">Notes &amp; Special Requests</h3>
             <svg id="notesChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;margin-left:auto;color:var(--gold-2);transition:transform .25s;flex:none"><path d="M6 9l6 6 6-6"/></svg></div>
           <div class="field-grid" id="notesBody" style="display:none;margin-top:20px">
             <div><label class="label" data-i18n="f_flight">Flight / train number</label><input id="n_flight" placeholder="AF1180 — CDG T2E"></div>
@@ -1020,6 +943,83 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
   </div>
 </footer>
 
+<!-- ============== INFOS CLIENT (pop-up obligatoire a l'envoi) ============== -->
+<div class="modal-bg" id="custModal" style="z-index:110">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-head"><h3 data-i18n="bk_c_title">Customer Information</h3><button class="x-close" onclick="closeCustomerModal()">✕</button></div>
+    <div class="modal-body">
+      <p style="color:var(--muted);font-size:13px;margin:-2px 0 16px" data-i18n="cust_modal_hint">Please enter your details to receive your quote.</p>
+      <div class="field-grid">
+            <div><label class="label" data-i18n="f_name">Full name</label><input id="c_name" placeholder="Jean-Baptiste Caron"></div>
+            <div><label class="label" data-i18n="f_company">Company (optional)</label><input id="c_company" placeholder="Maison Lévêque SAS"></div>
+            <div><label class="label" data-i18n="f_email">Email</label><input id="c_email" type="email" placeholder="jb.caron@maison-leveque.fr"></div>
+            <div><label class="label" data-i18n="f_phone">Phone</label>
+              <div class="phone-row">
+                <span class="dialwrap"><span class="dial-disp" id="dialDisp">+33</span>
+                <select id="c_dialcode" class="dialcode" aria-label="Indicatif" onchange="updDial()">
+                  <optgroup label="France & Outre-mer">
+                    <option value="+33" selected>France +33</option>
+                    <option value="+590">Guadeloupe +590</option>
+                    <option value="+596">Martinique +596</option>
+                    <option value="+594">Guyane +594</option>
+                    <option value="+262">La Réunion +262</option>
+                    <option value="+262">Mayotte +262</option>
+                    <option value="+590">Saint-Martin +590</option>
+                    <option value="+590">Saint-Barthélemy +590</option>
+                    <option value="+508">St-Pierre-et-Miquelon +508</option>
+                    <option value="+689">Polynésie française +689</option>
+                    <option value="+687">Nouvelle-Calédonie +687</option>
+                    <option value="+681">Wallis-et-Futuna +681</option>
+                  </optgroup>
+                  <optgroup label="International">
+                    <option value="+32">Belgique +32</option>
+                    <option value="+41">Suisse +41</option>
+                    <option value="+44">Royaume-Uni +44</option>
+                    <option value="+49">Allemagne +49</option>
+                    <option value="+34">Espagne +34</option>
+                    <option value="+39">Italie +39</option>
+                    <option value="+351">Portugal +351</option>
+                    <option value="+90">Turquie +90</option>
+                    <option value="+1">USA / Canada +1</option>
+                    <option value="+52">Mexique +52</option>
+                    <option value="+81">Japon +81</option>
+                    <option value="+86">Chine +86</option>
+                    <option value="+507">Panama +507</option>
+                  </optgroup>
+                </select></span>
+                <input id="c_phone" placeholder="6 71 24 88 02">
+              </div>
+            </div>
+            <div style="grid-column:1/-1;display:grid;grid-template-columns:120px 1fr;gap:16px">
+              <div><label class="label" data-i18n="f_num">Street no.</label><input id="c_num" placeholder="48"></div>
+              <div style="position:relative">
+                <label class="label" data-i18n="f_addr">Address</label>
+                <input id="c_addr" autocomplete="off" placeholder="Avenue Montaigne" oninput="addrSearch(this.value)" onfocus="addrSearch(this.value)">
+                <div id="addrSug" class="addr-sug"></div>
+              </div>
+            </div>
+            <div><label class="label" data-i18n="f_city">City</label><input id="c_city" placeholder="Paris"></div>
+            <div><label class="label" data-i18n="f_zip">Postal code</label><input id="c_zip" placeholder="75008"></div>
+            <div style="grid-column:1/-1"><label class="label" data-i18n="f_country">Country</label>
+              <select id="c_country"><option>France</option><option>Belgium</option><option>Switzerland</option><option>United Kingdom</option><option>Germany</option><option>Spain</option><option>Italy</option><option>Portugal</option><option>Turkey</option><option>United States</option><option>Mexico</option><option>Japan</option><option>China</option><option>Panama</option><option>Other</option></select>
+            </div>
+            <div style="grid-column:1/-1;display:flex;align-items:center;gap:9px;margin-top:2px">
+              <input type="checkbox" id="c_pro" onchange="document.getElementById('proFields').style.display=this.checked?'grid':'none'" style="width:auto;accent-color:var(--gold)">
+              <label for="c_pro" class="label" style="margin:0;cursor:pointer" data-i18n="f_pro">I'm booking as a business</label>
+            </div>
+            <div id="proFields" style="grid-column:1/-1;display:none;grid-template-columns:1fr 1fr;gap:16px">
+              <div><label class="label" data-i18n="f_siren">SIREN number</label><input id="c_siren" placeholder="934 505 702"></div>
+              <div><label class="label" data-i18n="f_vat">Intra-EU VAT number</label><input id="c_vat" placeholder="FR00 934505702"></div>
+            </div>
+          </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeCustomerModal()" data-i18n="pv_close">Close</button>
+      <button class="btn btn-gold" onclick="customerModalConfirm()" data-i18n="btn_sendq">Send my request</button>
+    </div>
+  </div>
+</div>
+
 <!-- ================= PREVIEW MODAL ================= -->
 <div class="modal-bg" id="modal">
   <div class="modal">
@@ -1153,7 +1153,7 @@ const I18N={
   hc_title:"Pourquoi nous choisir",hc_sub:"Un standard de service plébiscité par dirigeants et familles.",hc1:"Garantie de ponctualité",hc2:"Chauffeurs vérifiés",hc3:"Trajets réalisés",hc4:"Note moyenne client",hc5:"Programme fidélité",
   ss1:"Disponibilité & dispatch",ss2:"Clients entreprises",ss3:"Temps d'attente moyen",ss4:"Couverture nationale",
   bk_eyebrow:"Devis Instantané",bk_title:"Composez Votre Réservation",bk_lead:"Renseignez vos informations, ajoutez autant de services que nécessaire et recevez un devis précis à prix fixe, en temps réel.",
-  bk_c_title:"Informations Client",f_name:"Nom complet",f_company:"Société (optionnel)",f_email:"Email",f_phone:"Téléphone",f_addr:"Rue / Lieu",f_num:"N° de rue",f_city:"Ville",f_zip:"Code postal",f_country:"Pays",
+  bk_c_title:"Informations Client",cust_modal_hint:"Renseignez vos coordonnées pour recevoir votre devis.",f_name:"Nom complet",f_company:"Société (optionnel)",f_email:"Email",f_phone:"Téléphone",f_addr:"Rue / Lieu",f_num:"N° de rue",f_city:"Ville",f_zip:"Code postal",f_country:"Pays",
   f_pro:"Je réserve en tant que professionnel",f_siren:"N° SIREN",f_vat:"TVA intracommunautaire",
   bk_s_title:"Services de Transport",btn_add:"+ Ajouter un service",bk_n_title:"Notes & Demandes Spéciales",f_flight:"N° de vol / train",f_lug:"Nom sur la tablette",f_suitcase:"Valises (soute)",f_cabin:"Bagages cabine",f_special:"Exigences supplémentaires",
   pickup:"Adresse de prise en charge",dropoff:"Adresse de destination",addr_ph:"Saisir une adresse…",on_quote:"Sur devis",custom_note:"Transfert sur-mesure : nous vous recontactons dans la journée pour établir votre devis personnalisé.",
@@ -1182,7 +1182,7 @@ const I18N={
   hc_title:"Why ride with us",hc_sub:"A standard of service trusted by executives and families alike.",hc1:"On-time guarantee",hc2:"Vetted chauffeurs",hc3:"Journeys completed",hc4:"Average client rating",hc5:"Loyalty programme",
   ss1:"Availability & dispatch",ss2:"Corporate clients",ss3:"Average wait time",ss4:"Nationwide coverage",
   bk_eyebrow:"Instant Quotation",bk_title:"Build Your Reservation",bk_lead:"Enter your details, add as many services as you need, and receive a precise, fixed-price quote in real time.",
-  bk_c_title:"Customer Information",f_name:"Full name",f_company:"Company (optional)",f_email:"Email",f_phone:"Phone",f_addr:"Street / Place",f_num:"Street no.",f_city:"City",f_zip:"Postal code",f_country:"Country",
+  bk_c_title:"Customer Information",cust_modal_hint:"Enter your details to receive your quote.",f_name:"Full name",f_company:"Company (optional)",f_email:"Email",f_phone:"Phone",f_addr:"Street / Place",f_num:"Street no.",f_city:"City",f_zip:"Postal code",f_country:"Country",
   f_pro:"I'm booking as a business",f_siren:"SIREN number",f_vat:"Intra-EU VAT number",
   bk_s_title:"Transportation Services",btn_add:"+ Add Service",bk_n_title:"Notes & Special Requests",f_flight:"Flight / train number",f_lug:"Name on the pickup sign",f_suitcase:"Suitcases (hold)",f_cabin:"Cabin bags",f_special:"Additional requirements",
   pickup:"Pick-up address",dropoff:"Drop-off address",addr_ph:"Enter an address…",on_quote:"On quote",custom_note:"Custom transfer: we will contact you during the day to prepare your personalised quote.",
@@ -1799,13 +1799,16 @@ function lineForPack(p,i){
     : `${PL(v.name)}${sl?` · ${sl}`:""} · ${p.pax} pax${sup?` · +${eur(sup)}/pax`:""}`;
   return {label:`${t("pack_word")} #${i+1} — ${PL(pt.r)}`,detail,route,dt:fmtRDV(p.date),req:cust?(p.req||""):"",price:packPrice(p),ht:htv,vat:cust?null:10,custom:cust};
 }
+function svcAddrReady(s){const st=SERVICES.find(x=>x.id===s.type);const pu=(s.pickup||"").trim();if(st&&st.perH) return !!pu; return !!pu && !!((s.dropoff||"").trim());}
+function packAddrReady(p){return !!((p.pickup||"").trim());}
+function bookingHasPrice(){return services.some(s=>!isCustom(s)&&svcAddrReady(s))||packs.some(p=>!isPackCustom(p)&&packAddrReady(p));}
 function computeTotals(){       // prices are TTC; VAT is included, split by rate
   let ttc=0, v10=0, v20=0;
-  services.forEach(s=>{const p=svcPrice(s);ttc+=p;const inc=p-p/(1+vatRate(s));
+  services.forEach(s=>{const cust=isCustom(s),ready=svcAddrReady(s);const p=(cust||!ready)?0:svcPrice(s);ttc+=p;const inc=p-p/(1+vatRate(s));
     if(vatRate(s)===0.20) v20+=inc; else v10+=inc;
-    const el=document.getElementById("svcprice-"+s.id);if(el)el.textContent=isCustom(s)?t("on_quote"):eur(p);});
-  packs.forEach(p=>{const pr=packPrice(p);ttc+=pr;v10+=pr-pr/1.10;
-    const el=document.getElementById("packprice-"+p.id);if(el)el.textContent=isPackCustom(p)?t("on_quote"):eur(pr);});
+    const el=document.getElementById("svcprice-"+s.id);if(el)el.textContent=cust?t("on_quote"):(ready?eur(svcPrice(s)):"—");});
+  packs.forEach(p=>{const pcust=isPackCustom(p),pready=packAddrReady(p);const pr=(pcust||!pready)?0:packPrice(p);ttc+=pr;v10+=pr-pr/1.10;
+    const el=document.getElementById("packprice-"+p.id);if(el)el.textContent=pcust?t("on_quote"):(pready?eur(packPrice(p)):"—");});
   ttc=Math.round(ttc*100)/100;
   let disc=Math.min(currentDiscount()+loyaltyDiscount(), ttc);
   const factor= ttc>0?(ttc-disc)/ttc:0;
@@ -1822,10 +1825,10 @@ function sortedLines(){         // quote lines (transfers cheapest first, then p
 function recalc(){
   const {ttc,disc,tax,total}=computeTotals();
   document.getElementById("s_count").textContent=services.length+packs.length;
-  document.getElementById("s_subtotal").textContent=eur(ttc);
-  document.getElementById("s_disc").textContent="−"+eur(disc);
-  document.getElementById("s_tax").textContent=eur(tax);
-  document.getElementById("s_total").textContent=eur(total);
+  document.getElementById("s_subtotal").textContent=bookingHasPrice()?eur(ttc):"—";
+  document.getElementById("s_disc").textContent=bookingHasPrice()?("−"+eur(disc)):"—";
+  document.getElementById("s_tax").textContent=bookingHasPrice()?eur(tax):"—";
+  document.getElementById("s_total").textContent=bookingHasPrice()?eur(total):"—";
   return {ttc,disc,tax,total};
 }
 
@@ -1958,14 +1961,20 @@ function resetBookingForm(){
   _guestAck=false;
   ["n_flight","n_lug","n_special"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});   // vider Notes & demandes spéciales
   try{localStorage.removeItem(FORMKEY);}catch(e){}
+  if(document.getElementById("services")) addService();   // rouvre une prestation vierge
   recalc();
 }
+let _pendingSendBtn=null;
+function clientComplete(){const g=id=>{const e=document.getElementById(id);return e?e.value.trim():"";};return !!(g("c_name")&&g("c_email")&&g("c_phone"));}
+function openCustomerModal(){const m=document.getElementById("custModal");if(m){m.classList.add("open");setTimeout(()=>{const n=document.getElementById("c_name");if(n)n.focus();},60);}}
+function closeCustomerModal(){const m=document.getElementById("custModal");if(m)m.classList.remove("open");}
+function customerModalConfirm(){if(!validateClient())return;closeCustomerModal();sendQuoteRequest(_pendingSendBtn);}
 async function sendQuoteRequest(btn){
   if(!services.length&&!packs.length){toast(t("noServices"));return;}
   if(!packIdfOk())return;
   if(!svcLuggageOk())return;
   if(!validateServices())return;
-  if(!validateClient())return;
+  if(!clientComplete()){ _pendingSendBtn=btn; openCustomerModal(); return; }
   const cv=id=>document.getElementById(id).value.trim();
   const email=cv("c_email");
   if(!IS_LOGGED && !_guestAck){ showLoginReminder(btn); return; }
@@ -2192,7 +2201,7 @@ function addrSearch(q){
   const box=document.getElementById("addrSug");
   q=(q||"").trim();const ql=q.toLowerCase();
   if(ql.length<2){box.classList.remove("open");box.innerHTML="";return;}
-  const local=POIS.filter(p=>(p.kw+" "+p.l.toLowerCase()).includes(ql)).slice(0,4);
+  const local=POIS.filter(p=>{const _t=ql.split(/\s+/).filter(Boolean);const hay=(p.kw+" "+p.l.toLowerCase());return _t.every(k=>hay.includes(k));}).slice(0,6);
   const renderLocal=local.map(p=>{const zc=_zipCity(p.l);return custBtn({l:p.l,s:p.l.split(",")[0],c:zc.c,z:zc.z,country:"France"},p.ic);}).join("");
   if(renderLocal){box.innerHTML=renderLocal;box.classList.add("open");}
   clearTimeout(addrTimer);
@@ -2226,11 +2235,26 @@ document.addEventListener("click",e=>{if(!e.target.closest("#c_addr")&&!e.target
 
 /* ---------------- PER-SERVICE PICKUP / DROP-OFF AUTOCOMPLETE (addresses + POIs) ---------------- */
 const POIS=[
-  {l:"Aéroport Paris-Charles de Gaulle (CDG), 95700 Roissy-en-France", kw:"cdg charles de gaulle roissy aeroport airport terminal", ic:"plane"},
-  {l:"Aéroport Paris-Orly (ORY), 94390 Orly", kw:"orly ory aeroport airport terminal", ic:"plane"},
+  {l:"Aéroport Paris-Charles de Gaulle (CDG), 95700 Roissy-en-France", kw:"cdg charles de gaulle roissy aeroport airport", ic:"plane"},
+  {l:"CDG Terminal 1 (T1), 95700 Roissy-en-France", kw:"cdg t1 terminal 1 cdg 1 roissy charles de gaulle aeroport airport hall", ic:"plane"},
+  {l:"CDG Terminal 2A (T2A), 95700 Roissy-en-France", kw:"cdg t2a terminal 2a cdg 2a roissy charles de gaulle aeroport airport", ic:"plane"},
+  {l:"CDG Terminal 2B (T2B), 95700 Roissy-en-France", kw:"cdg t2b terminal 2b cdg 2b roissy charles de gaulle aeroport airport", ic:"plane"},
+  {l:"CDG Terminal 2C (T2C), 95700 Roissy-en-France", kw:"cdg t2c terminal 2c cdg 2c roissy charles de gaulle aeroport airport", ic:"plane"},
+  {l:"CDG Terminal 2D (T2D), 95700 Roissy-en-France", kw:"cdg t2d terminal 2d cdg 2d roissy charles de gaulle aeroport airport", ic:"plane"},
+  {l:"CDG Terminal 2E (T2E), 95700 Roissy-en-France", kw:"cdg t2e terminal 2e cdg 2e roissy charles de gaulle aeroport airport hall k l m", ic:"plane"},
+  {l:"CDG Terminal 2F (T2F), 95700 Roissy-en-France", kw:"cdg t2f terminal 2f cdg 2f roissy charles de gaulle aeroport airport", ic:"plane"},
+  {l:"CDG Terminal 2G (T2G), 95700 Roissy-en-France", kw:"cdg t2g terminal 2g cdg 2g roissy charles de gaulle aeroport airport navette", ic:"plane"},
+  {l:"CDG Terminal 3 (T3), 95700 Roissy-en-France", kw:"cdg t3 terminal 3 cdg 3 roissy charles de gaulle aeroport airport", ic:"plane"},
+  {l:"Gare Aéroport CDG 2 – TGV / RER, 95700 Roissy-en-France", kw:"cdg gare tgv rer aeroport 2 roissy charles de gaulle train", ic:"train"},
+  {l:"Aéroport Paris-Orly (ORY), 94390 Orly", kw:"orly ory aeroport airport", ic:"plane"},
+  {l:"Orly 1 (ex-Orly Ouest), 94390 Orly", kw:"orly 1 orly ouest ory terminal 1 aeroport airport", ic:"plane"},
+  {l:"Orly 2 (ex-Orly Ouest), 94390 Orly", kw:"orly 2 orly ouest ory terminal 2 aeroport airport", ic:"plane"},
+  {l:"Orly 3 (ex-Orly Sud), 94390 Orly", kw:"orly 3 orly sud ory terminal 3 aeroport airport", ic:"plane"},
+  {l:"Orly 4 (ex-Orly Sud), 94390 Orly", kw:"orly 4 orly sud ory terminal 4 aeroport airport", ic:"plane"},
   {l:"Aéroport Paris-Beauvais (BVA), 60000 Tillé", kw:"beauvais bva tille aeroport airport", ic:"plane"},
-  {l:"Aéroport du Bourget (LBG), 93350 Le Bourget", kw:"bourget lbg aeroport airport affaires", ic:"plane"},
+  {l:"Aéroport du Bourget (LBG), 93350 Le Bourget", kw:"bourget lbg aeroport airport affaires aviation", ic:"plane"},
   {l:"Disneyland Paris, 77700 Marne-la-Vallée", kw:"disney disneyland marne la vallee chessy parc", ic:"star"},
+  {l:"Gare de Marne-la-Vallée – Chessy (TGV), 77700 Chessy", kw:"marne la vallee chessy tgv gare disney train rer", ic:"train"},
   {l:"Parc Astérix, 60128 Plailly", kw:"asterix parc plailly", ic:"star"},
   {l:"Gare du Nord, 75010 Paris", kw:"gare du nord eurostar thalys train", ic:"train"},
   {l:"Gare de Lyon, 75012 Paris", kw:"gare de lyon tgv train", ic:"train"},
@@ -2238,8 +2262,11 @@ const POIS=[
   {l:"Gare de l'Est, 75010 Paris", kw:"gare de l est train", ic:"train"},
   {l:"Gare Saint-Lazare, 75008 Paris", kw:"gare saint lazare train", ic:"train"},
   {l:"Gare d'Austerlitz, 75013 Paris", kw:"gare austerlitz train", ic:"train"},
+  {l:"Gare de Bercy, 75012 Paris", kw:"gare bercy train", ic:"train"},
   {l:"Château de Versailles, 78000 Versailles", kw:"versailles chateau", ic:"star"},
   {l:"Palais des Congrès — Porte Maillot, 75017 Paris", kw:"palais des congres porte maillot", ic:"pin"},
+  {l:"Paris Expo — Porte de Versailles, 75015 Paris", kw:"porte de versailles paris expo salon", ic:"pin"},
+  {l:"Parc des Expositions Villepinte, 93420 Villepinte", kw:"villepinte parc expositions paris nord salon", ic:"pin"},
   {l:"Tour Eiffel, 75007 Paris", kw:"tour eiffel", ic:"pin"},
   {l:"Stade de France, 93200 Saint-Denis", kw:"stade de france saint denis", ic:"pin"},
 ];
@@ -2299,7 +2326,7 @@ function svcAddr(id,which,q,kind){
   const ql=q.toLowerCase();
   if(ql.length<2){box.classList.remove("open");box.innerHTML="";return;}
   // instant curated POI matches (airports, stations, parks…)
-  const local=POIS.filter(p=>(p.kw+" "+p.l.toLowerCase()).includes(ql)).slice(0,4);
+  const local=POIS.filter(p=>{const _t=ql.split(/\s+/).filter(Boolean);const hay=(p.kw+" "+p.l.toLowerCase());return _t.every(k=>hay.includes(k));}).slice(0,6);
   const renderLocal=local.map(p=>svcBtn(id,which,p.l,p.ic,kind)).join("");
   if(renderLocal){box.innerHTML=renderLocal;box.classList.add("open");}
   clearTimeout(svcAddrTimer[which+id]);
@@ -2385,8 +2412,8 @@ function loadForm(){
   recalc();saveForm();return true;   // refresh timestamp so the window slides while browsing
 }
 let _saveT;
-document.addEventListener("input",e=>{if(e.target.closest("#booking")){clearTimeout(_saveT);_saveT=setTimeout(saveForm,400);}});
-document.addEventListener("change",e=>{if(e.target.closest("#booking"))saveForm();});
+document.addEventListener("input",e=>{if(e.target.closest("#booking")||e.target.closest("#custModal")){clearTimeout(_saveT);_saveT=setTimeout(saveForm,400);}});
+document.addEventListener("change",e=>{if(e.target.closest("#booking")||e.target.closest("#custModal"))saveForm();});
 window.addEventListener("beforeunload",saveForm);
 window.addEventListener("pagehide",saveForm);
 
@@ -2406,6 +2433,7 @@ if("scrollRestoration" in history) history.scrollRestoration="manual";   // open
 })();
 renderFleet();renderTrust();renderTesti();renderFares();
 loadForm();   // restore an in-progress booking only if it's recent (kept while visiting pack pages); a fresh visit starts empty
+if(!services.length) addService();   // ouvre automatiquement une premiere prestation
 openNotesIfFilled();   // déplier la section Notes si le client l'avait remplie
 // E-mail assemblé en JS (jamais en clair dans le HTML : protection anti-robots/spam)
 var SITE_EMAIL=["ParisVTCdriver","gmail.com"].join(String.fromCharCode(64));
@@ -2415,6 +2443,7 @@ setLang(LANG);
 setupReveal();onScroll();
 window.addEventListener("load",()=>{if(!location.hash) window.scrollTo(0,0);});
 document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closePreview();});
+document.getElementById("custModal").addEventListener("click",e=>{if(e.target.id==="custModal")closeCustomerModal();});
 /* Fidélité : si un client est connecté, on applique sa réduction automatiquement */
 (async()=>{ try{ if(typeof sb!=="undefined"&&sb){
   const {data:{session}}=await sb.auth.getSession();
