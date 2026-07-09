@@ -1774,7 +1774,11 @@ function refreshServiceLabels(id){
   const el=document.getElementById("svc-"+id);if(!el)return;
   el.querySelectorAll("[data-l]").forEach(x=>x.textContent=t(x.dataset.l));
   el.querySelector(".si-remove").title=t("remove");
-  const tag=el.querySelector("[data-tag]");
+  const s=services.find(x=>x.id===id);
+  ["pickup","dropoff"].forEach(w=>{const inp=el.querySelector("#addr-"+w+"-"+id);if(inp)inp.placeholder=t("addr_ph");});
+  const tsel=el.querySelector("select[onchange*=\"'type'\"]");
+  if(tsel){const cur=tsel.value;tsel.innerHTML=SERVICES.map(x=>`<option value="${x.id}">${PL(x.r)}</option>`).join("");tsel.value=cur;}
+  if(s)rebuildSvcVeh(s);
   renumber();
 }
 function isCustom(s){const st=SERVICES.find(x=>x.id===s.type);return !!(st&&st.custom);}
@@ -1905,7 +1909,13 @@ function updPack(id,k,v){const p=packs.find(x=>x.id===id);if(!p)return;
   recalc();saveForm();}
 function refreshPackLabels(id){const el=document.getElementById("pack-"+id);if(!el)return;
   el.querySelectorAll("[data-l]").forEach(x=>x.textContent=t(x.dataset.l));
-  el.querySelector(".si-remove").title=t("remove");renumberPacks();}
+  el.querySelector(".si-remove").title=t("remove");
+  const p=packs.find(x=>x.id===id);
+  const pin=el.querySelector("#addr-pickup-p"+id);if(pin)pin.placeholder=(LANG==='fr'?'Paris ou Île-de-France':'Paris / Île-de-France');
+  const psel=el.querySelector("select[onchange*=\"'type'\"]");
+  if(psel){const cur=psel.value;psel.innerHTML=PACKTYPES.map(x=>`<option value="${x.id}">${PL(x.r)}</option>`).join("");psel.value=cur;}
+  if(p)rebuildPackVeh(p);
+  renumberPacks();}
 function fmtRDV(d){if(!d)return "";const [dt,tm]=d.split("T");if(!dt)return d;const [y,mo,da]=dt.split("-");const date=(LANG==="fr"?`${da}/${mo}/${y}`:`${y}-${mo}-${da}`);return tm?`${date} · ${tm}`:date;}
 function lineForPack(p,i){
   const pt=PACKTYPES.find(x=>x.id===p.type),v=VEHICLES.find(x=>x.id===p.veh);
