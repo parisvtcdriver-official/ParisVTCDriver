@@ -791,13 +791,16 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
           <div id="services"></div>
         </div>
 
-        <!-- Pack services -->
+        <!-- Pack services (réduit par défaut, déplié au clic) -->
         <div class="panel card-pad" style="margin-top:28px">
-          <div class="block-head" style="justify-content:space-between">
+          <div class="block-head" onclick="togglePacks()" style="cursor:pointer;user-select:none;justify-content:space-between;margin-bottom:0">
             <div style="display:flex;align-items:center;gap:12px"><span class="num">2</span><h3 data-i18n="bk_p_title">Pack Services</h3></div>
-            <button class="btn btn-gold" onclick="addPack()" data-i18n="btn_add_pack">+ Add pack</button>
+            <svg id="packsChev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;margin-left:auto;color:var(--gold-2);transition:transform .25s;flex:none"><path d="M6 9l6 6 6-6"/></svg>
           </div>
-          <div id="packServices"></div>
+          <div id="packsBody" style="display:none;margin-top:20px">
+            <button class="btn btn-gold" onclick="addPack()" data-i18n="btn_add_pack">+ Add pack</button>
+            <div id="packServices" style="margin-top:16px"></div>
+          </div>
         </div>
 
         <!-- Notes -->
@@ -1885,7 +1888,7 @@ function addPack(data){
   q("#addr-pickup-p"+id).value=p.pickup||"";
   const rq=q("#packreq-"+id);if(rq)rq.value=p.req||"";
   const sp=wrap.querySelector("[data-special]");if(sp)sp.style.display=(p.type==="special")?"":"none";
-  rebuildPackVeh(p);syncSeats('pack',p);refreshPackLabels(id);recalc();saveForm();
+  rebuildPackVeh(p);syncSeats('pack',p);refreshPackLabels(id);recalc();saveForm(); togglePacks(true);
 }
 function removePack(id){packs=packs.filter(x=>x.id!==id);document.getElementById("pack-"+id).remove();renumberPacks();recalc();saveForm();}
 function renumberPacks(){document.querySelectorAll("#packServices .service-item [data-ptag]").forEach((el,i)=>el.textContent=`${t("pack_word")} #${i+1}`);}
@@ -1959,6 +1962,11 @@ function toggleNotes(open){
   const b=document.getElementById("notesBody"), c=document.getElementById("notesChev"); if(!b)return;
   const willOpen=(open===undefined)?(b.style.display==="none"):open;
   b.style.display=willOpen?"grid":"none"; if(c)c.style.transform=willOpen?"rotate(180deg)":"";
+}
+function togglePacks(open){
+  const b=document.getElementById("packsBody"), c=document.getElementById("packsChev"); if(!b)return;
+  const willOpen=(open===undefined)?(b.style.display==="none"):open;
+  b.style.display=willOpen?"block":"none"; if(c)c.style.transform=willOpen?"rotate(180deg)":"";
 }
 function openNotesIfFilled(){
   const ids=["n_flight","n_lug","n_suitcase","n_cabin","n_special"];
@@ -2075,17 +2083,17 @@ function resetBookingForm(){
   if(document.getElementById("services")) addService();   // rouvre une prestation vierge
   recalc();
 }
-let _pendingSendBtn=null;
+let _pendingSendBtn=null,_custConfirmed=false;
 function clientComplete(){const g=id=>{const e=document.getElementById(id);return e?e.value.trim():"";};return !!(g("c_name")&&g("c_email")&&g("c_phone"));}
 function openCustomerModal(){const m=document.getElementById("custModal");if(m){m.classList.add("open");setTimeout(()=>{const n=document.getElementById("c_name");if(n)n.focus();},60);}}
 function closeCustomerModal(){const m=document.getElementById("custModal");if(m)m.classList.remove("open");}
-function customerModalConfirm(){if(!validateClient())return;closeCustomerModal();sendQuoteRequest(_pendingSendBtn);}
+function customerModalConfirm(){if(!validateClient())return;_custConfirmed=true;closeCustomerModal();sendQuoteRequest(_pendingSendBtn);}
 async function sendQuoteRequest(btn){
   if(!services.length&&!packs.length){toast(t("noServices"));return;}
   if(!packIdfOk())return;
   if(!svcLuggageOk())return;
   if(!validateServices())return;
-  if(!clientComplete()){ _pendingSendBtn=btn; openCustomerModal(); return; }
+  if(!_custConfirmed){ _pendingSendBtn=btn; openCustomerModal(); return; }
   const cv=id=>document.getElementById(id).value.trim();
   const email=cv("c_email");
   if(!IS_LOGGED && !_guestAck){ showLoginReminder(btn); return; }
@@ -2127,7 +2135,7 @@ async function sendQuoteRequest(btn){
     resetBookingForm();   // on vide les prestations : le récapitulatif est remis à zéro
   }catch(e){
     toast((LANG==="fr"?"Échec : ":"Failed: ")+(e&&e.message?e.message:e));
-  }finally{ if(btn){btn.disabled=false;btn.textContent=old;} }
+  }finally{ if(btn){btn.disabled=false;btn.textContent=old;} _custConfirmed=false; }
 }
 function toast(m){const el=document.getElementById("toast");el.textContent=m;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove("show"),3200);}
 function confirmRes(){if(!services.length&&!packs.length){toast(t("noServices"));return;}toast(t("confirmed"));}
@@ -2545,6 +2553,13 @@ if("scrollRestoration" in history) history.scrollRestoration="manual";   // open
 renderFleet();renderTrust();renderTesti();renderFares();
 loadForm();   // restore an in-progress booking only if it's recent (kept while visiting pack pages); a fresh visit starts empty
 if(!services.length) addService();   // ouvre automatiquement une premiere prestation
+try{var _pk=new URLSearchParams(location.search).get('pack');
+  if(_pk && typeof PACKTYPES!=='undefined' && PACKTYPES.some(function(x){return x.id===_pk;})){
+    addPack({type:_pk});
+    var _h=location.hash; try{history.replaceState(null,'',location.pathname+_h);}catch(e){}
+    setTimeout(function(){var b=document.getElementById('booking');if(b)b.scrollIntoView({behavior:'smooth',block:'start'});},120);
+  }
+}catch(e){}
 openNotesIfFilled();   // déplier la section Notes si le client l'avait remplie
 // E-mail assemblé en JS (jamais en clair dans le HTML : protection anti-robots/spam)
 var SITE_EMAIL=["ParisVTCdriver","gmail.com"].join(String.fromCharCode(64));
