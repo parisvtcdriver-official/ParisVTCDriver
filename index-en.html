@@ -1883,7 +1883,16 @@ function packIdfOk(){
   }
   return true;
 }
+function svcIsEmpty(s){return !s.date && !((s.pickup||"").trim()) && !((s.dropoff||"").trim());}
+function pruneEmptyServices(){
+  const empties=services.filter(svcIsEmpty);
+  if(!empties.length) return;
+  empties.forEach(s=>{const el=document.getElementById("svc-"+s.id);if(el)el.remove();});
+  services=services.filter(s=>!svcIsEmpty(s));
+  renumber();recalc();saveForm();
+}
 function openPreview(){
+  pruneEmptyServices();
   if(!services.length&&!packs.length){toast(t("noServices"));return;}
   if(!packIdfOk())return;
   if(!svcLuggageOk())return;
@@ -1988,6 +1997,7 @@ function openCustomerModal(){const m=document.getElementById("custModal");if(m){
 function closeCustomerModal(){const m=document.getElementById("custModal");if(m)m.classList.remove("open");}
 function customerModalConfirm(){if(!validateClient())return;_custConfirmed=true;closeCustomerModal();sendQuoteRequest(_pendingSendBtn);}
 async function sendQuoteRequest(btn){
+  pruneEmptyServices();
   if(!services.length&&!packs.length){toast(t("noServices"));return;}
   if(!packIdfOk())return;
   if(!svcLuggageOk())return;
@@ -2457,6 +2467,7 @@ if(_pk){
   // Arrivée via un lien « Réserver ce pack » : on ouvre le pack et on replie les Services de transport
   addPack({type:_pk});
   toggleServices(false);
+  pruneEmptyServices();
   var _h=location.hash; try{history.replaceState(null,'',location.pathname+_h);}catch(e){}
   setTimeout(function(){var b=document.getElementById('booking');if(b)b.scrollIntoView({behavior:'smooth',block:'start'});},120);
 }else{
