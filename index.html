@@ -1170,7 +1170,7 @@ const SERVICES=[
   {id:"versailles", r:{fr:"Paris ↔ Château de Versailles",en:"Paris ↔ Palace of Versailles"}, s:{fr:"~40 min",en:"~40 min"}, price:{eco:75,premium:100,van:120}},
   {id:"disney", r:{fr:"Paris ↔ Disneyland Paris",en:"Paris ↔ Disneyland Paris"}, s:{fr:"Marne-la-Vallée · ~50 min",en:"Marne-la-Vallée · ~50 min"}, price:{eco:85,premium:110,van:130}},
   {id:"localcdg", r:{fr:"Trajet local → Aéroport CDG",en:"Local ride → CDG Airport"}, s:{fr:"depuis ≤ 5 km du siège · prix fixe",en:"from ≤ 5 km of base · fixed"}, price:{eco:35,premium:55,van:65}, local:true},
-  {id:"local", r:{fr:"Trajet local · Villepinte & alentours",en:"Local ride · Villepinte area"}, s:{fr:"≤ 20 km du siège · prix automatique",en:"≤ 20 km from base · auto price"}, price:{eco:25,premium:55,van:60}, local:true},
+  {id:"local", r:{fr:"Trajet local · Villepinte & alentours",en:"Local ride · Villepinte area"}, s:{fr:"trajet ≤ 20 km · prix automatique",en:"trip ≤ 20 km · auto price"}, price:{eco:25,premium:55,van:60}, local:true},
   {id:"hourly", r:{fr:"Mise à disposition",en:"Hourly chauffeur"}, s:{fr:"par heure · 2h min.",en:"per hour · 2h min."}, price:{eco:50,premium:60,van:75}, perH:true},
   {id:"custom", r:{fr:"Transfert sur-mesure",en:"Custom transfer"}, s:{fr:"sur devis",en:"on quote"}, price:{eco:90,premium:120,van:160}, custom:true},
 ];
@@ -1789,7 +1789,7 @@ function svcPrice(s){            // returns the all-inclusive TTC price (0 for c
   const v=VEHICLES.find(x=>x.id===s.veh),st=SERVICES.find(x=>x.id===s.type);
   if(st&&st.custom) return 0;
   if(st&&st.id==='localcdg'){return Math.round(((st.price[v.id]||35)+seatFee(s))*100)/100;}
-  if(st&&st.local){var _b=localBand(s.distKm);if(_b==null)return 0;var _lb=(LOCAL_FARE[v.id]||LOCAL_FARE.eco)[_b];if(s.pax>v.seats)_lb+=(s.pax-v.seats)*15;return Math.round((_lb+seatFee(s))*100)/100;}
+  if(st&&st.local){var _b=localBand(s.tripKm);if(_b==null)return 0;var _lb=(LOCAL_FARE[v.id]||LOCAL_FARE.eco)[_b];if(s.pax>v.seats)_lb+=(s.pax-v.seats)*15;return Math.round((_lb+seatFee(s))*100)/100;}
   let base= st.price[v.id]||0;
   if(st.perH) base*=Math.max(2,s.hours||2); // 2h minimum
   if(s.pax>v.seats) base+= (s.pax-v.seats)*15; // overflow surcharge
@@ -1846,13 +1846,14 @@ try{var _sc=JSON.parse(localStorage.getItem('pvtc_siege')||'null'); if(_sc&&_sc.
 function _hav(aLat,aLng,bLat,bLng){var R=6371,dLat=(bLat-aLat)*Math.PI/180,dLng=(bLng-aLng)*Math.PI/180,s1=Math.sin(dLat/2),s2=Math.sin(dLng/2),a=s1*s1+Math.cos(aLat*Math.PI/180)*Math.cos(bLat*Math.PI/180)*s2*s2;return 2*R*Math.asin(Math.sqrt(a));}
 const LOCAL_FARE={eco:[25,30,39],premium:[55,60,70],van:[60,70,80]};
 function localBand(km){if(km==null)return null;if(km<=9)return 0;if(km<=13)return 1;if(km<=20)return 2;return null;}
-function localApplies(s){if(!s||s.type==='hourly')return false;var d=(s.dropoff||'').trim();if(!d)return false;if(svcZone(d)!=='other')return false;return localBand(s.distKm)!=null;}
-function localCdgApplies(s){if(!s||s.type==='hourly')return false;if(svcZone((s.dropoff||''))!=='cdg')return false;return (s.pickKm!=null&&s.pickKm<=5);}
-function setPickCoords(id,lat,lng){var s=services.find(function(x){return x.id===id;});if(!s)return;s.pickLat=lat;s.pickLng=lng;s.pickKm=_hav(SIEGE.lat,SIEGE.lng,lat,lng);autoType(id);recalc();try{saveForm();}catch(e){}roadDistancePick(id,lat,lng);}
+function localApplies(s){if(!s||s.type==='hourly')return false;var d=(s.dropoff||'').trim();if(!d)return false;if(svcZone(d)!=='other')return false;return localBand(s.tripKm)!=null;}
+function localCdgApplies(s){if(!s||s.type==='hourly')return false;if(svcZone((s.dropoff||''))!=='cdg')return false;if(s.pickLat==null)return false;return _hav(SIEGE.lat,SIEGE.lng,s.pickLat,s.pickLng)<=5;}
+function setPickCoords(id,lat,lng){var s=services.find(function(x){return x.id===id;});if(!s)return;s.pickLat=lat;s.pickLng=lng;computeTrip(id);}
 function applyRoadPick(id,km){var s=services.find(function(x){return x.id===id;});if(!s)return;s.pickKm=km;autoType(id);recalc();try{saveForm();}catch(e){}}
 function roadDistancePick(id,lat,lng){if(lat==null)return;var key=lat.toFixed(4)+","+lng.toFixed(4)+"@"+SIEGE.lat.toFixed(4)+","+SIEGE.lng.toFixed(4);if(_roadCache[key]!=null){applyRoadPick(id,_roadCache[key]);return;}roadKm(SIEGE.lng,SIEGE.lat,lng,lat).then(function(km){if(km!=null){_roadCache[key]=km;applyRoadPick(id,km);}});}
 function geocodePick(id,label){label=(label||'').trim();if(label.length<3)return;if(_geoCache[label]){setPickCoords(id,_geoCache[label][0],_geoCache[label][1]);return;}fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(label)+'&limit=1&lang='+(LANG==='fr'?'fr':'en')+'&lat='+SIEGE.lat+'&lon='+SIEGE.lng).then(function(r){return r.json();}).then(function(d){var g=d&&d.features&&d.features[0]&&d.features[0].geometry&&d.features[0].geometry.coordinates;if(g){_geoCache[label]=[g[1],g[0]];setPickCoords(id,g[1],g[0]);}}).catch(function(){});}
-function setDropCoords(id,lat,lng){var s=services.find(function(x){return x.id===id;});if(!s)return;s.dropLat=lat;s.dropLng=lng;s.distKm=_hav(SIEGE.lat,SIEGE.lng,lat,lng);s.roadKm=null;autoType(id);recalc();try{saveForm();}catch(e){}roadDistance(id,lat,lng);}
+function computeTrip(id){var s=services.find(function(x){return x.id===id;});if(!s)return;if(s.pickLat==null||s.dropLat==null){autoType(id);recalc();return;}s.tripKm=_hav(s.pickLat,s.pickLng,s.dropLat,s.dropLng);autoType(id);recalc();try{saveForm();}catch(e){}var key=s.pickLat.toFixed(4)+","+s.pickLng.toFixed(4)+">"+s.dropLat.toFixed(4)+","+s.dropLng.toFixed(4);if(_roadCache[key]!=null){s.tripKm=_roadCache[key];autoType(id);recalc();return;}roadKm(s.pickLng,s.pickLat,s.dropLng,s.dropLat).then(function(km){if(km!=null){_roadCache[key]=km;var s2=services.find(function(x){return x.id===id;});if(s2){s2.tripKm=km;autoType(id);recalc();try{saveForm();}catch(e){}}}});}
+function setDropCoords(id,lat,lng){var s=services.find(function(x){return x.id===id;});if(!s)return;s.dropLat=lat;s.dropLng=lng;computeTrip(id);}
 function applyRoad(id,km){var s=services.find(function(x){return x.id===id;});if(!s)return;s.distKm=km;s.roadKm=km;autoType(id);recalc();try{saveForm();}catch(e){}}
 function roadKm(fromLng,fromLat,toLng,toLat){return new Promise(function(res){function osrm(){fetch("https://router.project-osrm.org/route/v1/driving/"+fromLng+","+fromLat+";"+toLng+","+toLat+"?overview=false&alternatives=false&steps=false").then(function(r){return r.json();}).then(function(d){res(d&&d.code==="Ok"&&d.routes&&d.routes[0]?d.routes[0].distance/1000:null);}).catch(function(){res(null);});}if(typeof sb!=="undefined"&&sb&&sb.functions){sb.functions.invoke("route",{body:{from:[fromLng,fromLat],to:[toLng,toLat]}}).then(function(r){var km=r&&r.data&&r.data.km;if(km!=null)res(km);else osrm();}).catch(function(){osrm();});}else osrm();});}
 function roadDistance(id,lat,lng){if(lat==null)return;var key=lat.toFixed(4)+","+lng.toFixed(4)+"@"+SIEGE.lat.toFixed(4)+","+SIEGE.lng.toFixed(4);if(_roadCache[key]!=null){applyRoad(id,_roadCache[key]);return;}roadKm(SIEGE.lng,SIEGE.lat,lng,lat).then(function(km){if(km!=null){_roadCache[key]=km;applyRoad(id,km);}});}
@@ -2563,7 +2564,7 @@ let _loadingForm=false;
 function collectForm(){
   const f={};SIMPLE_FIELDS.forEach(id=>{const el=document.getElementById(id);if(el)f[id]=el.value;});
   f.pro=document.getElementById("c_pro").checked;
-  f.services=services.map(s=>({type:s.type,veh:s.veh,baby:s.baby,boost:s.boost,pax:s.pax,hours:s.hours,date:s.date,pickup:s.pickup,dropoff:s.dropoff,suitcase:s.suitcase,cabin:s.cabin,dropLat:s.dropLat,dropLng:s.dropLng,distKm:s.distKm,pickLat:s.pickLat,pickLng:s.pickLng,pickKm:s.pickKm}));
+  f.services=services.map(s=>({type:s.type,veh:s.veh,baby:s.baby,boost:s.boost,pax:s.pax,hours:s.hours,date:s.date,pickup:s.pickup,dropoff:s.dropoff,suitcase:s.suitcase,cabin:s.cabin,dropLat:s.dropLat,dropLng:s.dropLng,distKm:s.distKm,pickLat:s.pickLat,pickLng:s.pickLng,pickKm:s.pickKm,tripKm:s.tripKm}));
   f.packs=packs.map(p=>({type:p.type,veh:p.veh,baby:p.baby,boost:p.boost,pax:p.pax,date:p.date,pickup:p.pickup,req:p.req}));
   f.appliedCode=appliedCode;f.lang=LANG;f._ts=Date.now();return f;
 }
