@@ -917,6 +917,7 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
         <a href="guide-parcs-disney-monde-en.html">Guide: Disney parks worldwide</a>
         <a href="hourly-chauffeur.html">Hourly &amp; VIP Chauffeur</a>
         <a href="disneyland-paris-transfer.html" data-i18n="srv2">Disneyland Paris</a>
+        <a href="chauffeur-le-havre-en.html">Le Havre &amp; the coast</a>
         <a href="partenaires.html" data-i18n="srv5">Corporate Accounts</a>
       </div>
       <div>
@@ -1749,7 +1750,7 @@ function _hav(aLat,aLng,bLat,bLng){var R=6371,dLat=(bLat-aLat)*Math.PI/180,dLng=
 const LOCAL_FARE={eco:[25,30,39],premium:[55,60,70],van:[60,70,80]};
 function localBand(km){if(km==null)return null;if(km<=9)return 0;if(km<=13)return 1;if(km<=20)return 2;return null;}
 function localApplies(s){if(!s||s.type==='hourly')return false;var d=(s.dropoff||'').trim();if(!d)return false;if(svcZone(d)!=='other')return false;return localBand(s.tripKm)!=null;}
-function isSeaside(addr){var x=(addr||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');if(/\b(76600|14800|14600|76790|76400|76460|76200|76470|80550|62520)\b/.test(x))return true;return /(le havre|deauville|honfleur|etretat|fecamp|saint[- ]valery[- ]en[- ]caux|dieppe|le treport|le crotoy|le touquet)/.test(x);}
+function isSeaside(addr){var x=(addr||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');if(/\b(76600|14800|14600|76790|76400|76460|76200|76470|80550|62520|14360|14390)\b/.test(x))return true;return /(le havre|deauville|trouville|cabourg|honfleur|etretat|fecamp|saint[- ]valery[- ]en[- ]caux|dieppe|le treport|le crotoy|le touquet)/.test(x);}
 function seasideApplies(s){if(!s||s.type==='hourly')return false;return isSeaside(s.dropoff||'')||isSeaside(s.pickup||'');}
 function localCdgApplies(s){if(!s||s.type==='hourly')return false;if(svcZone((s.dropoff||''))!=='cdg')return false;if(s.pickLat==null)return false;return _hav(SIEGE.lat,SIEGE.lng,s.pickLat,s.pickLng)<=5;}
 function setPickCoords(id,lat,lng){var s=services.find(function(x){return x.id===id;});if(!s)return;s.pickLat=lat;s.pickLng=lng;computeTrip(id);}
