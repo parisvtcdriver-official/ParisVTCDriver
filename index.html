@@ -1169,6 +1169,7 @@ const SERVICES=[
   {id:"beauvais", r:{fr:"Paris ↔ Aéroport Beauvais",en:"Paris ↔ Beauvais Airport"}, s:{fr:"~1h15",en:"~1h15"}, price:{eco:150,premium:190,van:250}},
   {id:"versailles", r:{fr:"Paris ↔ Château de Versailles",en:"Paris ↔ Palace of Versailles"}, s:{fr:"~40 min",en:"~40 min"}, price:{eco:75,premium:100,van:120}},
   {id:"disney", r:{fr:"Paris ↔ Disneyland Paris",en:"Paris ↔ Disneyland Paris"}, s:{fr:"Marne-la-Vallée · ~50 min",en:"Marne-la-Vallée · ~50 min"}, price:{eco:85,premium:110,van:130}},
+  {id:"seaside", r:{fr:"Bord de mer · Normandie & Côte d'Opale",en:"Seaside · Normandy & Opal Coast"}, s:{fr:"prix fixe (aller)",en:"fixed price (one-way)"}, price:{eco:350,premium:550,van:750}, hideFare:true},
   {id:"localcdg", r:{fr:"Trajet local → Aéroport CDG",en:"Local ride → CDG Airport"}, s:{fr:"depuis ≤ 5 km du siège · prix fixe",en:"from ≤ 5 km of base · fixed"}, price:{eco:35,premium:55,van:65}, local:true},
   {id:"local", r:{fr:"Trajet local · Villepinte & alentours",en:"Local ride · Villepinte area"}, s:{fr:"trajet ≤ 20 km · prix automatique",en:"trip ≤ 20 km · auto price"}, price:{eco:25,premium:55,van:60}, local:true},
   {id:"hourly", r:{fr:"Mise à disposition",en:"Hourly chauffeur"}, s:{fr:"par heure · 2h min.",en:"per hour · 2h min."}, price:{eco:50,premium:60,van:75}, perH:true},
@@ -1474,7 +1475,7 @@ function renderFares(){
   const tb=document.getElementById("faresTable");if(!tb)return;
   const head=`<thead><tr><th data-h>${LANG==="fr"?"Trajet":"Route"}</th>`+
     VEHICLES.map(v=>`<th class="veh">${PL(v.name)}<small>${PL(v.desc)}</small></th>`).join("")+`</tr></thead>`;
-  const rows=SERVICES.filter(rt=>!rt.custom && !rt.local).map(rt=>`<tr><td class="route">${PL(rt.r)}<small>${PL(rt.s)}</small></td>`+
+  const rows=SERVICES.filter(rt=>!rt.custom && rt.id!=='localcdg').slice().sort((a,b)=>(a.price.eco||0)-(b.price.eco||0)).map(rt=>`<tr><td class="route">${PL(rt.r)}<small>${PL(rt.s)}</small></td>`+
     VEHICLES.map(v=>`<td class="fare${v.eco?' eco':''}">${LANG==="fr"?"dès ":"from "}${eur(rt.price[v.id])}${rt.perH?"/h":""}</td>`).join("")+`</tr>`).join("");
   tb.innerHTML=head+`<tbody>${rows}</tbody>`;
 }
@@ -1788,6 +1789,7 @@ function isPackCustom(p){const pt=PACKTYPES.find(x=>x.id===p.type);return !!(pt&
 function svcPrice(s){            // returns the all-inclusive TTC price (0 for custom = on quote)
   const v=VEHICLES.find(x=>x.id===s.veh),st=SERVICES.find(x=>x.id===s.type);
   if(st&&st.custom) return 0;
+  if(st&&st.id==='seaside'){return Math.round(((st.price[v.id]||350)+seatFee(s))*100)/100;}
   if(st&&st.id==='localcdg'){return Math.round(((st.price[v.id]||35)+seatFee(s))*100)/100;}
   if(st&&st.local){var _b=localBand(s.tripKm);if(_b==null)return 0;var _lb=(LOCAL_FARE[v.id]||LOCAL_FARE.eco)[_b];if(s.pax>v.seats)_lb+=(s.pax-v.seats)*15;return Math.round((_lb+seatFee(s))*100)/100;}
   let base= st.price[v.id]||0;
@@ -1847,6 +1849,8 @@ function _hav(aLat,aLng,bLat,bLng){var R=6371,dLat=(bLat-aLat)*Math.PI/180,dLng=
 const LOCAL_FARE={eco:[25,30,39],premium:[55,60,70],van:[60,70,80]};
 function localBand(km){if(km==null)return null;if(km<=9)return 0;if(km<=13)return 1;if(km<=20)return 2;return null;}
 function localApplies(s){if(!s||s.type==='hourly')return false;var d=(s.dropoff||'').trim();if(!d)return false;if(svcZone(d)!=='other')return false;return localBand(s.tripKm)!=null;}
+function isSeaside(addr){var x=(addr||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');if(/\b(76600|14800|14600|76790|76400|76460|76200|76470|80550|62520)\b/.test(x))return true;return /(le havre|deauville|honfleur|etretat|fecamp|saint[- ]valery[- ]en[- ]caux|dieppe|le treport|le crotoy|le touquet)/.test(x);}
+function seasideApplies(s){if(!s||s.type==='hourly')return false;return isSeaside(s.dropoff||'')||isSeaside(s.pickup||'');}
 function localCdgApplies(s){if(!s||s.type==='hourly')return false;if(svcZone((s.dropoff||''))!=='cdg')return false;if(s.pickLat==null)return false;return _hav(SIEGE.lat,SIEGE.lng,s.pickLat,s.pickLng)<=5;}
 function setPickCoords(id,lat,lng){var s=services.find(function(x){return x.id===id;});if(!s)return;s.pickLat=lat;s.pickLng=lng;computeTrip(id);}
 function applyRoadPick(id,km){var s=services.find(function(x){return x.id===id;});if(!s)return;s.pickKm=km;autoType(id);recalc();try{saveForm();}catch(e){}}
@@ -2481,7 +2485,7 @@ function detectSvcType(pk,dr){
 function autoType(id){
   const s=services.find(x=>x.id===id); if(!s) return;
   if(s.type==="hourly") return; // ne pas écraser la mise à disposition
-  const nt=localCdgApplies(s)?'localcdg':(localApplies(s)?'local':detectSvcType(s.pickup,s.dropoff));
+  const nt=seasideApplies(s)?'seaside':(localCdgApplies(s)?'localcdg':(localApplies(s)?'local':detectSvcType(s.pickup,s.dropoff)));
   if(!nt || nt===s.type) return;
   s.type=nt;
   const sel=document.querySelector("#svc-"+id+" select[onchange*=\"'type'\"]");
