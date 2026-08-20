@@ -1989,9 +1989,11 @@ const QV={
  v_dropoff:{fr:"Indiquez l'adresse de destination pour chaque prestation.",en:"Enter the drop-off address for each service.",es:"Indique la dirección de destino de cada servicio.",it:"Indica l'indirizzo di destinazione per ogni servizio.",pt:"Indique o endereço de destino de cada serviço.",tr:"Her hizmet için varış adresini girin.",zh:"请为每项服务填写目的地地址。"},
  v_name:{fr:"Indiquez votre nom.",en:"Enter your name.",es:"Indique su nombre.",it:"Inserisci il tuo nome.",pt:"Indique o seu nome.",tr:"Adınızı girin.",zh:"请填写您的姓名。"},
  v_email:{fr:"Entrez votre e-mail pour recevoir le devis.",en:"Enter your email to receive the quote.",es:"Introduzca su correo para recibir el presupuesto.",it:"Inserisci la tua e-mail per ricevere il preventivo.",pt:"Introduza o seu e-mail para receber o orçamento.",tr:"Teklifi almak için e-postanızı girin.",zh:"请输入您的邮箱以接收报价。"},
+ v_email_bad:{fr:"Adresse e-mail invalide — vérifiez le format (ex. nom@domaine.com).",en:"Invalid email address — check the format (e.g. name@domain.com).",es:"Correo electrónico no válido — compruebe el formato (p. ej. nombre@dominio.com).",it:"Indirizzo e-mail non valido — controlla il formato (es. nome@dominio.com).",pt:"Endereço de e-mail inválido — verifique o formato (ex. nome@dominio.com).",tr:"Geçersiz e-posta adresi — biçimi kontrol edin (örn. ad@alan.com).",zh:"电子邮箱地址无效——请检查格式（例如 name@domain.com）。"},
  v_phone:{fr:"Indiquez votre numéro de téléphone.",en:"Enter your phone number.",es:"Indique su número de teléfono.",it:"Inserisci il tuo numero di telefono.",pt:"Indique o seu número de telefone.",tr:"Telefon numaranızı girin.",zh:"请填写您的电话号码。"}
 };
 function qv(k){return (QV[k]&&(QV[k][LANG]||QV[k].fr))||"";}
+function validEmail(e){return /^[^\s@,]+@[^\s@,]+\.[^\s@,]{2,}$/.test(String(e||"").trim());}
 function validateServices(){
   for(const s of services){
     if(!s.date){toast(qv('v_date'));return false;}
@@ -2009,6 +2011,7 @@ function validateClient(){
   const cvf=id=>{const e=document.getElementById(id);return e?e.value.trim():"";};
   if(!cvf("c_name")){toast(qv('v_name'));return false;}
   if(!cvf("c_email")){toast(qv('v_email'));return false;}
+  if(!validEmail(cvf("c_email"))){toast(qv('v_email_bad'));const _e=document.getElementById("c_email");if(_e){_e.focus();}return false;}
   if(!cvf("c_phone")){toast(qv('v_phone'));return false;}
   return true;
 }
@@ -2054,6 +2057,7 @@ async function sendQuoteRequest(btn){
   if(!_custConfirmed){ _pendingSendBtn=btn; openCustomerModal(); return; }
   const cv=id=>document.getElementById(id).value.trim();
   const email=cv("c_email");
+  if(!validEmail(email)){toast(qv('v_email_bad'));const _e=document.getElementById("c_email");if(_e){_e.focus();}return;}
   if(!IS_LOGGED && !_guestAck){ showLoginReminder(btn); return; }
   if(typeof sb==="undefined"){toast(LANG==="fr"?"Service indisponible, réessayez.":"Service unavailable, retry.");return;}
   const {ttc,disc,tax,total}=computeTotals();
