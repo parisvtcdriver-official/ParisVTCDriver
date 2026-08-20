@@ -987,6 +987,17 @@ async function buildInvoiceDoc(b,opts){
   const _isPart=!!(b.user_id&&PROFILES[b.user_id]&&(PROFILES[b.user_id].is_partner||Number(PROFILES[b.user_id].partner_discount)>0));
   if(_isPart){doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(9);doc.text('Compte partenaire',W-40,yh,{align:'right'});yh+=15;}
   if(isInv&&!cancel){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?'PAYÉE':'EN ATTENTE DE PAIEMENT',W-40,yh,{align:'right'});}
+  const _docTitle=(cancel?'Facture n° ':(isInv?(paid?'Facture n° ':'Facture proforma n° '):'Devis n° '))+(b.reference||'—');
+  function _newPage(){
+    doc.addPage();
+    doc.setFillColor(7,10,18);doc.rect(0,0,W,50,'F');
+    doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(12);doc.text('ParisVTCDriver',40,24);
+    doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(7.2);
+    doc.text('SIRET '+CO.siret+' · TVA intracom. '+CO.tva+' · '+CO.addr,40,38);
+    doc.setTextColor(150,160,180);doc.setFontSize(8);doc.text(_docTitle+' (suite)',W-40,24,{align:'right'});
+    doc.setTextColor(...dark);doc.setFont(F,'normal');doc.setFontSize(9.5);
+    return 78;
+  }
   let y=160;
   doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(10);doc.text('Client :',40,y);
   doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
@@ -1027,13 +1038,14 @@ async function buildInvoiceDoc(b,opts){
       doc.setFont(F,'normal');doc.setFontSize(9.5);
     }
     y+=18;doc.setDrawColor(228,231,238);doc.line(40,y-8,W-40,y-8);
-    if(y>720){doc.addPage();y=60;}
+    if(y>720){y=_newPage();}
   });
   // ----- Totaux : TVA répartie par taux -----
   var _g={}; _lns.forEach(function(l){if(l.custom)return;var v=_lv(l);_g[v.rate]=(_g[v.rate]||0)+v.ttc;});
   var _vat10=0,_vat20=0;
   Object.keys(_g).forEach(function(rt){var net=_g[rt]*_ratio;var ht=net/(1+Number(rt)/100);var va=net-ht;if(String(rt)==='20')_vat20+=va;else _vat10+=va;});
   _vat10=Math.round(_vat10*100)/100;_vat20=Math.round(_vat20*100)/100;
+  if(y>690){y=_newPage();}
   y+=8;doc.setDrawColor(220);doc.line(W-230,y,W-40,y);y+=16;
   doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
   doc.text('Sous-total',W-230,y);doc.text(eur(_sub||b.amount_ttc),W-40,y,{align:'right'});y+=15;
@@ -1067,7 +1079,7 @@ async function buildInvoiceDoc(b,opts){
   {
     const _nf=(d.note_flight||'').trim(),_nl=(d.note_lug||'').trim(),_ns=(d.note_special||'').trim();
     if(_nf||_nl||_ns){
-      y+=26; if(y>720){doc.addPage();y=60;}
+      y+=26; if(y>720){y=_newPage();}
       doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
       doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);doc.text('Notes & demandes spéciales',40,y);y+=14;
       doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9);
@@ -1095,6 +1107,10 @@ async function buildInvoiceDoc(b,opts){
   }
   doc.setFont(F,'normal');doc.setTextColor(150,158,172);doc.setFontSize(7.5);
   doc.text('Prix TTC garantis · SIRET '+CO.siret+' · TVA intracom. '+CO.tva+' · Disponible 24/7 · Merci de votre confiance.',W/2,815,{align:'center'});
+  const _tp=doc.internal.getNumberOfPages();
+  for(let _p=1;_p<=_tp;_p++){ doc.setPage(_p); doc.setFont(F,'normal');doc.setFontSize(7);doc.setTextColor(150,158,172);
+    if(_p!==_tp){doc.text('ParisVTCDriver · SIRET '+CO.siret+' · TVA intracom. '+CO.tva,W/2,815,{align:'center'});}
+    doc.text('Page '+_p+' / '+_tp,W-40,832,{align:'right'}); }
   return doc;
 }
 async function docPDF(id){
@@ -1131,26 +1147,38 @@ async function proposePrice(id){
     // Aucune ligne sur-mesure : prix global classique
     const v=prompt('Prix TTC à proposer pour ce devis (€) :', b.amount_ttc||'');
     if(v===null)return;
-    const ttc=parseFloat(String(v).replace(',','.'));
-    if(isNaN(ttc)||ttc<=0){toast('Montant invalide');return;}
+    const gross=parseFloat(String(v).replace(',','.'));
+    if(isNaN(gross)||gross<=0){toast('Montant invalide');return;}
+    let pct=Number(d.discount_pct)||0;
+    const _pin=prompt('Remise commerciale en % à appliquer (0 = aucune) :', pct);
+    if(_pin!==null){const _p=parseFloat(String(_pin).replace(',','.'));pct=(isNaN(_p)||_p<0)?0:Math.min(_p,100);}
+    const disc=Math.round(gross*pct/100*100)/100;
+    const ttc=Math.round((gross-disc)*100)/100;
     const ht=Math.round(ttc/1.10*100)/100, vat=Math.round((ttc-ht)*100)/100;
-    const {error}=await sb.from('bookings').update({amount_ht:ht,vat,amount_ttc:ttc}).eq('id',id);
+    const _d=Object.assign({},d,{subtotal:gross,discount:disc,discount_pct:pct,discount_label:pct>0?('Remise commerciale −'+pct+'%'):(d.discount_label||'')});
+    const {error}=await sb.from('bookings').update({amount_ht:ht,vat,amount_ttc:ttc,details:_d}).eq('id',id);
     if(error){toast('Erreur : '+error.message);return;}
-    toast('Prix enregistré ✓ '+eur(ttc)); refresh(); return;
+    toast('Prix enregistré ✓ '+eur(ttc)+(pct>0?(' (remise −'+pct+'%)'):'')); refresh(); return;
   }
   // Recalcul cohérent des totaux à partir de TOUTES les lignes
   const origSub=Number(d.subtotal)||0, origDisc=Number(d.discount)||0;
   const newSub=Math.round(lines.reduce((s,l)=>s+(Number(l.price)||0),0)*100)/100;
-  const disc=origSub>0?Math.round(newSub*(origDisc/origSub)*100)/100:origDisc;
+  const promoDisc=origSub>0?Math.round(newSub*(origDisc/origSub)*100)/100:origDisc;   // remise code/fidélité éventuelle
+  let pct=Number(d.discount_pct)||0;
+  const _pin=prompt('Remise commerciale en % à appliquer sur le devis (0 = aucune) :', pct);
+  if(_pin!==null){const _p=parseFloat(String(_pin).replace(',','.'));pct=(isNaN(_p)||_p<0)?0:Math.min(_p,100);}
+  const pctDisc=Math.round(newSub*pct/100*100)/100;
+  const disc=Math.min(newSub,Math.round((promoDisc+pctDisc)*100)/100);
   const newTTC=Math.round((newSub-disc)*100)/100;
   const ratio=newSub>0?newTTC/newSub:1;
   let ht=0,vat=0;
   lines.forEach(l=>{const g=Number(l.price)||0;const net=g*ratio;const r=Number(l.vat)||10;const h=net/(1+r/100);ht+=h;vat+=net-h;});
   ht=Math.round(ht*100)/100; vat=Math.round(vat*100)/100;
-  d.subtotal=newSub; d.discount=disc; d.lines=lines;
+  d.subtotal=newSub; d.discount=disc; d.discount_pct=pct; d.lines=lines;
+  { const _rl=pct>0?('Remise commerciale −'+pct+'%'):''; let _base=(d.discount_label||'').replace(/\s*·?\s*Remise commerciale −[\d.,]+%/,'').trim().replace(/^·\s*/,''); d.discount_label=[_base,_rl].filter(Boolean).join(' · '); }
   const {error}=await sb.from('bookings').update({amount_ht:ht,vat,amount_ttc:newTTC,details:d}).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
-  toast('Prix enregistrés ✓ Total TTC '+eur(newTTC)); refresh();
+  toast('Prix enregistrés ✓ Total TTC '+eur(newTTC)+(pct>0?(' (remise −'+pct+'%)'):'')); refresh();
 }
 async function acceptDevis(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b)return;

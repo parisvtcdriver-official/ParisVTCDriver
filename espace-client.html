@@ -761,6 +761,17 @@ async function buildInvoiceDoc(b,opts){
   if(isInv&&b.quote_no&&b.quote_no!==b.reference){doc.setFontSize(8.5);doc.text(P('refdev')+b.quote_no,W-40,yh,{align:'right'});yh+=13;doc.setFontSize(9);}
   doc.text(b.created_at?new Date(b.created_at).toLocaleDateString(ploc):new Date().toLocaleDateString(ploc),W-40,yh,{align:'right'});yh+=16;
   if(isInv&&!cancel){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?P('paidd'):P('awaitp'),W-40,yh,{align:'right'});}
+  const _docTitle=(cancel?P('facno'):(isInv?(paid?P('facno'):P('pfno')):P('devno')))+(b.reference||'—');
+  function _newPage(){
+    doc.addPage();
+    doc.setFillColor(7,10,18);doc.rect(0,0,W,50,'F');
+    doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(12);doc.text('ParisVTCDriver',40,24);
+    doc.setTextColor(150,160,180);doc.setFont(F,'normal');doc.setFontSize(7.2);
+    doc.text('SIRET '+CO.siret+' · TVA intracom. '+CO.tva+' · '+CO.addr,40,38);
+    doc.setTextColor(150,160,180);doc.setFontSize(8);doc.text(_docTitle+' (suite)',W-40,24,{align:'right'});
+    doc.setTextColor(...dark);doc.setFont(F,'normal');doc.setFontSize(9.5);
+    return 78;
+  }
   let y=160;
   doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(10);doc.text(P('clientt'),40,y);
   doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
@@ -800,12 +811,13 @@ async function buildInvoiceDoc(b,opts){
       doc.setFont(F,'normal');doc.setFontSize(9.5);
     }
     y+=18;doc.setDrawColor(228,231,238);doc.line(40,y-8,W-40,y-8);
-    if(y>720){doc.addPage();y=60;}
+    if(y>720){y=_newPage();}
   });
   var _g={}; _lns.forEach(function(l){if(l.custom)return;var v=_lv(l);_g[v.rate]=(_g[v.rate]||0)+v.ttc;});
   var _vat10=0,_vat20=0;
   Object.keys(_g).forEach(function(rt){var net=_g[rt]*_ratio;var ht=net/(1+Number(rt)/100);var va=net-ht;if(String(rt)==='20')_vat20+=va;else _vat10+=va;});
   _vat10=Math.round(_vat10*100)/100;_vat20=Math.round(_vat20*100)/100;
+  if(y>690){y=_newPage();}
   y+=8;doc.setDrawColor(220);doc.line(W-230,y,W-40,y);y+=16;
   doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
   doc.text(P('subtotal'),W-230,y);doc.text(eur(_sub||b.amount_ttc),W-40,y,{align:'right'});y+=15;
@@ -843,7 +855,7 @@ async function buildInvoiceDoc(b,opts){
         sg:{fr:'Nom sur la tablette',en:'Name on the pickup sign',es:'Nombre en el cartel',it:'Nome sul cartello',pt:'Nome no cartaz',tr:'Karşılama tabelası adı',zh:'接机牌姓名',ar:'الاسم على لوحة الاستقبال'},
         sp:{fr:'Demandes spéciales',en:'Special requests',es:'Peticiones especiales',it:'Richieste speciali',pt:'Pedidos especiais',tr:'Özel istekler',zh:'特别要求',ar:'طلبات خاصة'}};
       const LBL=k=>NL[k][LANG]||NL[k].fr;
-      y+=26; if(y>720){doc.addPage();y=60;}
+      y+=26; if(y>720){y=_newPage();}
       doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
       doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(9.5);doc.text(LBL('t'),40,y);y+=14;
       doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9);
@@ -870,6 +882,11 @@ async function buildInvoiceDoc(b,opts){
   }
   doc.setFont(F,'normal');doc.setTextColor(150,158,172);doc.setFontSize(7.5);
   doc.text(P('footer').split('SIRET 934505702').join('SIRET '+CO.siret).split('FR32934505702').join(CO.tva),W/2,815,{align:'center'});
+  const _pg={fr:'Page',en:'Page',es:'Página',it:'Pagina',pt:'Página',tr:'Sayfa',zh:'第',ar:'صفحة'}[LANG]||'Page';
+  const _tp=doc.internal.getNumberOfPages();
+  for(let _p=1;_p<=_tp;_p++){ doc.setPage(_p); doc.setFont(F,'normal');doc.setFontSize(7);doc.setTextColor(150,158,172);
+    if(_p!==_tp){doc.text('ParisVTCDriver · SIRET '+CO.siret+' · TVA intracom. '+CO.tva,W/2,815,{align:'center'});}
+    doc.text(_pg+' '+_p+' / '+_tp,W-40,832,{align:'right'}); }
   return doc;
 }
 
