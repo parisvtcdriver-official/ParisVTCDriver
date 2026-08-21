@@ -620,12 +620,13 @@ function renderResaTable(elId,list,withSelect){
     // ----- Réservation multi-services éclatée (vue Réservations admin) -----
     if(withSelect && isMultiResa(b)){
       const ls=lineList(b);
+      const ord=ls.map((l,i)=>({l:l,i:i})).sort(function(a,c){var ta=a.l&&a.l.dt?parseRDV(a.l.dt):null,tc=c.l&&c.l.dt?parseRDV(c.l.dt):null;return (ta==null?Infinity:ta)-(tc==null?Infinity:tc);});
       const head=`<tr style="background:rgba(201,162,74,.05)"><td class="cli">${escapeHtml(bookingClient(b))}</td>
         <td><span class="rtoggle" onclick="toggleResa('${b.id}',this)" style="cursor:pointer;color:var(--gold-2);font-weight:700;margin-right:6px;user-select:none;display:inline-block;width:12px">▸</span><b style="color:var(--gold-2)">${escapeHtml(b.service||('Réservation — '+ls.length+' services'))}</b>${typeTag}<div class="sub2">${ls.length} prestations · facture unique${b.reference?' · '+escapeHtml(b.reference):''} · <span onclick="toggleResa('${b.id}',this.closest('td').querySelector('.rtoggle'))" style="cursor:pointer;text-decoration:underline">déplier / replier</span></div></td>
         <td class="sub2">—</td>`+(wideVeh?`<td class="sub2">—</td>`:'')+
         `<td class="amt">${eur(b.amount_ttc)}</td>
         <td>${statusBadgeFull(b)} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer toute la réservation">✕</button>${cancelReq?'<div class="sub2" style="color:var(--amber);margin-top:5px">⚠ Annulation demandée — '+escapeHtml(c.policy||'')+(c.reason?'<br>Motif : '+escapeHtml(c.reason):'')+'</div>':''}</td></tr>`;
-      const rows=ls.map((l,i)=>{
+      const rows=ord.map(function(o){var l=o.l,i=o.i;
         const st=lineStatus(b,l);
         const note=(l.st==='avoir'&&l.avoirCode)?`<div class="sub2" style="color:var(--gold-2)">Avoir ${escapeHtml(l.avoirCode)}</div>`:(l.st==='refunded'?'<div class="sub2" style="color:var(--blue)">Remboursé</div>':'');
         return `<tr data-parent="${b.id}" style="display:none"><td class="sub2" style="padding-left:18px">↳</td>
@@ -787,7 +788,7 @@ async function acceptModif(id){
   const {error}=await sb.from('bookings').update(upd).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
   const to=clientMailOf(b);
-  if(to){ try{ await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject:'Votre modification est confirmée — '+(b.reference||''),html:`<h2 style="color:#a07d2c">Modification confirmée</h2><p>Bonjour,</p><p>Votre demande de modification a été acceptée. Votre devis/facture n° ${b.reference||''} est mis à jour (même numéro).</p><p><b>Trajet :</b> ${mr.route||'—'}<br><b>Date :</b> ${mr.dt||'—'}</p><p style="color:#888;font-size:12px">ParisVTCDriver · +33 7 49 19 83 18</p>`}}); }catch(e){} }
+  if(to){ const _ref=b.reference||''; try{ await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject:eT(b,'mod_subj').replace('{ref}',_ref),html:`<h2 style="color:#a07d2c">${eT(b,'mod_h')}</h2><p>${eT(b,'hi')},</p><p>${eT(b,'mod_p1').replace('{ref}',_ref)}</p><p><b>${eT(b,'route_l')}</b> ${mr.route||'—'}<br><b>${eT(b,'date_l')}</b> ${mr.dt||'—'}</p><p style="color:#888;font-size:12px">${escapeHtml(CO.name)} · ${escapeHtml(CO.phone)}</p>`}}); }catch(e){} }
   toast('Modification acceptée ✓'); refresh();
 }
 async function declineModif(id){
@@ -1245,6 +1246,28 @@ async function validatePayment(id, via){
   await refresh();
   await emailInvoice(BOOKINGS.find(x=>x.id===id),'paid');
 }
+const EI={
+ subj_paid:{fr:'Facture payée {ref} · ParisVTCDriver',en:'Paid invoice {ref} · ParisVTCDriver',es:'Factura pagada {ref} · ParisVTCDriver',it:'Fattura pagata {ref} · ParisVTCDriver',pt:'Fatura paga {ref} · ParisVTCDriver',tr:'Ödenmiş fatura {ref} · ParisVTCDriver',zh:'已付发票 {ref} · ParisVTCDriver',ar:'فاتورة مدفوعة {ref} · ParisVTCDriver'},
+ subj_pf:{fr:'Facture proforma {ref} · ParisVTCDriver',en:'Proforma invoice {ref} · ParisVTCDriver',es:'Factura proforma {ref} · ParisVTCDriver',it:'Fattura proforma {ref} · ParisVTCDriver',pt:'Fatura proforma {ref} · ParisVTCDriver',tr:'Proforma fatura {ref} · ParisVTCDriver',zh:'形式发票 {ref} · ParisVTCDriver',ar:'فاتورة مبدئية {ref} · ParisVTCDriver'},
+ paid_h:{fr:'Merci pour votre paiement',en:'Thank you for your payment',es:'Gracias por su pago',it:'Grazie per il pagamento',pt:'Obrigado pelo seu pagamento',tr:'Ödemeniz için teşekkürler',zh:'感谢您的付款',ar:'شكراً لدفعتك'},
+ pf_h:{fr:'Votre devis est accepté',en:'Your quote is accepted',es:'Su presupuesto ha sido aceptado',it:'Il tuo preventivo è accettato',pt:'O seu orçamento foi aceite',tr:'Teklifiniz kabul edildi',zh:'您的报价已被接受',ar:'تم قبول عرض السعر الخاص بك'},
+ hi:{fr:'Bonjour',en:'Hello',es:'Hola',it:'Ciao',pt:'Olá',tr:'Merhaba',zh:'您好',ar:'مرحباً'},
+ paid_p1:{fr:'Nous confirmons la réception de votre paiement. Votre facture acquittée est en pièce jointe.',en:'We confirm receipt of your payment. Your paid invoice is attached.',es:'Confirmamos la recepción de su pago. Su factura pagada está adjunta.',it:'Confermiamo la ricezione del pagamento. La fattura quietanzata è in allegato.',pt:'Confirmamos a receção do seu pagamento. A sua fatura paga está em anexo.',tr:'Ödemenizin alındığını onaylıyoruz. Ödenmiş faturanız ektedir.',zh:'我们确认已收到您的付款。您的已付发票见附件。',ar:'نؤكد استلام دفعتك. فاتورتك المسددة في المرفق.'},
+ paid_amt:{fr:'Montant réglé :',en:'Amount paid:',es:'Importe pagado:',it:'Importo pagato:',pt:'Montante pago:',tr:'Ödenen tutar:',zh:'已付金额：',ar:'المبلغ المدفوع:'},
+ pf_p1a:{fr:'Votre <b>facture proforma</b> est en pièce jointe. Vous pouvez régler <b>{amt}</b> au choix :',en:'Your <b>proforma invoice</b> is attached. You can pay <b>{amt}</b> in one of two ways:',es:'Su <b>factura proforma</b> está adjunta. Puede pagar <b>{amt}</b> de dos formas:',it:'La tua <b>fattura proforma</b> è in allegato. Puoi pagare <b>{amt}</b> a scelta:',pt:'A sua <b>fatura proforma</b> está em anexo. Pode pagar <b>{amt}</b> de duas formas:',tr:'<b>Proforma faturanız</b> ektedir. <b>{amt}</b> tutarını iki şekilde ödeyebilirsiniz:',zh:'您的<b>形式发票</b>见附件。您可通过以下方式支付 <b>{amt}</b>：',ar:'<b>فاتورتك المبدئية</b> في المرفق. يمكنك دفع <b>{amt}</b> بإحدى طريقتين:'},
+ pay_btn:{fr:'💳 Payer par carte en ligne',en:'💳 Pay by card online',es:'💳 Pagar con tarjeta en línea',it:'💳 Paga con carta online',pt:'💳 Pagar com cartão online',tr:'💳 Kartla çevrimiçi öde',zh:'💳 在线刷卡支付',ar:'💳 الدفع بالبطاقة عبر الإنترنت'},
+ or_wire:{fr:'— ou par virement bancaire —',en:'— or by bank transfer —',es:'— o por transferencia bancaria —',it:'— oppure con bonifico bancario —',pt:'— ou por transferência bancária —',tr:'— veya banka havalesi ile —',zh:'— 或通过银行转账 —',ar:'— أو عبر التحويل البنكي —'},
+ wire_title:{fr:'Virement bancaire',en:'Bank transfer',es:'Transferencia bancaria',it:'Bonifico bancario',pt:'Transferência bancária',tr:'Banka havalesi',zh:'银行转账',ar:'تحويل بنكي'},
+ benef:{fr:'Bénéficiaire',en:'Beneficiary',es:'Beneficiario',it:'Beneficiario',pt:'Beneficiário',tr:'Alıcı',zh:'收款人',ar:'المستفيد'},
+ ref_label:{fr:'Référence à indiquer',en:'Reference to include',es:'Referencia a indicar',it:'Causale da indicare',pt:'Referência a indicar',tr:'Belirtilecek referans',zh:'请注明参考编号',ar:'المرجع المطلوب ذكره'},
+ pf_p2:{fr:'Le paiement par carte est confirmé automatiquement ; pour le virement, nous vous confirmerons dès réception.',en:'Card payments are confirmed automatically; for bank transfers, we will confirm upon receipt.',es:'Los pagos con tarjeta se confirman automáticamente; para la transferencia, se lo confirmaremos al recibirla.',it:'I pagamenti con carta sono confermati automaticamente; per il bonifico, confermeremo alla ricezione.',pt:'Os pagamentos com cartão são confirmados automaticamente; para a transferência, confirmaremos após a receção.',tr:'Kartla ödemeler otomatik onaylanır; havale için, aldığımızda onaylayacağız.',zh:'刷卡付款将自动确认；银行转账将在收到后确认。',ar:'تُؤكَّد المدفوعات بالبطاقة تلقائياً؛ أما التحويل البنكي فسنؤكده عند الاستلام.'},
+ mod_subj:{fr:'Votre modification est confirmée — {ref}',en:'Your change is confirmed — {ref}',es:'Su modificación está confirmada — {ref}',it:'La tua modifica è confermata — {ref}',pt:'A sua alteração está confirmada — {ref}',tr:'Değişikliğiniz onaylandı — {ref}',zh:'您的修改已确认 — {ref}',ar:'تم تأكيد تعديلك — {ref}'},
+ mod_h:{fr:'Modification confirmée',en:'Change confirmed',es:'Modificación confirmada',it:'Modifica confermata',pt:'Alteração confirmada',tr:'Değişiklik onaylandı',zh:'修改已确认',ar:'تم تأكيد التعديل'},
+ mod_p1:{fr:'Votre demande de modification a été acceptée. Votre devis/facture n° {ref} est mis à jour (même numéro).',en:'Your change request has been accepted. Your quote/invoice no. {ref} is updated (same number).',es:'Su solicitud de modificación ha sido aceptada. Su presupuesto/factura n.º {ref} se ha actualizado (mismo número).',it:'La tua richiesta di modifica è stata accettata. Il preventivo/fattura n. {ref} è aggiornato (stesso numero).',pt:'O seu pedido de alteração foi aceite. O seu orçamento/fatura n.º {ref} foi atualizado (mesmo número).',tr:'Değişiklik talebiniz kabul edildi. Teklif/fatura no. {ref} güncellendi (aynı numara).',zh:'您的修改请求已被接受。您的报价/发票编号 {ref} 已更新（编号不变）。',ar:'تم قبول طلب التعديل الخاص بك. تم تحديث عرض السعر/الفاتورة رقم {ref} (نفس الرقم).'},
+ route_l:{fr:'Trajet :',en:'Route:',es:'Trayecto:',it:'Tragitto:',pt:'Trajeto:',tr:'Güzergâh:',zh:'行程：',ar:'المسار:'},
+ date_l:{fr:'Date :',en:'Date:',es:'Fecha:',it:'Data:',pt:'Data:',tr:'Tarih:',zh:'日期：',ar:'التاريخ:'}
+};
+function eT(b,k){var L=eLang(b);return (EI[k]&&(EI[k][L]||EI[k].fr))||'';}
 async function emailInvoice(b,mode){
   if(!b)return;
   const to=(b.details&&b.details.client_email)||(b.user_id&&PROFILES[b.user_id]&&PROFILES[b.user_id].email);
@@ -1255,18 +1278,19 @@ async function emailInvoice(b,mode){
   const name=(b.details&&b.details.client_name)||'';
   const paid=mode==='paid';
   const ref=b.reference||'';
-  const subject=paid?('Facture payée '+ref+' · ParisVTCDriver'):('Facture proforma '+ref+' · ParisVTCDriver');
+  const subject=(paid?eT(b,'subj_paid'):eT(b,'subj_pf')).replace('{ref}',ref);
   // Lien de paiement carte (Stripe) — créé/récupéré pour les factures en attente avec montant > 0
   let payUrl='';
   if(!paid && Number(b.amount_ttc)>0){
     try{ const {data:pr}=await sb.functions.invoke('request-quote',{body:{action:'create-payment',booking_id:b.id}}); if(pr&&pr.ok&&pr.url)payUrl=pr.url; else if(pr&&pr.error)console.warn('Stripe:',pr.error); }catch(e){}
   }
   const payBtn=payUrl
-    ? `<p style="margin:18px 0"><a href="${payUrl}" style="display:inline-block;background:#635bff;color:#fff;text-decoration:none;padding:13px 24px;border-radius:9px;font-weight:700">💳 Payer par carte en ligne</a></p><p style="color:#777;font-size:13px;margin:0 0 6px">— ou par virement bancaire —</p>`
+    ? `<p style="margin:18px 0"><a href="${payUrl}" style="display:inline-block;background:#635bff;color:#fff;text-decoration:none;padding:13px 24px;border-radius:9px;font-weight:700">${eT(b,'pay_btn')}</a></p><p style="color:#777;font-size:13px;margin:0 0 6px">${eT(b,'or_wire')}</p>`
     : '';
+  const _foot=`<p style="color:#888;font-size:12px;margin-top:14px">${escapeHtml(CO.name)} · ${escapeHtml(CO.phone)} · ${escapeHtml(CO.site)}</p>`;
   const html=paid
-    ? `<h2 style="color:#a07d2c">Merci pour votre paiement</h2><p>Bonjour ${escapeHtml(name)},</p><p>Nous confirmons la réception de votre paiement. Votre facture acquittée est en pièce jointe.</p><p>Montant réglé : <b>${eur(b.amount_ttc)}</b></p><p style="color:#888;font-size:12px;margin-top:14px">ParisVTCDriver · +33 7 49 19 83 18 · www.parisvtcdriver.com</p>`
-    : `<h2 style="color:#a07d2c">Votre devis est accepté</h2><p>Bonjour ${escapeHtml(name)},</p><p>Votre <b>facture proforma</b> est en pièce jointe. Vous pouvez régler <b>${eur(b.amount_ttc)}</b> au choix :</p>${payBtn}<p><b>Virement bancaire</b><br>Bénéficiaire : ${escapeHtml(BK.beneficiary)}<br>IBAN : ${escapeHtml(BK.iban)}<br>BIC : ${escapeHtml(BK.bic)}<br>Référence à indiquer : ${escapeHtml(ref)}</p><p>Le paiement par carte est confirmé automatiquement ; pour le virement, nous vous confirmerons dès réception.</p><p style="color:#888;font-size:12px;margin-top:14px">${escapeHtml(CO.name)} · ${escapeHtml(CO.phone)} · ${escapeHtml(CO.site)}</p>`;
+    ? `<h2 style="color:#a07d2c">${eT(b,'paid_h')}</h2><p>${eT(b,'hi')} ${escapeHtml(name)},</p><p>${eT(b,'paid_p1')}</p><p>${eT(b,'paid_amt')} <b>${eur(b.amount_ttc)}</b></p>${_foot}`
+    : `<h2 style="color:#a07d2c">${eT(b,'pf_h')}</h2><p>${eT(b,'hi')} ${escapeHtml(name)},</p><p>${eT(b,'pf_p1a').replace('{amt}',eur(b.amount_ttc))}</p>${payBtn}<p><b>${eT(b,'wire_title')}</b><br>${eT(b,'benef')} : ${escapeHtml(BK.beneficiary)}<br>IBAN : ${escapeHtml(BK.iban)}<br>BIC : ${escapeHtml(BK.bic)}<br>${eT(b,'ref_label')} : ${escapeHtml(ref)}</p><p>${eT(b,'pf_p2')}</p>${_foot}`;
   try{
     const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject,html,pdf_base64:pdf64,filename:(paid?'facture-payee-':'facture-proforma-')+(ref||'doc')+'.pdf'}});
     if(error||(data&&data.ok===false)) throw new Error((data&&data.error)||(error&&error.message)||'err');

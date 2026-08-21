@@ -353,6 +353,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover{filter:inv
 .code-msg{font-size:12.5px;margin-top:7px;min-height:16px}
 .code-msg.ok{color:#6ee7b7}
 .code-msg.err{color:#ff9a9a}
+.field-error{border-color:#ff5a5a !important;box-shadow:0 0 0 2px rgba(255,90,90,.45) !important;border-radius:8px !important;outline:none !important}
 
 /* ---------- FLEET / CARDS ---------- */
 .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
@@ -1994,25 +1995,33 @@ const QV={
 };
 function qv(k){return (QV[k]&&(QV[k][LANG]||QV[k].fr))||"";}
 function validEmail(e){return /^[^\s@,]+@[^\s@,]+\.[^\s@,]{2,}$/.test(String(e||"").trim());}
+function markError(el){
+  if(!el)return;
+  el.classList.add("field-error");
+  try{el.scrollIntoView({behavior:"smooth",block:"center"});}catch(_){try{el.scrollIntoView();}catch(e){}}
+  setTimeout(function(){try{el.focus({preventScroll:true});}catch(_){try{el.focus();}catch(e){}}},140);
+  var clr=function(){el.classList.remove("field-error");el.removeEventListener("input",clr);el.removeEventListener("change",clr);};
+  el.addEventListener("input",clr);el.addEventListener("change",clr);
+}
 function validateServices(){
   for(const s of services){
-    if(!s.date){toast(qv('v_date'));return false;}
-    if(!(s.pickup||"").trim()){toast(qv('v_pickup'));return false;}
+    if(!s.date){markError(document.querySelector("#svc-"+s.id+" input[type=datetime-local]"));toast(qv('v_date'));return false;}
+    if(!(s.pickup||"").trim()){markError(document.getElementById("addr-pickup-"+s.id));toast(qv('v_pickup'));return false;}
     const st=SERVICES.find(x=>x.id===s.type);
-    if(!(st&&st.perH) && !(s.dropoff||"").trim()){toast(qv('v_dropoff'));return false;}
+    if(!(st&&st.perH) && !(s.dropoff||"").trim()){markError(document.getElementById("addr-dropoff-"+s.id));toast(qv('v_dropoff'));return false;}
   }
   for(const p of packs){
-    if(!p.date){toast(qv('v_date'));return false;}
-    if(!(p.pickup||"").trim()){toast(qv('v_pickup'));return false;}
+    if(!p.date){markError(document.querySelector("#pack-"+p.id+" input[type=datetime-local]"));toast(qv('v_date'));return false;}
+    if(!(p.pickup||"").trim()){markError(document.getElementById("addr-pickup-p"+p.id));toast(qv('v_pickup'));return false;}
   }
   return true;
 }
 function validateClient(){
   const cvf=id=>{const e=document.getElementById(id);return e?e.value.trim():"";};
-  if(!cvf("c_name")){toast(qv('v_name'));return false;}
-  if(!cvf("c_email")){toast(qv('v_email'));return false;}
-  if(!validEmail(cvf("c_email"))){toast(qv('v_email_bad'));const _e=document.getElementById("c_email");if(_e){_e.focus();}return false;}
-  if(!cvf("c_phone")){toast(qv('v_phone'));return false;}
+  if(!cvf("c_name")){markError(document.getElementById("c_name"));toast(qv('v_name'));return false;}
+  if(!cvf("c_email")){markError(document.getElementById("c_email"));toast(qv('v_email'));return false;}
+  if(!validEmail(cvf("c_email"))){markError(document.getElementById("c_email"));toast(qv('v_email_bad'));return false;}
+  if(!cvf("c_phone")){markError(document.getElementById("c_phone"));toast(qv('v_phone'));return false;}
   return true;
 }
 const LR={
