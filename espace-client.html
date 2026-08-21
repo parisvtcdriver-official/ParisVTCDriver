@@ -802,8 +802,8 @@ async function buildInvoiceDoc(b,opts){
       doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(9.5);doc.text(eur(v.ttc),xPrice,yTop,{align:'right'});
       doc.setFont(F,'normal');doc.setTextColor(95,105,125);doc.setFontSize(8.5);doc.text(eur(v.ht),xHt,yTop,{align:'right'});doc.text(v.rate+'%',xVat,yTop,{align:'right'});
     }
-    if(l.detail){y+=13;doc.setFont(F,'normal');doc.setTextColor(120,130,150);doc.setFontSize(8.5);doc.splitTextToSize(String(l.detail),detW).forEach(function(ln,i){if(i)y+=12;doc.text(ln,48,y);});}
-    [['route','Trajet : '],['dt','RDV : '],['req','Demande : ']].forEach(function(kp){var k=kp[0],pfx=kp[1];if(l[k]){doc.setTextColor(150,120,40);doc.setFontSize(8.5);doc.splitTextToSize(pfx+l[k],detW).forEach(function(ln){y+=12;doc.text(ln,48,y);});}});
+    if(l.detail){y+=12;doc.setFont(F,'normal');doc.setTextColor(120,130,150);doc.setFontSize(8);doc.splitTextToSize(String(l.detail),detW).forEach(function(ln,i){if(i)y+=11;doc.text(ln,48,y);});}
+    [['route','Trajet : '],['dt','RDV : '],['req','Demande : ']].forEach(function(kp){var k=kp[0],pfx=kp[1];if(l[k]){doc.setTextColor(150,120,40);doc.setFontSize(7.8);doc.splitTextToSize(pfx+l[k],detW).forEach(function(ln){y+=11;doc.text(ln,48,y);});}});
     if(l.st&&['cancelled','refunded','avoir'].indexOf(l.st)>=0){
       y+=12;doc.setFont(F,'bold');doc.setFontSize(8.5);
       if(l.st==='avoir'){doc.setTextColor(...gold);doc.text(P('svcAvoir').replace('{c}',l.avoirCode?(' · '+l.avoirCode):'').replace('{a}',eur(_net(l))),48,y);}
@@ -811,7 +811,7 @@ async function buildInvoiceDoc(b,opts){
       else{doc.setTextColor(...red);doc.text(P('svcCanc').replace('{a}',eur(_net(l))),48,y);}
       doc.setFont(F,'normal');doc.setFontSize(9.5);
     }
-    y+=18;doc.setDrawColor(228,231,238);doc.line(40,y-8,W-40,y-8);
+    y+=15;doc.setDrawColor(228,231,238);doc.line(40,y-8,W-40,y-8);
     if(y>720){y=_newPage();}
   });
   var _g={}; _lns.forEach(function(l){if(l.custom)return;var v=_lv(l);_g[v.rate]=(_g[v.rate]||0)+v.ttc;});
@@ -865,7 +865,9 @@ async function buildInvoiceDoc(b,opts){
       if(_ns){const _w=doc.splitTextToSize('• '+LBL('sp')+' : '+_ns,W-80);doc.text(_w,40,y);y+=13*_w.length;}
     }
   }
-  y+=40;doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
+  y+=24;
+  if(y>730){y=_newPage();}
+  doc.setDrawColor(230);doc.line(40,y,W-40,y);y+=16;
   if(cancel){
     doc.setFont(F,'bold');doc.setTextColor(...red);doc.setFontSize(9.5);doc.text(P('resaCancel'),40,y);y+=14;
     doc.setFont(F,'normal');doc.setTextColor(60,70,90);
