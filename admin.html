@@ -601,6 +601,13 @@ function bookingRides(b){ // chaque service réalisable = une course (avec sa da
   return [{date:ts?new Date(ts):(b.created_at?new Date(b.created_at):null)}];
 }
 
+function toggleResa(id,el){
+  const rows=document.querySelectorAll('tr[data-parent="'+id+'"]');
+  if(!rows.length)return;
+  const show=rows[0].style.display==='none';
+  rows.forEach(function(r){r.style.display=show?'':'none';});
+  if(el)el.textContent=show?'▾':'▸';
+}
 function renderResaTable(elId,list,withSelect){
   const el=document.getElementById(elId);
   if(!list.length){el.innerHTML='<tr><td colspan="6" class="empty">Aucune réservation.</td></tr>';return;}
@@ -614,14 +621,14 @@ function renderResaTable(elId,list,withSelect){
     if(withSelect && isMultiResa(b)){
       const ls=lineList(b);
       const head=`<tr style="background:rgba(201,162,74,.05)"><td class="cli">${escapeHtml(bookingClient(b))}</td>
-        <td><b style="color:var(--gold-2)">${escapeHtml(b.service||('Réservation — '+ls.length+' services'))}${typeTag}</b><div class="sub2">${ls.length} prestations · facture unique${b.reference?' · '+escapeHtml(b.reference):''}</div></td>
+        <td><span class="rtoggle" onclick="toggleResa('${b.id}',this)" style="cursor:pointer;color:var(--gold-2);font-weight:700;margin-right:6px;user-select:none;display:inline-block;width:12px">▸</span><b style="color:var(--gold-2)">${escapeHtml(b.service||('Réservation — '+ls.length+' services'))}</b>${typeTag}<div class="sub2">${ls.length} prestations · facture unique${b.reference?' · '+escapeHtml(b.reference):''} · <span onclick="toggleResa('${b.id}',this.closest('td').querySelector('.rtoggle'))" style="cursor:pointer;text-decoration:underline">déplier / replier</span></div></td>
         <td class="sub2">—</td>`+(wideVeh?`<td class="sub2">—</td>`:'')+
         `<td class="amt">${eur(b.amount_ttc)}</td>
         <td>${statusBadgeFull(b)} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer toute la réservation">✕</button>${cancelReq?'<div class="sub2" style="color:var(--amber);margin-top:5px">⚠ Annulation demandée — '+escapeHtml(c.policy||'')+(c.reason?'<br>Motif : '+escapeHtml(c.reason):'')+'</div>':''}</td></tr>`;
       const rows=ls.map((l,i)=>{
         const st=lineStatus(b,l);
         const note=(l.st==='avoir'&&l.avoirCode)?`<div class="sub2" style="color:var(--gold-2)">Avoir ${escapeHtml(l.avoirCode)}</div>`:(l.st==='refunded'?'<div class="sub2" style="color:var(--blue)">Remboursé</div>':'');
-        return `<tr><td class="sub2" style="padding-left:18px">↳</td>
+        return `<tr data-parent="${b.id}" style="display:none"><td class="sub2" style="padding-left:18px">↳</td>
           <td><b style="color:var(--txt)">${escapeHtml(l.label||('Service '+(i+1)))}</b><div class="sub2">${escapeHtml(l.detail||'')}</div></td>
           <td>${escapeHtml(l.dt||'—')}</td>`+(wideVeh?`<td>${escapeHtml(lineVehicle(l))}</td>`:'')+
           `<td class="amt">${eur(lineTTC(b,l))}</td>
