@@ -782,7 +782,7 @@ async function buildInvoiceDoc(b,opts){
   cl.filter(Boolean).forEach((line,i)=>doc.text(String(line),40,y+15+i*13));
   y=y+15+cl.filter(Boolean).length*13+18;
   function _dtKey(l){var s=String(l&&l.dt||"");var m=s.match(/(\d{4})-(\d{2})-(\d{2})/),y,mo,dd;if(m){y=+m[1];mo=+m[2];dd=+m[3];}else{m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m){dd=+m[1];mo=+m[2];y=+m[3];}else return Infinity;}var t=s.match(/(\d{1,2}):(\d{2})/);return new Date(y,mo-1,dd,t?+t[1]:0,t?+t[2]:0).getTime();}
-  const _lns=(d.lines||[]).slice().sort(function(a,b){return _dtKey(a)-_dtKey(b);}); const _sub=Number(d.subtotal)||0; const _tot=Number(b.amount_ttc)||0; const _ratio=_sub>0?_tot/_sub:1;
+  const _lns=(d.lines||[]).slice().sort(function(a,b){return _dtKey(a)-_dtKey(b);}); const _sub=Number(d.subtotal)||0; const _tot=Number(b.amount_ttc)||0; const _ratio=_sub>0?_tot/_sub:1;const _dr=(Number(d.discount)>0)?1:_ratio;
   const _net=l=>(l.price!=null&&l.price!=='')?Math.round((Number(l.price)||0)*_ratio*100)/100:Math.round((_tot/(_lns.length||1))*100)/100;
   const _docRate=Number(b.amount_ht)>0?Math.round((Number(b.amount_ttc)/Number(b.amount_ht)-1)*100):10;
   function _lv(l){var ttc=(l.price!=null&&l.price!=='')?Number(l.price):parseFloat(String(l.priceLabel||'').replace(/[^0-9.,]/g,'').replace(',','.'));if(!isFinite(ttc))ttc=0;var rate=(l.vat!=null&&l.vat!=='')?Number(l.vat):(_docRate||10);if(!rate)rate=10;var ht=(l.ht!=null&&l.ht!=='')?Number(l.ht):Math.round(ttc/(1+rate/100)*100)/100;return{ttc:ttc,rate:rate,ht:ht,vat:Math.round((ttc-ht)*100)/100,custom:!!l.custom};}
@@ -799,8 +799,8 @@ async function buildInvoiceDoc(b,opts){
       doc.setFont(F,'normal');doc.setTextColor(110,160,120);doc.setFontSize(9);doc.text(P('onquote'),xPrice,yTop,{align:'right'});
       doc.setTextColor(150,160,175);doc.text('—',xHt,yTop,{align:'right'});doc.text('—',xVat,yTop,{align:'right'});
     } else {
-      doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(9.5);doc.text(eur(v.ttc),xPrice,yTop,{align:'right'});
-      doc.setFont(F,'normal');doc.setTextColor(95,105,125);doc.setFontSize(8.5);doc.text(eur(v.ht),xHt,yTop,{align:'right'});doc.text(v.rate+'%',xVat,yTop,{align:'right'});
+      doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(9.5);doc.text(eur(v.ttc*_dr),xPrice,yTop,{align:'right'});
+      doc.setFont(F,'normal');doc.setTextColor(95,105,125);doc.setFontSize(8.5);doc.text(eur(v.ht*_dr),xHt,yTop,{align:'right'});doc.text(v.rate+'%',xVat,yTop,{align:'right'});
     }
     if(l.detail){y+=12;doc.setFont(F,'normal');doc.setTextColor(120,130,150);doc.setFontSize(8);doc.splitTextToSize(String(l.detail),detW).forEach(function(ln,i){if(i)y+=11;doc.text(ln,48,y);});}
     [['route','Trajet : '],['dt','RDV : '],['req','Demande : ']].forEach(function(kp){var k=kp[0],pfx=kp[1];if(l[k]){doc.setTextColor(150,120,40);doc.setFontSize(7.8);doc.splitTextToSize(pfx+l[k],detW).forEach(function(ln){y+=11;doc.text(ln,48,y);});}});
@@ -821,7 +821,7 @@ async function buildInvoiceDoc(b,opts){
   if(y>690){y=_newPage();}
   y+=8;doc.setDrawColor(220);doc.line(W-230,y,W-40,y);y+=16;
   doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
-  doc.text(P('subtotal'),W-230,y);doc.text(eur(_sub||b.amount_ttc),W-40,y,{align:'right'});y+=15;
+  doc.text(P('subtotal'),W-230,y);doc.text(eur(Number(d.discount)>0?(_sub||b.amount_ttc):b.amount_ttc),W-40,y,{align:'right'});y+=15;
   if(Number(d.discount)>0){
     doc.setTextColor(40,160,110);doc.text(P('remise'),W-230,y);doc.text('−'+eur(d.discount),W-40,y,{align:'right'});y+=12;
     if(d.discount_label){doc.setFontSize(8);doc.text(String(d.discount_label),W-230,y);doc.setFontSize(9.5);y+=12;}
