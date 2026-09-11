@@ -8,13 +8,13 @@
   gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});
   try{ if(localStorage.getItem('pvtc_consent')==='granted'){ gtag('consent','update',{ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',analytics_storage:'granted'}); } }catch(e){}
 </script>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-LYT5MCF63Z"></script>
+<!-- Google Ads (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18387320769"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'G-LYT5MCF63Z');
+  gtag('config', 'AW-18387320769');
 </script>
 
 <meta charset="UTF-8" />
@@ -2217,6 +2217,7 @@ async function sendQuoteRequest(btn){
       throw new Error(reason);
     }
     if(data&&data.ok===false) throw new Error(data.error||"erreur serveur");
+    try{ if(typeof gtag==="function") gtag('event','conversion',{send_to:'AW-18387320769/58AbCJmbovQcEMH_4L9E'}); }catch(_){}
     toast(LANG==="fr"?"Demande envoyée ! Un e-mail de confirmation vous a été adressé.":"Request sent! A confirmation email is on its way.");
     closePreview();
     resetBookingForm();   // on vide les prestations : le récapitulatif est remis à zéro
