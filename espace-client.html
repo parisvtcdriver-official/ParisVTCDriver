@@ -838,9 +838,9 @@ async function buildInvoiceDoc(b,opts){
   if(_dep>0.009 && !['cancelled','refunded','avoir'].includes(b.status)){
     var _bal=Math.round((Number(b.amount_ttc||0)-_dep)*100)/100;
     var _dP=(b.pay_status==='partial'||b.pay_status==='paid'), _bP=(b.pay_status==='paid');
-    y+=16;doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
-    doc.text((LANG==='en'?('Deposit'+(_dP?' (paid online)':' (online)')):('Acompte'+(_dP?' (réglé en ligne)':' à régler en ligne'))),W-230,y);doc.text(eur(_dep),W-40,y,{align:'right'});y+=14;
-    doc.text((LANG==='en'?('Balance'+(_bP?' (cash)':' (cash on board)')):('Solde'+(_bP?' (réglé en espèces)':' à régler en espèces à bord'))),W-230,y);doc.text(eur(_bal),W-40,y,{align:'right'});
+    y+=16;doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(8.5);
+    doc.text((LANG==='en'?(_dP?'Deposit paid (online)':'Deposit (online)'):(_dP?'Acompte payé (en ligne)':'Acompte (en ligne)')),W-230,y);doc.text(eur(_dep),W-40,y,{align:'right'});y+=13;
+    doc.text((LANG==='en'?(_bP?'Balance paid on board':'Balance due on board'):(_bP?'Solde réglé à bord':'Solde à régler à bord')),W-230,y);doc.text(eur(_bal),W-40,y,{align:'right'});
     doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
   }
   const _ded=_lns.filter(l=>l.st==='cancelled'||l.st==='refunded').reduce((s,l)=>s+_net(l),0);

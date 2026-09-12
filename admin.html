@@ -1085,9 +1085,9 @@ async function buildInvoiceDoc(b,opts){
     var _bal=Math.round((Number(b.amount_ttc||0)-_dep)*100)/100;
     var _depPaid=(b.pay_status==='partial'||b.pay_status==='paid'||d.deposit_paid);
     var _balPaid=(b.pay_status==='paid');
-    y+=16;doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
-    doc.text('Acompte'+(_depPaid?' (réglé en ligne)':' à régler en ligne'),W-230,y);doc.text(eur(_dep),W-40,y,{align:'right'});y+=14;
-    doc.text('Solde'+(_balPaid?' (réglé en espèces)':' à régler en espèces à bord'),W-230,y);doc.text(eur(_bal),W-40,y,{align:'right'});
+    y+=16;doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(8.5);
+    doc.text(_depPaid?'Acompte payé (en ligne)':'Acompte (en ligne)',W-230,y);doc.text(eur(_dep),W-40,y,{align:'right'});y+=13;
+    doc.text(_balPaid?'Solde réglé à bord':'Solde à régler à bord',W-230,y);doc.text(eur(_bal),W-40,y,{align:'right'});
     doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
   }
   // Ajustement par ligne (montants NETS = remise répartie) — la facture reste unique
