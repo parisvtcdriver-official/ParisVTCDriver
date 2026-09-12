@@ -932,14 +932,24 @@ function renderDocs(){
     if(b.type==='devis') typeCell='<span class="st att">Devis</span>';
     else if(['cancelled','refunded'].includes(b.status)) typeCell=statusBadgeFull(b);
     else if(b.status==='avoir') typeCell='<span class="st conf">Facture payée</span> <span class="sub2" style="color:var(--gold-2)">· avoir</span>';
-    else typeCell=(b.pay_status==='paid')?'<span class="st conf">Facture payée</span>':'<span class="st att">Facture à payer</span>';
+    else if(b.pay_status==='paid') typeCell='<span class="st conf">Facture payée</span>';
+    else if(b.pay_status==='partial') typeCell='<span class="st conf">Acompte payé</span> <span class="sub2" style="color:var(--gold-2)">· solde espèces dû</span>';
+    else { const _dep=Number(b.details&&b.details.deposit)||0; typeCell='<span class="st att">Facture à payer</span>'+(_dep>0?' <span class="sub2" style="color:var(--gold-2)">· acompte '+eur(_dep)+'</span>':''); }
     if(arch) typeCell+=' <span class="sub2" style="color:var(--muted-2)">· archivé</span>';
     const archBtn=arch
       ?`<button class="btn-mini" onclick="unarchiveBooking('${b.id}')">Désarchiver</button>`
       :`<button class="btn-mini" onclick="archiveBooking('${b.id}')" title="Archiver (masqué des listes, points et compteur du client conservés)">Archiver</button>`;
     let act=`<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> <button class="btn-mini" onclick="missionNote('${b.id}')" title="Télécharger la note de course">Note</button> ${archBtn} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer définitivement (réduit le compteur de courses)">✕</button>`;
-    if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini" onclick="applyDiscount('${b.id}')" title="Appliquer une remise en % sur ce devis">Remise</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
-    else if(b.type==='facture'&&b.pay_status!=='paid') act=`<button class="btn-mini gold" onclick="validatePayment('${b.id}')" title="Paiement reçu par virement">Valider paiement</button> <button class="btn-mini gold" onclick="validatePayment('${b.id}','especes')" title="Paiement reçu en espèces à bord">💶 Espèces</button> <button class="btn-mini" onclick="resendPayLink('${b.id}')" title="Créer/renvoyer le lien de paiement carte">Renvoyer lien</button> `+act;
+    if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini" onclick="applyDiscount('${b.id}')" title="Appliquer une remise en % sur ce devis">Remise</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Définir un acompte à régler en ligne (le solde sera payé en espèces à bord)">Acompte</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
+    else if(b.type==='facture'&&b.pay_status!=='paid'){
+      const _dep=Number(b.details&&b.details.deposit)||0;
+      if(_dep>0 && b.pay_status==='partial')
+        act=`<button class="btn-mini gold" onclick="validateBalanceCash('${b.id}')" title="Solde reçu en espèces à bord">💶 Solde espèces reçu</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Modifier l'acompte">Acompte</button> `+act;
+      else if(_dep>0)
+        act=`<button class="btn-mini gold" onclick="validateDeposit('${b.id}')" title="Acompte reçu (carte ou virement)">Valider acompte</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Modifier l'acompte">Acompte</button> <button class="btn-mini" onclick="resendPayLink('${b.id}')" title="Créer/renvoyer le lien de paiement de l'acompte">Renvoyer lien</button> `+act;
+      else
+        act=`<button class="btn-mini gold" onclick="validatePayment('${b.id}')" title="Paiement reçu par virement">Valider paiement</button> <button class="btn-mini gold" onclick="validatePayment('${b.id}','especes')" title="Paiement reçu en espèces à bord">💶 Espèces</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Définir un acompte à régler en ligne (solde en espèces à bord)">Acompte</button> <button class="btn-mini" onclick="resendPayLink('${b.id}')" title="Créer/renvoyer le lien de paiement carte">Renvoyer lien</button> `+act;
+    }
     return `<tr${arch?' style="opacity:.6"':''}><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(bookingClient(b))}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td>${eur(b.amount_ht)}</td><td>${eur(b.vat)}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${typeCell}</td><td>${act}</td></tr>`;
   }).join('');
 }
@@ -1069,6 +1079,17 @@ async function buildInvoiceDoc(b,opts){
   if(_vat10<=0.009&&_vat20<=0.009){doc.text('TVA',W-230,y);doc.text(eur(b.vat),W-40,y,{align:'right'});y+=15;}
   y+=3;doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
   doc.text('Total TTC',W-230,y);doc.text(eur(b.amount_ttc),W-40,y,{align:'right'});
+  // Acompte en ligne + solde en espèces à bord
+  var _dep=Math.round((Number(d.deposit)||0)*100)/100;
+  if(_dep>0.009 && !cancel){
+    var _bal=Math.round((Number(b.amount_ttc||0)-_dep)*100)/100;
+    var _depPaid=(b.pay_status==='partial'||b.pay_status==='paid'||d.deposit_paid);
+    var _balPaid=(b.pay_status==='paid');
+    y+=16;doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
+    doc.text('Acompte'+(_depPaid?' (réglé en ligne)':' à régler en ligne'),W-230,y);doc.text(eur(_dep),W-40,y,{align:'right'});y+=14;
+    doc.text('Solde'+(_balPaid?' (réglé en espèces)':' à régler en espèces à bord'),W-230,y);doc.text(eur(_bal),W-40,y,{align:'right'});
+    doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
+  }
   // Ajustement par ligne (montants NETS = remise répartie) — la facture reste unique
   const _ded=_lns.filter(l=>l.st==='cancelled'||l.st==='refunded').reduce((s,l)=>s+_net(l),0);
   const _avo=_lns.filter(l=>l.st==='avoir').reduce((s,l)=>s+_net(l),0);
@@ -1258,6 +1279,50 @@ async function validatePayment(id, via){
   await refresh();
   await emailInvoice(BOOKINGS.find(x=>x.id===id),'paid');
 }
+/* ---------- Acompte en ligne + solde en espèces à bord ---------- */
+async function setDeposit(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  const d=Object.assign({},b.details||{});
+  const tot=Number(b.amount_ttc)||Number(d.subtotal)||0;
+  if(tot<=0){toast('Proposez d’abord un prix (bouton « Prix »).');return;}
+  const cur=Number(d.deposit)||0;
+  const _v=prompt('Acompte à régler EN LIGNE pour réserver (en €).\nLe solde sera payé en espèces à bord.\n0 = pas d’acompte.\n\nTotal TTC : '+eur(tot), cur||'');
+  if(_v===null)return;
+  let dep=parseFloat(String(_v).replace(',','.')); if(isNaN(dep)||dep<0)dep=0;
+  if(dep>tot){toast('L’acompte ne peut pas dépasser le total ('+eur(tot)+').');return;}
+  if(dep>0) d.deposit=Math.round(dep*100)/100; else delete d.deposit;
+  const {error}=await sb.from('bookings').update({details:d}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast(dep>0?('Acompte fixé ✓ '+eur(dep)+' en ligne · solde '+eur(Math.round((tot-dep)*100)/100)+' en espèces'):'Acompte retiré ✓'); refresh();
+}
+async function validateDeposit(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  const d=Object.assign({},b.details||{}); const dep=Number(d.deposit)||0; const tot=Number(b.amount_ttc)||0;
+  if(dep<=0){toast('Aucun acompte défini (bouton « Acompte »).');return;}
+  const via=confirm('Acompte de '+eur(dep)+' reçu par CARTE ?\n\nOK = carte bancaire · Annuler = virement')?'stripe':'virement';
+  if(!confirm('Confirmer la réception de l’acompte de '+eur(dep)+' ('+(via==='stripe'?'carte':'virement')+') ?\nLe solde de '+eur(Math.round((tot-dep)*100)/100)+' sera à régler en espèces à bord.\n\nUn e-mail de confirmation sera envoyé au client.'))return;
+  d.deposit_paid=true; d.deposit_via=via;
+  const upd={pay_status:'partial',status:'confirmed',accepted_at:b.accepted_at||new Date().toISOString(),details:d};
+  if(!b.invoice_no){ const inv=await assignInvoiceNo(); if(inv){ upd.invoice_no=inv; upd.reference=inv; } }
+  const {error}=await sb.from('bookings').update(upd).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Acompte validé ✓ — solde '+eur(Math.round((tot-dep)*100)/100)+' en espèces à bord');
+  await refresh();
+  await emailInvoice(BOOKINGS.find(x=>x.id===id),'partial');
+}
+async function validateBalanceCash(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  const d=Object.assign({},b.details||{}); const dep=Number(d.deposit)||0; const tot=Number(b.amount_ttc)||0;
+  if(!confirm('Confirmer la réception du SOLDE de '+eur(Math.round((tot-dep)*100)/100)+' en espèces à bord ?\nLa facture sera marquée soldée et envoyée au client.'))return;
+  d.balance_via='especes'; d.paid_via=(d.deposit_via||'stripe')+'+especes';
+  const upd={pay_status:'paid',paid_at:new Date().toISOString(),details:d};
+  if(!b.invoice_no){ const inv=await assignInvoiceNo(); if(inv){ upd.invoice_no=inv; upd.reference=inv; } }
+  const {error}=await sb.from('bookings').update(upd).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Solde espèces validé ✓ Facture soldée');
+  await refresh();
+  await emailInvoice(BOOKINGS.find(x=>x.id===id),'paid');
+}
 const EI={
  subj_paid:{fr:'Facture payée {ref} · ParisVTCDriver',en:'Paid invoice {ref} · ParisVTCDriver',es:'Factura pagada {ref} · ParisVTCDriver',it:'Fattura pagata {ref} · ParisVTCDriver',pt:'Fatura paga {ref} · ParisVTCDriver',tr:'Ödenmiş fatura {ref} · ParisVTCDriver',zh:'已付发票 {ref} · ParisVTCDriver',ar:'فاتورة مدفوعة {ref} · ParisVTCDriver'},
  subj_pf:{fr:'Facture proforma {ref} · ParisVTCDriver',en:'Proforma invoice {ref} · ParisVTCDriver',es:'Factura proforma {ref} · ParisVTCDriver',it:'Fattura proforma {ref} · ParisVTCDriver',pt:'Fatura proforma {ref} · ParisVTCDriver',tr:'Proforma fatura {ref} · ParisVTCDriver',zh:'形式发票 {ref} · ParisVTCDriver',ar:'فاتورة مبدئية {ref} · ParisVTCDriver'},
@@ -1277,7 +1342,14 @@ const EI={
  mod_h:{fr:'Modification confirmée',en:'Change confirmed',es:'Modificación confirmada',it:'Modifica confermata',pt:'Alteração confirmada',tr:'Değişiklik onaylandı',zh:'修改已确认',ar:'تم تأكيد التعديل'},
  mod_p1:{fr:'Votre demande de modification a été acceptée. Votre devis/facture n° {ref} est mis à jour (même numéro).',en:'Your change request has been accepted. Your quote/invoice no. {ref} is updated (same number).',es:'Su solicitud de modificación ha sido aceptada. Su presupuesto/factura n.º {ref} se ha actualizado (mismo número).',it:'La tua richiesta di modifica è stata accettata. Il preventivo/fattura n. {ref} è aggiornato (stesso numero).',pt:'O seu pedido de alteração foi aceite. O seu orçamento/fatura n.º {ref} foi atualizado (mesmo número).',tr:'Değişiklik talebiniz kabul edildi. Teklif/fatura no. {ref} güncellendi (aynı numara).',zh:'您的修改请求已被接受。您的报价/发票编号 {ref} 已更新（编号不变）。',ar:'تم قبول طلب التعديل الخاص بك. تم تحديث عرض السعر/الفاتورة رقم {ref} (نفس الرقم).'},
  route_l:{fr:'Trajet :',en:'Route:',es:'Trayecto:',it:'Tragitto:',pt:'Trajeto:',tr:'Güzergâh:',zh:'行程：',ar:'المسار:'},
- date_l:{fr:'Date :',en:'Date:',es:'Fecha:',it:'Data:',pt:'Data:',tr:'Tarih:',zh:'日期：',ar:'التاريخ:'}
+ date_l:{fr:'Date :',en:'Date:',es:'Fecha:',it:'Data:',pt:'Data:',tr:'Tarih:',zh:'日期：',ar:'التاريخ:'},
+ subj_dep:{fr:'Acompte reçu — réservation confirmée {ref} · ParisVTCDriver',en:'Deposit received — booking confirmed {ref} · ParisVTCDriver'},
+ dep_intro:{fr:'Pour confirmer votre réservation, un acompte de <b>{dep}</b> est à régler :',en:'To confirm your booking, a deposit of <b>{dep}</b> is required:'},
+ dep_balance:{fr:'Le solde de <b>{bal}</b> sera à régler en espèces à bord, le jour de la course.',en:'The balance of <b>{bal}</b> is payable in cash on board, on the day of the ride.'},
+ dep_pay_btn:{fr:'💳 Payer l’acompte par carte',en:'💳 Pay the deposit by card'},
+ dep_recv_h:{fr:'Acompte reçu — réservation confirmée',en:'Deposit received — booking confirmed'},
+ dep_recv_p:{fr:'Nous confirmons la réception de votre acompte de <b>{dep}</b>. Votre réservation est confirmée. Votre facture est en pièce jointe.',en:'We confirm receipt of your deposit of <b>{dep}</b>. Your booking is confirmed. Your invoice is attached.'},
+ dep_paid_note:{fr:'Réglé : acompte <b>{dep}</b> par carte/virement + solde <b>{bal}</b> en espèces à bord.',en:'Paid: deposit <b>{dep}</b> by card/transfer + balance <b>{bal}</b> in cash on board.'}
 };
 function eT(b,k){var L=eLang(b);return (EI[k]&&(EI[k][L]||EI[k].fr))||'';}
 async function emailInvoice(b,mode){
@@ -1289,20 +1361,33 @@ async function emailInvoice(b,mode){
   try{const doc=await buildInvoiceDoc(b);pdf64=doc.output('datauristring').split(',')[1];}catch(e){}
   const name=(b.details&&b.details.client_name)||'';
   const paid=mode==='paid';
+  const partial=mode==='partial';
+  const dep=Math.round((Number(b.details&&b.details.deposit)||0)*100)/100;
+  const tot=Number(b.amount_ttc)||0;
+  const bal=Math.round((tot-dep)*100)/100;
   const ref=b.reference||'';
-  const subject=(paid?eT(b,'subj_paid'):eT(b,'subj_pf')).replace('{ref}',ref);
-  // Lien de paiement carte (Stripe) — créé/récupéré pour les factures en attente avec montant > 0
+  const subject=(paid?eT(b,'subj_paid'):(partial?eT(b,'subj_dep'):eT(b,'subj_pf'))).replace('{ref}',ref);
+  // Lien de paiement carte (Stripe) — montant = acompte si défini, sinon total (géré côté fonction request-quote)
   let payUrl='';
-  if(!paid && Number(b.amount_ttc)>0){
+  if(!paid && !partial && Number(b.amount_ttc)>0){
     try{ const {data:pr}=await sb.functions.invoke('request-quote',{body:{action:'create-payment',booking_id:b.id}}); if(pr&&pr.ok&&pr.url)payUrl=pr.url; else if(pr&&pr.error)console.warn('Stripe:',pr.error); }catch(e){}
   }
   const payBtn=payUrl
-    ? `<p style="margin:18px 0"><a href="${payUrl}" style="display:inline-block;background:#635bff;color:#fff;text-decoration:none;padding:13px 24px;border-radius:9px;font-weight:700">${eT(b,'pay_btn')}</a></p><p style="color:#777;font-size:13px;margin:0 0 6px">${eT(b,'or_wire')}</p>`
+    ? `<p style="margin:18px 0"><a href="${payUrl}" style="display:inline-block;background:#635bff;color:#fff;text-decoration:none;padding:13px 24px;border-radius:9px;font-weight:700">${dep>0?eT(b,'dep_pay_btn'):eT(b,'pay_btn')}</a></p><p style="color:#777;font-size:13px;margin:0 0 6px">${eT(b,'or_wire')}</p>`
     : '';
   const _foot=`<p style="color:#888;font-size:12px;margin-top:14px">${escapeHtml(CO.name)} · ${escapeHtml(CO.phone)} · ${escapeHtml(CO.site)}</p>`;
-  const html=paid
-    ? `<h2 style="color:#a07d2c">${eT(b,'paid_h')}</h2><p>${eT(b,'hi')} ${escapeHtml(name)},</p><p>${eT(b,'paid_p1')}</p><p>${eT(b,'paid_amt')} <b>${eur(b.amount_ttc)}</b></p>${_foot}`
-    : `<h2 style="color:#a07d2c">${eT(b,'pf_h')}</h2><p>${eT(b,'hi')} ${escapeHtml(name)},</p><p>${eT(b,'pf_p1a').replace('{amt}',eur(b.amount_ttc))}</p>${payBtn}<p><b>${eT(b,'wire_title')}</b><br>${eT(b,'benef')} : ${escapeHtml(BK.beneficiary)}<br>IBAN : ${escapeHtml(BK.iban)}<br>BIC : ${escapeHtml(BK.bic)}<br>${eT(b,'ref_label')} : ${escapeHtml(ref)}</p><p>${eT(b,'pf_p2')}</p>${_foot}`;
+  const _wire=`<p><b>${eT(b,'wire_title')}</b><br>${eT(b,'benef')} : ${escapeHtml(BK.beneficiary)}<br>IBAN : ${escapeHtml(BK.iban)}<br>BIC : ${escapeHtml(BK.bic)}<br>${eT(b,'ref_label')} : ${escapeHtml(ref)}</p>`;
+  let html;
+  if(paid){
+    const _paidLine = dep>0 ? `<p>${eT(b,'dep_paid_note').replace('{dep}',eur(dep)).replace('{bal}',eur(bal))}</p>` : `<p>${eT(b,'paid_amt')} <b>${eur(tot)}</b></p>`;
+    html=`<h2 style="color:#a07d2c">${eT(b,'paid_h')}</h2><p>${eT(b,'hi')} ${escapeHtml(name)},</p><p>${eT(b,'paid_p1')}</p>${_paidLine}${_foot}`;
+  } else if(partial){
+    html=`<h2 style="color:#a07d2c">${eT(b,'dep_recv_h')}</h2><p>${eT(b,'hi')} ${escapeHtml(name)},</p><p>${eT(b,'dep_recv_p').replace('{dep}',eur(dep))}</p><p>${eT(b,'dep_balance').replace('{bal}',eur(bal))}</p>${_foot}`;
+  } else if(dep>0){
+    html=`<h2 style="color:#a07d2c">${eT(b,'pf_h')}</h2><p>${eT(b,'hi')} ${escapeHtml(name)},</p><p>${eT(b,'dep_intro').replace('{dep}',eur(dep))}</p>${payBtn}${_wire}<p>${eT(b,'dep_balance').replace('{bal}',eur(bal))}</p><p>${eT(b,'pf_p2')}</p>${_foot}`;
+  } else {
+    html=`<h2 style="color:#a07d2c">${eT(b,'pf_h')}</h2><p>${eT(b,'hi')} ${escapeHtml(name)},</p><p>${eT(b,'pf_p1a').replace('{amt}',eur(tot))}</p>${payBtn}${_wire}<p>${eT(b,'pf_p2')}</p>${_foot}`;
+  }
   try{
     const {data,error}=await sb.functions.invoke('request-quote',{body:{action:'send-invoice',to,subject,html,pdf_base64:pdf64,filename:(paid?'facture-payee-':'facture-proforma-')+(ref||'doc')+'.pdf'}});
     if(error||(data&&data.ok===false)) throw new Error((data&&data.error)||(error&&error.message)||'err');
