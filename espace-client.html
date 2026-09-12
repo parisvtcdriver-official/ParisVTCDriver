@@ -599,7 +599,7 @@ function lineTTC(b,l){if(l&&l.price!=null&&l.price!=='')return Number(l.price)||
 function lineVehicle(l){if(l&&l.detail){return String(l.detail).split('·')[0].trim()||'—';}return '—';}
 function rowResaMulti(b,withCancel){
   const ls=lineList(b);
-  const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">'+t('paid')+'</span>':' <span class="st att" style="margin-left:6px">'+t('topay')+'</span>'):'';
+  const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">'+t('paid')+'</span>':(b.pay_status==='partial'?' <span class="st conf" style="margin-left:6px">'+(LANG==='en'?'Deposit paid':'Acompte payé')+'</span>':' <span class="st att" style="margin-left:6px">'+t('topay')+'</span>')):'';
   let extra='';
   if(withCancel){
     if(b.details&&b.details.mod_request) extra='<span class="sub2" style="color:var(--amber)">'+t('mod_pending')+'</span>';
@@ -621,7 +621,7 @@ function rowResa(b,withCancel){
     else if(b.details&&b.details.cancel&&b.details.cancel.requested&&b.status!=='cancelled') extra='<span class="sub2" style="color:var(--amber)">'+t('req_sent')+'</span>';
     else if(!['cancelled','completed','refunded','avoir'].includes(b.status)) extra=`<button class="btn btn-ghost btn-sm" style="margin-right:6px" onclick="modifyResa('${b.id}')">${t('btn_modify')}</button><button class="btn btn-ghost btn-sm" onclick="requestCancel('${b.id}')">${t('btn_cancel')}</button>`;
   }
-  const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">'+t('paid')+'</span>':' <span class="st att" style="margin-left:6px">'+t('topay')+'</span>'):'';
+  const payTag=b.type==='facture'?(b.pay_status==='paid'?' <span class="st conf" style="margin-left:6px">'+t('paid')+'</span>':(b.pay_status==='partial'?' <span class="st conf" style="margin-left:6px">'+(LANG==='en'?'Deposit paid':'Acompte payé')+'</span>':' <span class="st att" style="margin-left:6px">'+t('topay')+'</span>')):'';
   return `<tr><td><div class="cli">${escapeHtml(b.service||b.type)}${payTag}</div><div class="sub2">${escapeHtml([b.pickup,b.dropoff].filter(Boolean).join(' → '))}</div></td>
     <td>${bkRDV(b)}</td><td>${escapeHtml(bkVehicle(b)||'—')}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${statusBadgeFull(b)}</td>${withCancel?`<td>${extra}</td>`:''}</tr>`;
 }
@@ -673,11 +673,11 @@ function renderDocs(list){
   const FPAID={fr:'Facture payée',en:'Invoice paid',es:'Factura pagada',it:'Fattura pagata',pt:'Fatura paga',tr:'Fatura ödendi',zh:'发票已付'}[LANG]||'Facture payée';
   el.innerHTML=docs.map(b=>{
     let badge;
-    if(b.type==='facture') badge=(['cancelled','refunded'].includes(b.status))?statusBadgeFull(b):(b.pay_status==='paid'?'<span class="st conf">'+FPAID+'</span>':'<span class="st att">'+t('topay')+'</span>');
+    if(b.type==='facture') badge=(['cancelled','refunded'].includes(b.status))?statusBadgeFull(b):(b.pay_status==='paid'?'<span class="st conf">'+FPAID+'</span>':(b.pay_status==='partial'?'<span class="st conf">'+(LANG==='en'?'Deposit paid':'Acompte payé')+'</span>':'<span class="st att">'+t('topay')+'</span>'));
     else badge='<span class="st att">'+DEVIS+'</span>';
     const rev=revCell(b);
     const PAYNOW={fr:'Payer par carte',en:'Pay by card',es:'Pagar con tarjeta',it:'Paga con carta',pt:'Pagar com cartão',tr:'Kartla öde',zh:'银行卡支付'}[LANG]||'Payer par carte';
-    const payNow=(b.type==='facture'&&b.pay_status!=='paid'&&!['cancelled','refunded'].includes(b.status)&&b.details&&b.details.stripe_url)?`<a class="btn btn-gold btn-sm" style="margin-left:6px" href="${b.details.stripe_url}" target="_blank" rel="noopener">💳 ${PAYNOW}</a>`:'';
+    const payNow=(b.type==='facture'&&b.pay_status!=='paid'&&b.pay_status!=='partial'&&!['cancelled','refunded'].includes(b.status)&&b.details&&b.details.stripe_url)?`<a class="btn btn-gold btn-sm" style="margin-left:6px" href="${b.details.stripe_url}" target="_blank" rel="noopener">💳 ${PAYNOW}</a>`:'';
     return `<tr><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(b.service||'')}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString(loc):'—'}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${badge}</td><td>${b.type==='facture'?`<button class="btn btn-ghost btn-sm" onclick="clientDocPDF('${b.id}')">PDF</button>`:''}${payNow}${rev}</td></tr>`;
   }).join('');
 }
@@ -833,6 +833,16 @@ async function buildInvoiceDoc(b,opts){
   if(_vat10<=0.009&&_vat20<=0.009){doc.text(P('vath'),W-230,y);doc.text(eur(b.vat),W-40,y,{align:'right'});y+=15;}
   y+=3;doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
   doc.text(P('totalttc'),W-230,y);doc.text(eur(b.amount_ttc),W-40,y,{align:'right'});
+  // Acompte en ligne + solde en espèces à bord
+  var _dep=Math.round((Number(d.deposit)||0)*100)/100;
+  if(_dep>0.009 && !['cancelled','refunded','avoir'].includes(b.status)){
+    var _bal=Math.round((Number(b.amount_ttc||0)-_dep)*100)/100;
+    var _dP=(b.pay_status==='partial'||b.pay_status==='paid'), _bP=(b.pay_status==='paid');
+    y+=16;doc.setFont(F,'normal');doc.setTextColor(60,70,90);doc.setFontSize(9.5);
+    doc.text((LANG==='en'?('Deposit'+(_dP?' (paid online)':' (online)')):('Acompte'+(_dP?' (réglé en ligne)':' à régler en ligne'))),W-230,y);doc.text(eur(_dep),W-40,y,{align:'right'});y+=14;
+    doc.text((LANG==='en'?('Balance'+(_bP?' (cash)':' (cash on board)')):('Solde'+(_bP?' (réglé en espèces)':' à régler en espèces à bord'))),W-230,y);doc.text(eur(_bal),W-40,y,{align:'right'});
+    doc.setFont(F,'bold');doc.setTextColor(...gold);doc.setFontSize(12);
+  }
   const _ded=_lns.filter(l=>l.st==='cancelled'||l.st==='refunded').reduce((s,l)=>s+_net(l),0);
   const _avo=_lns.filter(l=>l.st==='avoir').reduce((s,l)=>s+_net(l),0);
   if(_ded>0.009||_avo>0.009){
