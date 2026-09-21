@@ -1147,8 +1147,8 @@ const VEHICLES=[
 ];
 /* leisure packs — price per person (TTC) for Eco Green; vehicle surcharge per person from VEHICLES.packSup; date surcharge per person */
 const PACKTYPES=[
-  {id:"disney1", per:250, vehFlat:{eco:0,premium:150,van:250}, dateSup:{"12-31":100,"10-31":50}, r:{fr:"Pack Disneyland Paris — 1 Parc",en:"Disneyland Paris Pack — 1 Park",es:"Pack Disneyland Paris — 1 Parque",it:"Pack Disneyland Paris — 1 Parco",pt:"Pack Disneyland Paris — 1 Parque",tr:"Disneyland Paris Paketi — 1 Park",zh:"巴黎迪士尼套餐 — 1 个园区"}},
-  {id:"disney2", per:300, vehFlat:{eco:0,premium:150,van:250}, dateSup:{"12-31":100,"10-31":50}, r:{fr:"Pack Disneyland Paris — 2 Parcs",en:"Disneyland Paris Pack — 2 Parks",es:"Pack Disneyland Paris — 2 Parques",it:"Pack Disneyland Paris — 2 Parchi",pt:"Pack Disneyland Paris — 2 Parques",tr:"Disneyland Paris Paketi — 2 Park",zh:"巴黎迪士尼套餐 — 2 个园区"}},
+  {id:"disney1", paxBase:{eco:350,premium:450,van:150}, paxSup:100, dateSup:{"12-31":100,"10-31":50}, r:{fr:"Pack Disneyland Paris — 1 Parc",en:"Disneyland Paris Pack — 1 Park",es:"Pack Disneyland Paris — 1 Parque",it:"Pack Disneyland Paris — 1 Parco",pt:"Pack Disneyland Paris — 1 Parque",tr:"Disneyland Paris Paketi — 1 Park",zh:"巴黎迪士尼套餐 — 1 个园区"}},
+  {id:"disney2", paxBase:{eco:400,premium:500,van:600}, paxSup:150, dateSup:{"12-31":100,"10-31":50}, r:{fr:"Pack Disneyland Paris — 2 Parcs",en:"Disneyland Paris Pack — 2 Parks",es:"Pack Disneyland Paris — 2 Parques",it:"Pack Disneyland Paris — 2 Parchi",pt:"Pack Disneyland Paris — 2 Parques",tr:"Disneyland Paris Paketi — 2 Park",zh:"巴黎迪士尼套餐 — 2 个园区"}},
   {id:"vers1", per:90, vehFlat:{eco:150,premium:200,van:250}, r:{fr:"Pack Château de Versailles — Château",en:"Versailles Palace Pack — Palace",es:"Pack Palacio de Versalles — Palacio",it:"Pack Reggia di Versailles — Castello",pt:"Pack Palácio de Versalhes — Palácio",tr:"Versailles Sarayı Paketi — Saray",zh:"凡尔赛宫套餐 — 宫殿"}},
   {id:"vers2", per:110, vehFlat:{eco:150,premium:200,van:250}, r:{fr:"Pack Château de Versailles — Château + Jardins",en:"Versailles Palace Pack — Palace + Gardens",es:"Pack Palacio de Versalles — Palacio + Jardines",it:"Pack Reggia di Versailles — Castello + Giardini",pt:"Pack Palácio de Versalhes — Palácio + Jardins",tr:"Versailles Sarayı Paketi — Saray + Bahçeler",zh:"凡尔赛宫套餐 — 宫殿 + 花园"}},
   {id:"vincennes", per:25, vehFlat:{eco:150,premium:200,van:250}, r:{fr:"Pack Château de Vincennes",en:"Vincennes Castle Pack",es:"Pack Castillo de Vincennes",it:"Pack Castello di Vincennes",pt:"Pack Castelo de Vincennes",tr:"Vincennes Şatosu Paketi",zh:"万塞讷城堡套餐"}},
@@ -1823,7 +1823,8 @@ function packPrice(p){           // TTC. Disney: per-person (base+veh sup+date)�
   if(!pt) return 0;
   if(pt.custom) return 0; // Pack Spécial — sur devis
   let price;
-  if(pt.vehFlat){ const ds=pt.dateSup?(pt.dateSup[(p.date||"").slice(5,10)]||0):0; price = (pt.per+ds)*Math.max(1,p.pax) + (pt.vehFlat[p.veh]||0); }
+  if(pt.paxBase){ const ds=pt.dateSup?(pt.dateSup[(p.date||"").slice(5,10)]||0):0; const px=Math.max(1,p.pax); const b=(pt.paxBase[p.veh]!=null?pt.paxBase[p.veh]:(pt.paxBase.eco||0)); price = b + (pt.paxSup||0)*(px-1) + ds*px; }
+  else if(pt.vehFlat){ const ds=pt.dateSup?(pt.dateSup[(p.date||"").slice(5,10)]||0):0; price = (pt.per+ds)*Math.max(1,p.pax) + (pt.vehFlat[p.veh]||0); }
   else { price = (pt.per + (v?v.packSup:0) + packDateSup(p.date))*Math.max(1,p.pax); }
   return Math.round((price + seatFee(p))*100)/100;
 }
