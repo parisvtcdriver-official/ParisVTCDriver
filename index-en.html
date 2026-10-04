@@ -371,6 +371,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover{filter:inv
 .vcard.eco:hover{border-color:rgba(52,211,153,.5)}
 .vcard .eco-badge{position:absolute;top:12px;left:12px;z-index:2;font-size:12px;font-weight:600;letter-spacing:.06em;color:#062a1d;background:linear-gradient(135deg,#6ee7b7,#10b981);padding:5px 11px;border-radius:999px;box-shadow:0 6px 16px -6px rgba(16,185,129,.7)}
 .vcard.eco .price{color:#6ee7b7}
+.vcard.elec{border-color:rgba(96,165,250,.3)}
+.vcard.elec:hover{border-color:rgba(96,165,250,.55)}
+.vcard .elec-badge{position:absolute;top:12px;left:12px;z-index:2;font-size:12px;font-weight:600;letter-spacing:.06em;color:#fff;background:linear-gradient(135deg,#60a5fa,#2563eb);padding:5px 11px;border-radius:999px;box-shadow:0 6px 16px -6px rgba(37,99,235,.7);display:inline-flex;align-items:center;gap:5px}
+.vcard.elec .price{color:#93c5fd}
 .vcard .body{padding:20px}
 .vcard .body h4{font-size:17px;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .vcard .body .seats{font-size:12.5px;color:var(--muted-2);margin:6px 0 12px}
@@ -386,6 +390,7 @@ table.fares td.route{font-weight:500}
 table.fares td.route small{display:block;color:var(--muted-2);font-size:12px;font-weight:400}
 table.fares td.fare{font-family:'Space Grotesk';color:var(--gold-bright);font-weight:600;white-space:nowrap}
 table.fares td.fare.eco{color:#6ee7b7}
+table.fares td.fare.elec{color:#93c5fd}
 table.fares tbody tr{transition:background .2s}
 table.fares tbody tr:hover{background:rgba(255,255,255,.025)}
 table.fares th.veh small{display:block;color:var(--muted-2);font-size:12px;font-weight:400;text-transform:none;letter-spacing:0}
@@ -1058,7 +1063,8 @@ footer{border-top:1px solid var(--line-soft);background:linear-gradient(180deg,#
 <script>
 /* ---------------- DATA ---------------- */
 const VEHICLES=[
-  {id:"eco",  name:{fr:"Éco Green Hybride",en:"Eco Green Hybrid"}, seats:4, maxPax:4, base:75, perH:62, packSup:0, shape:"sedan", eco:true, img:"car-eco.jpg", ecoLabel:{fr:"Hybride Toyota",en:"Toyota Hybrid"}, desc:{fr:"Toyota, Tesla ou équivalent",en:"Toyota, Tesla or equivalent"}},
+  {id:"eco",  name:{fr:"Éco Green Hybride",en:"Eco Green Hybrid"}, seats:4, maxPax:4, base:75, perH:62, packSup:0, shape:"sedan", eco:true, img:"car-eco.jpg", ecoLabel:{fr:"Hybride Toyota",en:"Toyota Hybrid"}, desc:{fr:"Toyota, Honda ou équivalent",en:"Toyota, Honda or equivalent"}},
+  {id:"electrique", name:{fr:"Électrique Premium",en:"Premium Electric"}, seats:4, maxPax:4, base:85, perH:72, packSup:0, shape:"sedan", elec:true, elecLabel:{fr:"Électrique",en:"Electric"}, img:"car-electrique.jpg", desc:{fr:"Tesla, BYD ou équivalent",en:"Tesla, BYD or equivalent"}},
   {id:"premium", name:{fr:"Berline Premium",en:"Premium Sedan"}, seats:3, maxPax:3, base:90, perH:72, packSup:25, shape:"sedan", img:"car-premium.jpg", desc:{fr:"Mercedes Classe E ou équivalent",en:"Mercedes E-Class or equivalent"}},
   {id:"van",  name:{fr:"Van Mercedes Classe V",en:"Mercedes V-Class Van"}, seats:7, maxPax:8, base:130, perH:95, packSup:35, shape:"van", img:"car-van.jpg", desc:{fr:"Mercedes Classe V ou équivalent — groupes & bagages",en:"Mercedes V-Class or equivalent — groups & luggage"}},
 ];
@@ -1085,18 +1091,18 @@ function packDateSup(dateStr){ // per person surcharge on special dates
 }
 /* all-inclusive fixed fares (€) per vehicle id */
 const SERVICES=[
-  {id:"paris", r:{fr:"Paris ↔ Paris",en:"Within Paris"}, s:{fr:"intra-muros",en:"inner city"}, price:{eco:39,premium:59,van:65}},
-  {id:"cdg", r:{fr:"Paris ↔ Aéroport CDG",en:"Paris ↔ CDG Airport"}, s:{fr:"Roissy · ~45 min",en:"Roissy · ~45 min"}, price:{eco:80,premium:100,van:120}},
-  {id:"orly", r:{fr:"Paris ↔ Aéroport Orly",en:"Paris ↔ Orly Airport"}, s:{fr:"~35 min",en:"~35 min"}, price:{eco:70,premium:90,van:100}},
-  {id:"beauvais", r:{fr:"Paris ↔ Aéroport Beauvais",en:"Paris ↔ Beauvais Airport"}, s:{fr:"~1h15",en:"~1h15"}, price:{eco:150,premium:190,van:250}},
-  {id:"versailles", r:{fr:"Paris ↔ Château de Versailles",en:"Paris ↔ Palace of Versailles"}, s:{fr:"~40 min",en:"~40 min"}, price:{eco:75,premium:100,van:120}},
-  {id:"disney", r:{fr:"Paris ↔ Disneyland Paris",en:"Paris ↔ Disneyland Paris"}, s:{fr:"Marne-la-Vallée · ~50 min",en:"Marne-la-Vallée · ~50 min"}, price:{eco:85,premium:110,van:130}},
-  {id:"seaside", r:{fr:"Bord de mer · Normandie & Côte d'Opale",en:"Seaside · Normandy & Opal Coast"}, s:{fr:"prix fixe (aller)",en:"fixed price (one-way)"}, price:{eco:350,premium:550,van:750}, hideFare:true},
-  {id:"localcdg", r:{fr:"Trajet local → Aéroport CDG",en:"Local ride → CDG Airport"}, s:{fr:"depuis ≤ 5 km du siège · prix fixe",en:"from ≤ 5 km of base · fixed"}, price:{eco:35,premium:55,van:65}, local:true},
-  {id:"local", r:{fr:"Trajet local · Villepinte & alentours",en:"Local ride · Villepinte area"}, s:{fr:"trajet ≤ 20 km · prix automatique",en:"trip ≤ 20 km · auto price"}, price:{eco:25,premium:55,van:60}, local:true},
-  {id:"localparis", r:{fr:"Trajet local → Paris",en:"Local ride → Paris"}, s:{fr:"≤ 10 km du siège · prix fixe",en:"≤ 10 km from base · fixed"}, price:{eco:80,premium:100,van:120}},
-  {id:"hourly", r:{fr:"Mise à disposition",en:"Hourly chauffeur"}, s:{fr:"par heure · 2h min.",en:"per hour · 2h min."}, price:{eco:50,premium:60,van:75}, perH:true},
-  {id:"custom", r:{fr:"Transfert sur-mesure",en:"Custom transfer"}, s:{fr:"sur devis",en:"on quote"}, price:{eco:90,premium:120,van:160}, custom:true},
+  {id:"paris", r:{fr:"Paris ↔ Paris",en:"Within Paris"}, s:{fr:"intra-muros",en:"inner city"}, price:{eco:39,electrique:49,premium:59,van:65}},
+  {id:"cdg", r:{fr:"Paris ↔ Aéroport CDG",en:"Paris ↔ CDG Airport"}, s:{fr:"Roissy · ~45 min",en:"Roissy · ~45 min"}, price:{eco:80,electrique:90,premium:100,van:120}},
+  {id:"orly", r:{fr:"Paris ↔ Aéroport Orly",en:"Paris ↔ Orly Airport"}, s:{fr:"~35 min",en:"~35 min"}, price:{eco:70,electrique:80,premium:90,van:100}},
+  {id:"beauvais", r:{fr:"Paris ↔ Aéroport Beauvais",en:"Paris ↔ Beauvais Airport"}, s:{fr:"~1h15",en:"~1h15"}, price:{eco:150,electrique:170,premium:190,van:250}},
+  {id:"versailles", r:{fr:"Paris ↔ Château de Versailles",en:"Paris ↔ Palace of Versailles"}, s:{fr:"~40 min",en:"~40 min"}, price:{eco:75,electrique:85,premium:100,van:120}},
+  {id:"disney", r:{fr:"Paris ↔ Disneyland Paris",en:"Paris ↔ Disneyland Paris"}, s:{fr:"Marne-la-Vallée · ~50 min",en:"Marne-la-Vallée · ~50 min"}, price:{eco:85,electrique:95,premium:110,van:130}},
+  {id:"seaside", r:{fr:"Bord de mer · Normandie & Côte d'Opale",en:"Seaside · Normandy & Opal Coast"}, s:{fr:"prix fixe (aller)",en:"fixed price (one-way)"}, price:{eco:350,electrique:450,premium:550,van:750}, hideFare:true},
+  {id:"localcdg", r:{fr:"Trajet local → Aéroport CDG",en:"Local ride → CDG Airport"}, s:{fr:"depuis ≤ 5 km du siège · prix fixe",en:"from ≤ 5 km of base · fixed"}, price:{eco:35,electrique:45,premium:55,van:65}, local:true},
+  {id:"local", r:{fr:"Trajet local · Villepinte & alentours",en:"Local ride · Villepinte area"}, s:{fr:"trajet ≤ 20 km · prix automatique",en:"trip ≤ 20 km · auto price"}, price:{eco:25,electrique:35,premium:55,van:60}, local:true},
+  {id:"localparis", r:{fr:"Trajet local → Paris",en:"Local ride → Paris"}, s:{fr:"≤ 10 km du siège · prix fixe",en:"≤ 10 km from base · fixed"}, price:{eco:80,electrique:90,premium:100,van:120}},
+  {id:"hourly", r:{fr:"Mise à disposition",en:"Hourly chauffeur"}, s:{fr:"par heure · 2h min.",en:"per hour · 2h min."}, price:{eco:50,electrique:60,premium:60,van:75}, perH:true},
+  {id:"custom", r:{fr:"Transfert sur-mesure",en:"Custom transfer"}, s:{fr:"sur devis",en:"on quote"}, price:{eco:90,electrique:100,premium:120,van:160}, custom:true},
 ];
 const CHAUFFEURS=[
   {id:"std", name:{fr:"Chauffeur Standard",en:"Standard Driver"}, fee:0},
@@ -1369,7 +1375,7 @@ function renderFares(){
   const head=`<thead><tr><th data-h>${LANG==="fr"?"Trajet":"Route"}</th>`+
     VEHICLES.map(v=>`<th class="veh">${PL(v.name)}<small>${PL(v.desc)}</small></th>`).join("")+`</tr></thead>`;
   const rows=SERVICES.filter(rt=>!rt.custom && rt.id!=='localcdg' && rt.id!=='localparis').slice().sort((a,b)=>(a.price.eco||0)-(b.price.eco||0)).map(rt=>`<tr><td class="route">${PL(rt.r)}<small>${PL(rt.s)}</small></td>`+
-    VEHICLES.map(v=>`<td class="fare${v.eco?' eco':''}">${LANG==="fr"?"dès ":"from "}${eur(rt.price[v.id])}${rt.perH?"/h":""}</td>`).join("")+`</tr>`).join("");
+    VEHICLES.map(v=>`<td class="fare${v.eco?' eco':v.elec?' elec':''}">${LANG==="fr"?"dès ":"from "}${eur(rt.price[v.id])}${rt.perH?"/h":""}</td>`).join("")+`</tr>`).join("");
   tb.innerHTML=head+`<tbody>${rows}</tbody>`;
 }
 
@@ -1464,11 +1470,11 @@ function minFare(vid){return Math.min(...SERVICES.filter(s=>!s.custom&&!s.perH).
 /* ---------------- RENDER STATIC GRIDS ---------------- */
 function renderFleet(){
   document.getElementById("fleetGrid").innerHTML=VEHICLES.map(v=>`
-    <div class="vcard${v.eco?' eco':''}">
-      <div class="ph"><img class="vphoto" src="${v.img}" alt="${PL(v.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="vfallback" style="display:none">${carSVG(v)}</span>${v.eco?`<span class="eco-badge">${PL(v.ecoLabel)}</span>`:''}</div>
+    <div class="vcard${v.eco?' eco':v.elec?' elec':''}">
+      <div class="ph"><img class="vphoto" src="${v.img}" alt="${PL(v.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="vfallback" style="display:none">${carSVG(v)}</span>${v.eco?`<span class="eco-badge">${PL(v.ecoLabel)}</span>`:v.elec?`<span class="elec-badge"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>${PL(v.elecLabel)}</span>`:''}</div>
       <div class="body">
         <h4>${PL(v.name)}
-          <svg class="vicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">${v.eco?'<path d="M11 20A7 7 0 0 1 4 13c0-4 3-8 7-11 4 3 7 7 7 11a7 7 0 0 1-7 7zM11 9v11" stroke-linecap="round" stroke-linejoin="round"/>':'<path d="M5 13l1.5-4.5A2 2 0 0 1 8.4 7h7.2a2 2 0 0 1 1.9 1.5L19 13M5 13h14M5 13v4m14-4v4M7 17h2m6 0h2" stroke-linecap="round" stroke-linejoin="round"/>'}</svg>
+          <svg class="vicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">${v.eco?'<path d="M11 20A7 7 0 0 1 4 13c0-4 3-8 7-11 4 3 7 7 7 11a7 7 0 0 1-7 7zM11 9v11" stroke-linecap="round" stroke-linejoin="round"/>':v.elec?'<path d="M13 2 4 14h6l-1 8 9-12h-6z" stroke-linecap="round" stroke-linejoin="round"/>':'<path d="M5 13l1.5-4.5A2 2 0 0 1 8.4 7h7.2a2 2 0 0 1 1.9 1.5L19 13M5 13h14M5 13v4m14-4v4M7 17h2m6 0h2" stroke-linecap="round" stroke-linejoin="round"/>'}</svg>
         </h4>
         <div class="seats">${PL(v.desc)} · ${v.seats} ${LANG==="fr"?"passagers":"passengers"}</div>
         <div class="price">${LANG==="fr"?"dès":"from"} <span style="font-size:18px">${eur(minFare(v.id))}</span> <small>/ ${LANG==="fr"?"trajet":"transfer"}</small></div>
@@ -1711,7 +1717,7 @@ function packPrice(p){           // TTC. Disney: per-person (base+veh sup+date)�
   if(pt.custom) return 0; // Pack Spécial — sur devis
   let price;
   if(pt.paxBase){ const ds=pt.dateSup?(pt.dateSup[(p.date||"").slice(5,10)]||0):0; const px=Math.max(1,p.pax); const b=(pt.paxBase[p.veh]!=null?pt.paxBase[p.veh]:(pt.paxBase.eco||0)); price = b + (pt.paxSup||0)*(px-1) + ds*px; }
-  else if(pt.vehFlat){ const ds=pt.dateSup?(pt.dateSup[(p.date||"").slice(5,10)]||0):0; price = (pt.per+ds)*Math.max(1,p.pax) + (pt.vehFlat[p.veh]||0); }
+  else if(pt.vehFlat){ const ds=pt.dateSup?(pt.dateSup[(p.date||"").slice(5,10)]||0):0; price = (pt.per+ds)*Math.max(1,p.pax) + (pt.vehFlat[p.veh]!=null?pt.vehFlat[p.veh]:(pt.vehFlat.eco||0)); }
   else { price = (pt.per + (v?v.packSup:0) + packDateSup(p.date))*Math.max(1,p.pax); }
   return Math.round((price + seatFee(p))*100)/100;
 }
