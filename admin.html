@@ -1156,7 +1156,8 @@ async function docPDF(id){
 
 /* ---------- Circuit devis → facture → paiement ---------- */
 function askLinePrice(l,idx){
-  const v=prompt('Prix TTC pour « '+(l.label||('Service '+(idx+1)))+' » (€) :','');
+  const _cur=(l&&l.price!=null&&l.price!=='')?l.price:'';
+  const v=prompt('Prix TTC pour « '+(l.label||('Service '+(idx+1)))+' » (€) :',_cur);
   if(v===null) return null;                       // annulation
   const ttc=parseFloat(String(v).replace(',','.'));
   if(isNaN(ttc)||ttc<0){toast('Montant invalide');return undefined;}
@@ -1175,6 +1176,9 @@ async function proposePrice(id){
       const rate=10;                    // transport = 10% (modifiable plus tard si besoin)
       lines[i].price=ttc; lines[i].ht=Math.round(ttc/(1+rate/100)*100)/100; lines[i].vat=rate; lines[i].priceLabel=eur(ttc); lines[i].custom=false;
     }
+  } else if(lines.length>1){
+    // Plusieurs services : corriger le prix de CHAQUE service individuellement
+    for(let i=0;i<lines.length;i++){ const ttc=askLinePrice(lines[i],i); if(ttc===null||ttc===undefined) return; const r=Number(lines[i].vat)||10; lines[i].price=ttc; lines[i].ht=Math.round(ttc/(1+r/100)*100)/100; lines[i].vat=r; lines[i].priceLabel=eur(ttc); lines[i].custom=false; }
   } else {
     // Aucune ligne sur-mesure : prix global classique
     const v=prompt('Prix TTC à proposer pour ce devis (€) :', b.amount_ttc||'');
