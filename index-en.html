@@ -1104,6 +1104,17 @@ const SERVICES=[
   {id:"hourly", r:{fr:"Mise à disposition",en:"Hourly chauffeur"}, s:{fr:"par heure · 2h min.",en:"per hour · 2h min."}, price:{eco:50,electrique:60,premium:60,van:75}, perH:true},
   {id:"custom", r:{fr:"Transfert sur-mesure",en:"Custom transfer"}, s:{fr:"sur devis",en:"on quote"}, price:{eco:90,electrique:100,premium:120,van:160}, custom:true},
 ];
+/* Péages — montant fixe TTC par trajet type ; sur-mesure/hourly = estimation au km (ajustable dans l'admin) */
+const TOLLS={paris:0,cdg:0,orly:0,versailles:0,disney:0,beauvais:10,seaside:30,localcdg:0,local:0,localparis:0,hourly:0};
+const TOLL_PER_KM=0.10;
+function tollFor(s){
+  if(!s||!s.toll) return 0;
+  var st=SERVICES.find(function(x){return x.id===s.type;});
+  if(st&&st.custom) return 0;
+  if(TOLLS[s.type]!=null) return TOLLS[s.type];
+  var km=Number(s.tripKm)||0;
+  return Math.round(km*TOLL_PER_KM*100)/100;
+}
 const CHAUFFEURS=[
   {id:"std", name:{fr:"Chauffeur Standard",en:"Standard Driver"}, fee:0},
   {id:"snr", name:{fr:"Chauffeur Senior",en:"Senior Chauffeur"}, fee:35},
@@ -1616,6 +1627,7 @@ function addService(data){
       ${seatsCell('svc',id)}
       <div data-hours style="display:none"><label class="label" data-l="hours">${t("hours")}</label><input type="number" min="2" max="12" value="2" onchange="updSvc(${id},'hours',this.value)"></div>
     </div>
+    <label data-tollrow style="display:flex;align-items:center;gap:9px;margin-top:4px;margin-bottom:2px;cursor:pointer;font-size:13.5px;color:var(--txt)"><input type="checkbox" data-toll onchange="updSvc(${id},'toll',this.checked)" style="width:17px;height:17px;accent-color:var(--gold)"> ${LANG==='fr'?'Péage inclus (autoroute)':'Tolls included (motorway)'}</label>
     <div data-lug style="display:none;margin-top:14px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div><label class="label" data-l="f_suitcase">${t("f_suitcase")}</label><input type="number" min="0" max="20" placeholder="0" oninput="updSvc(${id},'suitcase',this.value)" onchange="updSvc(${id},'suitcase',this.value)"></div>
@@ -1632,6 +1644,7 @@ function addService(data){
   q("input[onchange*=\"'pax'\"]").value=s.pax;
   q("input[onchange*=\"'hours'\"]").value=s.hours;
   q("#addr-pickup-"+id).value=s.pickup||"";q("#addr-dropoff-"+id).value=s.dropoff||"";
+  var _tgl=q("[data-toll]");if(_tgl)_tgl.checked=!!s.toll;
   q("[data-lug] input[onchange*=\"'suitcase'\"]").value=(s.suitcase!=null?s.suitcase:"");
   q("[data-lug] input[onchange*=\"'cabin'\"]").value=(s.cabin!=null?s.cabin:"");
   const st=SERVICES.find(x=>x.id===s.type),hb=wrap.querySelector("[data-hours]");if(hb)hb.style.display=(st&&st.perH)?"":"none";
@@ -1699,13 +1712,13 @@ function isPackCustom(p){const pt=PACKTYPES.find(x=>x.id===p.type);return !!(pt&
 function svcPrice(s){            // returns the all-inclusive TTC price (0 for custom = on quote)
   const v=VEHICLES.find(x=>x.id===s.veh),st=SERVICES.find(x=>x.id===s.type);
   if(st&&st.custom) return 0;
-  if(st&&st.id==='seaside'){return Math.round(((st.price[v.id]||350)+seatFee(s))*100)/100;}
-  if(st&&st.id==='localcdg'){return Math.round(((st.price[v.id]||35)+seatFee(s))*100)/100;}
-  if(st&&st.local){var _b=localBand(s.tripKm);if(_b==null)return 0;var _lb=(LOCAL_FARE[v.id]||LOCAL_FARE.eco)[_b];if(s.pax>v.seats)_lb+=(s.pax-v.seats)*15;return Math.round((_lb+seatFee(s))*100)/100;}
+  if(st&&st.id==='seaside'){return Math.round(((st.price[v.id]||350)+seatFee(s)+tollFor(s))*100)/100;}
+  if(st&&st.id==='localcdg'){return Math.round(((st.price[v.id]||35)+seatFee(s)+tollFor(s))*100)/100;}
+  if(st&&st.local){var _b=localBand(s.tripKm);if(_b==null)return 0;var _lb=(LOCAL_FARE[v.id]||LOCAL_FARE.eco)[_b];if(s.pax>v.seats)_lb+=(s.pax-v.seats)*15;return Math.round((_lb+seatFee(s)+tollFor(s))*100)/100;}
   let base= st.price[v.id]||0;
   if(st.perH) base*=Math.max(2,s.hours||2); // 2h minimum
   if(s.pax>v.seats) base+= (s.pax-v.seats)*15; // overflow surcharge
-  return Math.round((base + seatFee(s))*100)/100;
+  return Math.round((base + seatFee(s)+tollFor(s))*100)/100;
 }
 function vatRate(s){            // 20% for hourly hire, 10% otherwise
   const st=SERVICES.find(x=>x.id===s.type);return (st&&st.perH)?0.20:0.10;
@@ -1910,8 +1923,8 @@ function lineForSvc(s,i){
   const lug=[];
   if(Number(s.suitcase)>0)lug.push(s.suitcase+" "+(LANG==="fr"?"valise(s) soute":"hold suitcase(s)"));
   if(Number(s.cabin)>0)lug.push(s.cabin+" "+(LANG==="fr"?"bagage(s) cabine":"cabin bag(s)"));
-  const detail=`${PL(v.name)}${sl?` · ${sl}`:""} · ${s.pax} pax${st.perH?` · ${s.hours}h`:""}${lug.length?" · "+lug.join(" · "):""}`;
-  return {label:`${t("service")} #${i+1} — ${PL(st.r)}`,detail,route,dt:fmtRDV(s.date),price:svcPrice(s),ht:htv,vat:cust?null:Math.round(vatRate(s)*100),custom:cust};
+  const detail=`${PL(v.name)}${sl?` · ${sl}`:""} · ${s.pax} pax${st.perH?` · ${s.hours}h`:""}${lug.length?" · "+lug.join(" · "):""}${(s.tripKm!=null&&!st.perH)?" · "+Math.round(s.tripKm)+" km":""}${tollFor(s)>0?" · "+(LANG==="fr"?"péage ":"toll ")+eur(tollFor(s))+(LANG==="fr"?" inclus":" incl."):""}`;
+  return {label:`${t("service")} #${i+1} — ${PL(st.r)}`,detail,route,dt:fmtRDV(s.date),price:svcPrice(s),ht:htv,vat:cust?null:Math.round(vatRate(s)*100),custom:cust,km:((s.tripKm!=null&&!st.perH)?Math.round(s.tripKm):null),toll:tollFor(s),tollOn:!!s.toll};
 }
 function toggleNotes(open){
   const b=document.getElementById("notesBody"), c=document.getElementById("notesChev"); if(!b)return;
@@ -2083,7 +2096,7 @@ async function sendQuoteRequest(btn){
   const {ttc,disc,tax,total}=computeTotals();
   const ref=peekRef();
   const L=sortedLines();
-  const lines=L.map(l=>({label:l.label,detail:l.detail,custom:!!l.custom,price:l.custom?null:l.price,ht:l.custom?null:l.ht,vat:l.custom?null:l.vat,priceLabel:l.custom?t("on_quote"):eur(l.price),route:l.route||"",dt:l.dt||"",req:l.req||""}));
+  const lines=L.map(l=>({label:l.label,detail:l.detail,custom:!!l.custom,price:l.custom?null:l.price,ht:l.custom?null:l.ht,vat:l.custom?null:l.vat,priceLabel:l.custom?t("on_quote"):eur(l.price),route:l.route||"",dt:l.dt||"",req:l.req||"",km:(l.km!=null?l.km:null),toll:(l.toll||0),tollOn:!!l.tollOn}));
   const first=L[0]||{};
   const rt=(first.route||"").split("→").map(s=>s.trim());
   // libellé de remise (fidélité et/ou code promo)
