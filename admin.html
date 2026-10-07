@@ -940,7 +940,7 @@ function renderDocs(){
       ?`<button class="btn-mini" onclick="unarchiveBooking('${b.id}')">Désarchiver</button>`
       :`<button class="btn-mini" onclick="archiveBooking('${b.id}')" title="Archiver (masqué des listes, points et compteur du client conservés)">Archiver</button>`;
     let act=`<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> <button class="btn-mini" onclick="missionNote('${b.id}')" title="Télécharger la note de course">Note</button> ${archBtn} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer définitivement (réduit le compteur de courses)">✕</button>`;
-    if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini" onclick="applyDiscount('${b.id}')" title="Appliquer une remise en % sur ce devis">Remise</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Définir un acompte à régler en ligne (le solde sera payé en espèces à bord)">Acompte</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
+    if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini" onclick="applyDiscount('${b.id}')" title="Appliquer une remise en % sur ce devis">Remise</button> <button class="btn-mini" onclick="setToll('${b.id}')" title="Ajuster le péage inclus de chaque service">Péage</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Définir un acompte à régler en ligne (le solde sera payé en espèces à bord)">Acompte</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
     else if(b.type==='facture'&&b.pay_status!=='paid'){
       const _dep=Number(b.details&&b.details.deposit)||0;
       if(_dep>0 && b.pay_status==='partial')
@@ -1164,6 +1164,34 @@ function askLinePrice(l,idx){
   const ttc=parseFloat(String(v).replace(',','.'));
   if(isNaN(ttc)||ttc<0){toast('Montant invalide');return undefined;}
   return ttc;
+}
+async function setToll(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  const d=Object.assign({},b.details||{});
+  let lines=Array.isArray(d.lines)?d.lines.map(l=>Object.assign({},l)):[];
+  const idxs=lines.map((l,i)=>l.custom?-1:i).filter(i=>i>=0);
+  if(!idxs.length){toast('Aucun service applicable au péage.');return;}
+  for(const i of idxs){
+    const l=lines[i]; const cur=Number(l.toll)||0; const label=l.label||('Service '+(i+1));
+    const v=prompt('Péage TTC inclus pour « '+label+' » (€) :\n\n0 = pas de péage', cur);
+    if(v===null) return;
+    let nt=parseFloat(String(v).replace(',','.')); if(isNaN(nt)||nt<0){toast('Montant invalide');return;}
+    nt=Math.round(nt*100)/100;
+    const old=Number(l.toll)||0; const np=Math.round(((Number(l.price)||0)-old+nt)*100)/100;
+    l.price=np; l.toll=nt; l.tollOn=nt>0; l.priceLabel=eur(np); l.ht=Math.round(np/(1+(Number(l.vat)||10)/100)*100)/100;
+    l.detail=String(l.detail||'').replace(/\s*·\s*(?:p[ée]age|toll)[^·]*$/i,'').trimEnd();
+    if(nt>0) l.detail=l.detail+' · péage '+eur(nt)+' inclus';
+  }
+  const origSub=Number(d.subtotal)||0, origDisc=Number(d.discount)||0;
+  const newSub=Math.round(lines.reduce((s,l)=>s+(Number(l.price)||0),0)*100)/100;
+  const disc=origSub>0?Math.round(newSub*(origDisc/origSub)*100)/100:origDisc;
+  const newTTC=Math.round((newSub-disc)*100)/100; const ratio=newSub>0?newTTC/newSub:1;
+  let ht=0,vat=0; lines.forEach(l=>{const g=Number(l.price)||0;const net=g*ratio;const r=Number(l.vat)||10;const h=net/(1+r/100);ht+=h;vat+=net-h;});
+  ht=Math.round(ht*100)/100; vat=Math.round(vat*100)/100;
+  d.subtotal=newSub; d.discount=disc; d.lines=lines;
+  const {error}=await sb.from('bookings').update({amount_ht:ht,vat,amount_ttc:newTTC,details:d}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Péage mis à jour ✓ Total TTC '+eur(newTTC)); refresh();
 }
 async function proposePrice(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
