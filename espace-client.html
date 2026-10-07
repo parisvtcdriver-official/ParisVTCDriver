@@ -760,6 +760,7 @@ async function buildInvoiceDoc(b,opts){
   doc.text((cancel?P('facno'):(isInv?(paid?P('facno'):P('pfno')):P('devno')))+(b.reference||'—'),W-40,yh,{align:'right'});yh+=14;
   if(isInv&&b.quote_no&&b.quote_no!==b.reference){doc.setFontSize(8.5);doc.text(P('refdev')+b.quote_no,W-40,yh,{align:'right'});yh+=13;doc.setFontSize(9);}
   doc.text(b.created_at?new Date(b.created_at).toLocaleDateString(ploc):new Date().toLocaleDateString(ploc),W-40,yh,{align:'right'});yh+=16;
+  if(isInv&&!paid&&!cancel){ var _part=(typeof isPartnerClient==='function')?isPartnerClient():false; var _bd=b.created_at?new Date(b.created_at):new Date(); var _onr={fr:'À réception',en:'On receipt',es:'A la recepción',it:'Al ricevimento',pt:'À receção',tr:'Teslimde',zh:'收到后'}[LANG]||'À réception'; var _ech=_part?new Date(_bd.getTime()+30*86400000).toLocaleDateString(ploc):_onr; var _el={fr:'Échéance : ',en:'Due date: ',es:'Vencimiento: ',it:'Scadenza: ',pt:'Vencimento: ',tr:'Vade: ',zh:'到期日：'}[LANG]||'Échéance : '; doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(9); doc.text(_el+_ech,W-40,yh,{align:'right'});yh+=15; doc.setFont(F,'normal');doc.setTextColor(150,160,180);doc.setFontSize(9); }
   if(isInv&&!cancel){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?P('paidd'):P('awaitp'),W-40,yh,{align:'right'});}
   const _docTitle=(cancel?P('facno'):(isInv?(paid?P('facno'):P('pfno')):P('devno')))+(b.reference||'—');
   function _newPage(){

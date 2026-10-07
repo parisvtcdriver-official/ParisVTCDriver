@@ -1002,6 +1002,7 @@ async function buildInvoiceDoc(b,opts){
   doc.text((cancel?'Facture n° ':(isInv?(paid?'Facture n° ':'Facture proforma n° '):'Devis n° '))+(b.reference||'—'),W-40,yh,{align:'right'});yh+=14;
   if(isInv&&b.quote_no&&b.quote_no!==b.reference){doc.setFontSize(8.5);doc.text('Réf. devis : '+b.quote_no,W-40,yh,{align:'right'});yh+=13;doc.setFontSize(9);}
   doc.text(b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):new Date().toLocaleDateString('fr-FR'),W-40,yh,{align:'right'});yh+=16;
+  if(isInv&&!paid&&!cancel){ var _du=PROFILES[b.user_id]&&(PROFILES[b.user_id].is_partner||Number(PROFILES[b.user_id].partner_discount)>0); var _bd=b.created_at?new Date(b.created_at):new Date(); var _ech=_du?new Date(_bd.getTime()+30*86400000).toLocaleDateString('fr-FR'):'À réception'; doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(9); doc.text('Échéance : '+_ech,W-40,yh,{align:'right'});yh+=15; doc.setFont(F,'normal');doc.setTextColor(150,160,180);doc.setFontSize(9); }
   const _isPart=!!(b.user_id&&PROFILES[b.user_id]&&(PROFILES[b.user_id].is_partner||Number(PROFILES[b.user_id].partner_discount)>0));
   if(_isPart){doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(9);doc.text('Compte partenaire',W-40,yh,{align:'right'});yh+=15;}
   if(isInv&&!cancel){doc.setTextColor(...(paid?[40,160,110]:[200,140,40]));doc.setFont(F,'bold');doc.setFontSize(9.5);doc.text(paid?'PAYÉE':'EN ATTENTE DE PAIEMENT',W-40,yh,{align:'right'});}
