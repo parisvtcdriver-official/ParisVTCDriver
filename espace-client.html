@@ -893,6 +893,7 @@ async function buildInvoiceDoc(b,opts){
     doc.text('Bénéficiaire : '+BK.beneficiary,40,y);y+=13;
     doc.text('IBAN '+ibanFmt(BK.iban)+'   ·   BIC '+BK.bic,40,y);
   }
+  if(isInv&&!cancel){ y+=20; if(y>784){y=_newPage();} doc.setDrawColor(235);doc.line(40,y,W-40,y);y+=12; doc.setFont(F,'normal');doc.setTextColor(120,128,142);doc.setFontSize(7.5); var _ml441=doc.splitTextToSize("En cas de retard de paiement, une indemnité forfaitaire de 40 € pour frais de recouvrement sera due conformément à l'article L.441-10 du Code de commerce.",W-80); doc.text(_ml441,40,y); }
   doc.setFont(F,'normal');doc.setTextColor(150,158,172);doc.setFontSize(7.5);
   doc.text(P('footer').split('SIRET 934505702').join('SIRET '+CO.siret).split('FR32934505702').join(CO.tva),W/2,815,{align:'center'});
   const _pg={fr:'Page',en:'Page',es:'Página',it:'Pagina',pt:'Página',tr:'Sayfa',zh:'第',ar:'صفحة'}[LANG]||'Page';

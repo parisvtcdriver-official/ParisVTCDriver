@@ -1137,6 +1137,7 @@ async function buildInvoiceDoc(b,opts){
     doc.text('Bénéficiaire : '+BK.beneficiary,40,y);y+=13;
     doc.text('IBAN '+ibanFmt(BK.iban)+'   ·   BIC '+BK.bic,40,y);
   }
+  if(isInv&&!cancel){ y+=20; if(y>784){y=_newPage();} doc.setDrawColor(235);doc.line(40,y,W-40,y);y+=12; doc.setFont(F,'normal');doc.setTextColor(120,128,142);doc.setFontSize(7.5); var _ml441=doc.splitTextToSize("En cas de retard de paiement, une indemnité forfaitaire de 40 € pour frais de recouvrement sera due conformément à l'article L.441-10 du Code de commerce.",W-80); doc.text(_ml441,40,y); }
   doc.setFont(F,'normal');doc.setTextColor(150,158,172);doc.setFontSize(7.5);
   doc.text('Prix TTC garantis · SIRET '+CO.siret+' · TVA intracom. '+CO.tva+' · Disponible 24/7 · Merci de votre confiance.',W/2,815,{align:'center'});
   const _tp=doc.internal.getNumberOfPages();
