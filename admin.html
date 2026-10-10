@@ -162,7 +162,7 @@ select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:
     <!-- CODES PROMO -->
     <section class="view" id="promo">
       <div class="top"><div><h1>Codes promo</h1><div class="sub">Codes de réduction à usage unique</div></div>
-        <button class="btn btn-gold" style="margin-left:auto" onclick="generatePromo()">+ Générer des codes</button></div>
+        <button class="btn btn-ghost" style="margin-left:auto" onclick="createClientAvoir()">+ Avoir client</button> <button class="btn btn-gold" onclick="generatePromo()">+ Générer des codes</button></div>
       <div class="card"><div class="scroll"><table>
         <thead><tr><th>Code</th><th>Type</th><th>Montant</th><th>Validité</th><th>Utilisé par</th><th>Statut</th><th></th></tr></thead>
         <tbody id="allPromo"></tbody>
@@ -1705,6 +1705,34 @@ async function deletePromo(id){
   toast('Code supprimé ✓'); refresh();
 }
 function randCode(amount){return 'R'+amount+'-'+Math.floor(10000+Math.random()*89999);}
+function findProfileByQuery(q){
+  q=(q||'').trim().toLowerCase(); if(!q)return [];
+  const all=Object.values(PROFILES);
+  const exact=all.filter(p=>(p.email||'').toLowerCase()===q);
+  if(exact.length) return exact;
+  return all.filter(p=>(p.email||'').toLowerCase().includes(q)||(p.full_name||'').toLowerCase().includes(q));
+}
+async function createClientAvoir(){
+  const q=prompt("E-mail (ou nom) du client à créditer :\n\nLe client doit avoir un compte sur le site.",""); if(q===null)return;
+  const matches=findProfileByQuery(q);
+  if(!matches.length){toast("Client introuvable. Vérifiez l'e-mail (compte requis).");return;}
+  let prof=matches[0];
+  if(matches.length>1){
+    const listtxt=matches.slice(0,10).map((p,i)=>(i+1)+'. '+(p.full_name||'—')+' · '+(p.email||'')).join('\n');
+    const pick=prompt('Plusieurs clients correspondent, indiquez le numéro :\n\n'+listtxt,'1'); if(pick===null)return;
+    const idx=parseInt(pick,10)-1; if(isNaN(idx)||idx<0||idx>=matches.length){toast('Choix invalide');return;}
+    prof=matches[idx];
+  }
+  const a=prompt("Montant de l'avoir pour "+(prof.full_name||prof.email)+" (en €) :",""); if(a===null)return;
+  const amount=Math.round(parseFloat(String(a).replace(',','.'))*100)/100;
+  if(isNaN(amount)||amount<=0){toast('Montant invalide');return;}
+  if(!confirm("Créditer un avoir de "+eur(amount)+" à "+(prof.full_name||prof.email)+" ?\n\nValable 2 mois, utilisable sur ses prochaines réservations. Il apparaîtra dans « Mes avoirs » de son compte."))return;
+  const code='AV-'+Math.floor(10000+Math.random()*89999);
+  const exp=new Date(Date.now()+62*24*36e5).toISOString();
+  const {error}=await sb.from('promo_codes').insert({code,amount,kind:'avoir',avoir_no:code,expires_at:exp,status:'available',used_by:prof.id});
+  if(error){toast('Erreur : '+error.message);return;}
+  toast("Avoir de "+eur(amount)+" crédité à "+(prof.full_name||prof.email)+" ✓"); refresh();
+}
 async function generatePromo(){
   const a=prompt('Montant de la remise (en €) :','10'); if(a===null)return;
   const amount=parseFloat(String(a).replace(',','.')); if(isNaN(amount)||amount<=0){toast('Montant invalide');return;}
