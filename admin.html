@@ -939,7 +939,7 @@ function renderDocs(){
     const archBtn=arch
       ?`<button class="btn-mini" onclick="unarchiveBooking('${b.id}')">Désarchiver</button>`
       :`<button class="btn-mini" onclick="archiveBooking('${b.id}')" title="Archiver (masqué des listes, points et compteur du client conservés)">Archiver</button>`;
-    let act=`<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> <button class="btn-mini" onclick="missionNote('${b.id}')" title="Télécharger la note de course">Note</button> ${archBtn} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer définitivement (réduit le compteur de courses)">✕</button>`;
+    let act=`${!b.user_id?`<button class="btn-mini" style="border-color:rgba(96,165,250,.45);color:#60a5fa" onclick="linkBookingToClient('${b.id}')" title="Associer cette demande au compte client (apparaîtra dans son espace)">🔗 Lier au compte</button> `:''}<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> <button class="btn-mini" onclick="missionNote('${b.id}')" title="Télécharger la note de course">Note</button> ${archBtn} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer définitivement (réduit le compteur de courses)">✕</button>`;
     if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini" onclick="applyDiscount('${b.id}')" title="Appliquer une remise en % sur ce devis">Remise</button> <button class="btn-mini" onclick="setToll('${b.id}')" title="Ajuster le péage inclus de chaque service">Péage</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Définir un acompte à régler en ligne (le solde sera payé en espèces à bord)">Acompte</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
     else if(b.type==='facture'&&b.pay_status!=='paid'){
       const _dep=Number(b.details&&b.details.deposit)||0;
@@ -1732,6 +1732,24 @@ async function createClientAvoir(){
   const {error}=await sb.from('promo_codes').insert({code,amount,kind:'avoir',avoir_no:code,expires_at:exp,status:'available',used_by:prof.id});
   if(error){toast('Erreur : '+error.message);return;}
   toast("Avoir de "+eur(amount)+" crédité à "+(prof.full_name||prof.email)+" ✓"); refresh();
+}
+async function linkBookingToClient(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  const guessEmail=(b.details&&b.details.client_email)||'';
+  const q=prompt("Associer cette demande à quel compte client ?\n\nE-mail (ou nom) du client :",guessEmail); if(q===null)return;
+  const matches=findProfileByQuery(q);
+  if(!matches.length){toast("Client introuvable. Le client doit d'abord créer son compte.");return;}
+  let prof=matches[0];
+  if(matches.length>1){
+    const listtxt=matches.slice(0,10).map((pf,i)=>(i+1)+'. '+(pf.full_name||'—')+' · '+(pf.email||'')).join('\n');
+    const pick=prompt('Plusieurs clients correspondent, indiquez le numéro :\n\n'+listtxt,'1'); if(pick===null)return;
+    const idx=parseInt(pick,10)-1; if(isNaN(idx)||idx<0||idx>=matches.length){toast('Choix invalide');return;}
+    prof=matches[idx];
+  }
+  if(!confirm("Associer la demande "+(b.reference||'')+" au compte de "+(prof.full_name||prof.email)+" ?\n\nElle apparaîtra dans son espace client."))return;
+  const {error}=await sb.from('bookings').update({user_id:prof.id}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast("Demande associée à "+(prof.full_name||prof.email)+" ✓"); refresh();
 }
 async function generatePromo(){
   const a=prompt('Montant de la remise (en €) :','10'); if(a===null)return;
