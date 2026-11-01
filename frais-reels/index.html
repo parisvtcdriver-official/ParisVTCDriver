@@ -87,6 +87,30 @@ main{max-width:760px;margin:auto;padding:15px}.summary{background:white;border-r
    <div class="kpi"><span>Frais / chiffre d'affaires</span><strong id="expenseRate">—</strong></div>
   </div>
   <div class="notice">* Résultat indicatif : chiffre d'affaires TTC moins les frais saisis dans l'application. Ce n'est pas un bénéfice comptable ou fiscal. Le coût au kilomètre et par jour utilise le total des frais du mois.</div>
+  <div class="sectionhead" style="margin:22px 0 4px"><div><h2>Énergie &amp; coût de revient</h2><div class="hint">Renseignez votre motorisation pour obtenir le coût au km, tout compris.</div></div></div>
+  <div class="formgrid">
+   <div class="field"><label for="enType">Motorisation</label><select id="enType"><option value="electric">Électrique</option><option value="essence">Essence</option><option value="diesel">Diesel</option></select></div>
+   <div class="field"><label id="enConsoLbl" for="enConso">Consommation (kWh / 100 km)</label><input id="enConso" type="number" min="0" step="0.1" placeholder="Ex. 18"></div>
+   <div class="field"><label id="enPriceLbl" for="enPrice">Prix énergie (€ / kWh)</label><input id="enPrice" type="number" min="0" step="0.001" placeholder="Ex. 0,20"></div>
+   <div class="field"><label for="enMargin">Marge cible (%)</label><input id="enMargin" type="number" min="0" step="1" placeholder="Ex. 20"></div>
+  </div>
+  <div class="kpis">
+   <div class="kpi"><span>Coût énergie / km</span><strong id="kEnergy">—</strong></div>
+   <div class="kpi"><span>Énergie / 100 km</span><strong id="kEnergy100">—</strong></div>
+   <div class="kpi"><span>Coût de revient / km (seuil)</span><strong id="kBreakeven">—</strong></div>
+   <div class="kpi"><span>Prix plancher conseillé / km</span><strong id="kFloor">—</strong></div>
+  </div>
+  <div class="notice">Coût de revient = charges fixes mensualisées + frais variables (hors énergie) ramenés aux km du mois + coût énergie calculé. Le prix plancher applique votre marge cible. Renseignez les km du mois (ci-dessus) pour activer le calcul.</div>
+  <div class="sectionhead" style="margin:22px 0 4px"><div><h2>Cette course vaut-elle le coup&nbsp;?</h2><div class="hint">Distance et prix proposé (Uber, Bolt, transfert…) → verdict immédiat.</div></div></div>
+  <div class="formgrid">
+   <div class="field"><label for="simKm">Distance de la course (km)</label><input id="simKm" type="number" min="0" step="0.1" placeholder="Ex. 25"></div>
+   <div class="field"><label for="simPrice">Prix proposé (€)</label><input id="simPrice" type="number" min="0" step="0.01" placeholder="Ex. 22"></div>
+  </div>
+  <div class="kpis">
+   <div class="kpi"><span>Coût de revient de la course</span><strong id="simCost">—</strong></div>
+   <div class="kpi"><span>Marge estimée</span><strong id="simMargin">—</strong></div>
+  </div>
+  <div id="simVerdict" class="notice" style="margin-top:10px">Renseignez l'énergie et les km du mois, puis une distance et un prix de course.</div>
  </section>
  <section id="annualPanel" class="section hidden">
   <div class="sectionhead"><div><h2>Bilan annuel</h2><div class="hint">Synthèse calculée à partir des dépenses enregistrées et des chiffres mensuels.</div></div><select id="year" class="month" style="color:var(--ink);background:#fafbfd;border-color:var(--line)"></select></div>
@@ -115,7 +139,7 @@ const $=id=>document.getElementById(id), money=n=>new Intl.NumberFormat('fr-FR',
 const defaultFixed=[{id:'insurance',name:'Assurance véhicule',amount:0,period:'month',base:true},{id:'registry',name:'Registre VTC + macaron',amount:0,period:'year',base:true},{id:'accountant',name:'Comptable',amount:0,period:'month',base:true},{id:'phone',name:'Mobile + box Internet',amount:0,period:'month',base:true},{id:'loa',name:'LOA véhicule',amount:0,period:'month',base:true}];
 const emptyData=()=>({version:2,fixed:defaultFixed.map(x=>({...x})),expenses:[],performance:{}});
 let data;try{data=JSON.parse(localStorage.getItem('pvtd_expenses_v2')||localStorage.getItem('pvtd_expenses_v1'))||emptyData()}catch(e){data=emptyData()}
-if(!data.fixed)data.fixed=emptyData().fixed;if(!data.expenses)data.expenses=[];if(!data.performance)data.performance={};data.version=2;
+if(!data.fixed)data.fixed=emptyData().fixed;if(!data.expenses)data.expenses=[];if(!data.performance)data.performance={};if(!data.vehicle)data.vehicle={type:'electric',conso:0,price:0,margin:20};data.version=2;
 const now=new Date(), localDate=d=>{const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)};
 $('month').value=localDate(now).slice(0,7);$('vDate').value=localDate(now);
 function save(){try{localStorage.setItem('pvtd_expenses_v2',JSON.stringify(data));localStorage.setItem('pvtd_expenses_v1',JSON.stringify(data))}catch(e){alert("Stockage saturé : téléchargez une sauvegarde et libérez de l'espace.")}render()}
@@ -124,6 +148,22 @@ function fixedMonthly(c){return (Number(c.amount)||0)/(c.period==='year'?12:1)}
 function monthExpenses(m=mth()){return data.expenses.filter(e=>e.date&&e.date.slice(0,7)===m)}
 function perf(m=mth()){return data.performance[m]||{revenue:0,km:0,days:0}}
 function totals(m=mth()){let f=data.fixed.reduce((s,c)=>s+fixedMonthly(c),0),v=monthExpenses(m).reduce((s,e)=>s+Number(e.amount||0),0);return {f,v,total:f+v}}
+function energyPerKm(){var ve=data.vehicle||{};return (Number(ve.conso)||0)*(Number(ve.price)||0)/100;}
+function otherVarMonth(m){return monthExpenses(m).filter(function(e){return e.category!=='Carburant / Électricité';}).reduce(function(s,e){return s+Number(e.amount||0);},0);}
+function breakevenKm(m){var km=Number(perf(m).km)||0;if(km<=0)return null;var f=data.fixed.reduce(function(s,c){return s+fixedMonthly(c);},0);return (f+otherVarMonth(m))/km + energyPerKm();}
+function floorKm(m){var be=breakevenKm(m);if(be==null)return null;return be*(1+(Number((data.vehicle||{}).margin)||0)/100);}
+function renderSim(){
+ var m=mth(),be=breakevenKm(m),fl=floorKm(m);
+ var km=Number($('simKm').value)||0,price=Number($('simPrice').value)||0,v=$('simVerdict');
+ function paint(bg,col,bd){v.style.background=bg;v.style.color=col;v.style.borderColor=bd;}
+ if(be==null||km<=0){$('simCost').textContent='—';$('simMargin').textContent='—';$('simMargin').className='';v.textContent="Renseignez l'énergie et les km du mois, puis une distance et un prix de course.";paint('#fff8e9','#755c2f','#f0dfbd');return;}
+ var cost=be*km,margin=price-cost,pkm=km>0?price/km:0;
+ $('simCost').textContent=money(cost);$('simMargin').textContent=money(margin);$('simMargin').className=margin>=0?'positive':'negative';
+ if(price<=0){v.textContent="Saisissez le prix proposé de la course.";paint('#fff8e9','#755c2f','#f0dfbd');return;}
+ if(pkm<be){v.textContent="❌ À PERTE — "+money(pkm)+"/km proposé contre "+money(be)+"/km de coût de revient. Course à refuser.";paint('#fdecec','#9a2b2b','#f3c6c6');}
+ else if(fl!=null&&pkm<fl){v.textContent="⚠️ Couvre les frais mais SOUS ta marge cible (plancher "+money(fl)+"/km). Marge faible : "+money(margin)+".";paint('#fff8e9','#755c2f','#f0dfbd');}
+ else{v.textContent="✅ RENTABLE — "+money(pkm)+"/km proposé, au-dessus du plancher "+money(fl!=null?fl:be)+"/km. Marge : "+money(margin)+".";paint('#eaf7f1','#17694f','#bfe3d4');}
+}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function render(){
  const m=mth(),[yy,mm]=m.split('-'),{f,v,total}=totals(m),p=perf(m),label=new Date(+yy,+mm-1,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
@@ -138,6 +178,13 @@ function render(){
  const profit=Number(p.revenue||0)-total;
  $('profit').textContent=money(profit);$('profit').className=profit>=0?'positive':'negative';
  $('perKm').textContent=Number(p.km)>0?money(total/Number(p.km)):'—';$('perDay').textContent=Number(p.days)>0?money(total/Number(p.days)):'—';$('expenseRate').textContent=Number(p.revenue)>0?(total/Number(p.revenue)*100).toLocaleString('fr-FR',{maximumFractionDigits:1})+' %':'—';
+ var ve=data.vehicle||{},isEl=(ve.type||'electric')==='electric';
+ $('enType').value=ve.type||'electric';$('enConso').value=ve.conso||'';$('enPrice').value=ve.price||'';$('enMargin').value=(ve.margin!=null&&ve.margin!==''?ve.margin:'');
+ $('enConsoLbl').textContent=isEl?'Consommation (kWh / 100 km)':'Consommation (L / 100 km)';
+ $('enPriceLbl').textContent=isEl?'Prix énergie (€ / kWh)':'Prix carburant (€ / L)';
+ var epk=energyPerKm();$('kEnergy').textContent=epk>0?money(epk):'—';$('kEnergy100').textContent=epk>0?money(epk*100):'—';
+ var be=breakevenKm(m),fl=floorKm(m);$('kBreakeven').textContent=be!=null?money(be):'—';$('kFloor').textContent=fl!=null?money(fl):'—';
+ renderSim();
  renderAnnual();
 }
 function renderAnnual(){
@@ -155,8 +202,10 @@ function csvAll(){const rows=[['Type','Catégorie','Date','Montant (€)','Préc
 function download(content,type,name){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 $('exportCsv').addEventListener('click',csvAll);$('exportAllCsv').addEventListener('click',csvAll);
 $('backupBtn').addEventListener('click',()=>download(JSON.stringify(data,null,2),'application/json','ParisVTCDriver-sauvegarde-'+localDate(now)+'.json'));
-$('restoreBtn').addEventListener('click',async()=>{const file=$('restoreFile').files[0];if(!file){alert('Choisissez d’abord un fichier JSON.');return}try{const incoming=JSON.parse(await file.text());if(!incoming||!Array.isArray(incoming.fixed)||!Array.isArray(incoming.expenses))throw Error('format');if(!confirm('Cette opération remplacera les données actuellement enregistrées sur cet appareil. Continuer ?'))return;data={version:2,fixed:incoming.fixed,expenses:incoming.expenses,performance:incoming.performance||{}};save();alert('Sauvegarde restaurée.')}catch(e){alert('Fichier invalide ou illisible. Aucune donnée modifiée.')}});
+$('restoreBtn').addEventListener('click',async()=>{const file=$('restoreFile').files[0];if(!file){alert('Choisissez d’abord un fichier JSON.');return}try{const incoming=JSON.parse(await file.text());if(!incoming||!Array.isArray(incoming.fixed)||!Array.isArray(incoming.expenses))throw Error('format');if(!confirm('Cette opération remplacera les données actuellement enregistrées sur cet appareil. Continuer ?'))return;data={version:2,fixed:incoming.fixed,expenses:incoming.expenses,performance:incoming.performance||{},vehicle:incoming.vehicle||{type:'electric',conso:0,price:0,margin:20}};save();alert('Sauvegarde restaurée.')}catch(e){alert('Fichier invalide ou illisible. Aucune donnée modifiée.')}});
 const yearNow=now.getFullYear();for(let y=yearNow-3;y<=yearNow+1;y++){const o=document.createElement('option');o.value=y;o.textContent=y;if(y===yearNow)o.selected=true;$('year').appendChild(o)}$('year').addEventListener('change',renderAnnual);
+['enType','enConso','enPrice','enMargin'].forEach(function(id){var el=$(id);if(el)el.addEventListener('change',function(){data.vehicle={type:$('enType').value,conso:Math.max(0,Number($('enConso').value)||0),price:Math.max(0,Number($('enPrice').value)||0),margin:Math.max(0,Number($('enMargin').value)||0)};save();});});
+['simKm','simPrice'].forEach(function(id){var el=$(id);if(el)el.addEventListener('input',renderSim);});
 render();
 if('serviceWorker' in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 </script>
