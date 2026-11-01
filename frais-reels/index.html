@@ -21,7 +21,7 @@ main{max-width:760px;margin:auto;padding:15px}.summary{background:white;border-r
 .tabs{display:flex;gap:6px;margin:15px 0 13px;overflow:auto}.tab{flex:1;min-width:max-content;border:1px solid var(--line);background:white;color:#526075;border-radius:10px;padding:11px 10px;font-weight:700;font-size:12px}.tab.active{background:var(--navy);color:white;border-color:var(--navy)}
 .section{background:white;border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}.section h2{font-size:15px;margin:0}.hint{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4}
 .btn{border:0;border-radius:10px;padding:10px 12px;background:var(--navy);color:white;font-weight:700;font-size:12px}.btn.gold{background:var(--gold);color:#1b2431}.btn.light{background:#f1f3f6;color:#273449}.btn.danger{background:#fff0f0;color:var(--red)}
-.charge{display:grid;grid-template-columns:minmax(0,1fr) 108px 22px;align-items:center;gap:7px;padding:10px 0;border-top:1px solid #eef1f5}.charge label{font-size:13px;font-weight:650}.charge small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.money{width:100%;border:1px solid var(--line);background:#fafbfd;border-radius:9px;padding:10px 6px;text-align:right;font:inherit;font-size:13px}.period{font-size:10px;color:var(--muted);margin-top:4px;text-align:right}.remove{border:0;background:none;color:#a1aab7;font-size:18px;padding:0}
+.charge{display:grid;grid-template-columns:minmax(0,1fr) 108px 22px;align-items:center;gap:7px;padding:10px 0;border-top:1px solid #eef1f5}.charge label{font-size:13px;font-weight:650}.charge small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.money{width:100%;border:1px solid var(--line);background:#fafbfd;border-radius:9px;padding:10px 6px;text-align:right;font:inherit;font-size:13px}.period{font-size:10px;color:var(--muted);margin-top:4px;text-align:right}.fixedPeriod{width:100%;margin-top:5px;border:1px solid var(--line);background:#fafbfd;border-radius:9px;padding:6px 4px;font:inherit;font-size:11px;color:#596579}.remove{border:0;background:none;color:#a1aab7;font-size:18px;padding:0}
 .formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:11px;font-weight:700;color:#596579}.field input,.field select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fbfcfd;font:inherit;font-size:14px;color:var(--ink)}
 .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.actions .btn{flex:1}.entry{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #eef1f5}.entrytitle{font-size:13px;font-weight:700}.entrymeta{font-size:10px;color:var(--muted);margin-top:3px}.entryright{text-align:right;white-space:nowrap;font-weight:750;font-size:13px}.empty{text-align:center;color:var(--muted);font-size:12px;padding:18px 8px}
 .breakrow{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eef1f5;font-size:13px}.breakrow span{color:var(--muted)}.breakrow strong{font-variant-numeric:tabular-nums;text-align:right}
@@ -56,10 +56,25 @@ main{max-width:760px;margin:auto;padding:15px}.summary{background:white;border-r
   <div class="stats"><div class="stat"><span>Charges fixes / mois</span><strong id="fixedTotal">0,00 €</strong></div><div class="stat"><span>Charges variables</span><strong id="variableTotal">0,00 €</strong></div></div>
  </section>
  <nav class="tabs">
-  <button class="tab active" data-tab="fixed">Charges fixes</button><button class="tab" data-tab="variable">Dépenses</button><button class="tab" data-tab="performance">Rentabilité</button><button class="tab" data-tab="annual">Année</button><button class="tab" data-tab="backup">Sauvegarde</button>
+  <button class="tab active" data-tab="home">Accueil</button><button class="tab" data-tab="fixed">Charges fixes</button><button class="tab" data-tab="variable">Dépenses</button><button class="tab" data-tab="performance">Rentabilité</button><button class="tab" data-tab="annual">Année</button><button class="tab" data-tab="backup">Sauvegarde</button>
  </nav>
- <section id="fixedPanel" class="section">
-  <div class="sectionhead"><div><h2>Charges fixes</h2><div class="hint">Les charges annuelles sont automatiquement mensualisées.</div></div><button class="btn gold" id="addFixed">+ Ajouter</button></div>
+  <section id="homePanel" class="section">
+  <div class="sectionhead"><div><h2>Tableau de bord</h2><div class="hint">Votre objectif du jour, calculé sur vos jours travaillés et vos charges.</div></div></div>
+  <div style="text-align:center;padding:4px 0 10px">
+   <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)">À faire par jour pour être rentable</div>
+   <div id="hGoal" style="font-size:40px;font-weight:850;color:var(--navy);letter-spacing:-1px;margin-top:4px">—</div>
+   <div id="hGoalSub" class="hint" style="margin-top:4px">Renseignez vos jours travaillés et vos charges.</div>
+  </div>
+  <div class="kpis">
+   <div class="kpi"><span>Frais par jour travaillé</span><strong id="hPerDay">—</strong></div>
+   <div class="kpi"><span>CA moyen par jour</span><strong id="hCaDay">—</strong></div>
+   <div class="kpi"><span>Coût de revient / km</span><strong id="hPerKm">—</strong></div>
+   <div class="kpi"><span>Résultat du mois</span><strong id="hProfit">—</strong></div>
+  </div>
+  <div id="hHint" class="notice" style="margin-top:12px">Pour activer le tableau de bord : renseignez vos charges fixes, puis vos jours travaillés et votre chiffre d'affaires dans l'onglet Rentabilité.</div>
+ </section>
+ <section id="fixedPanel" class="section hidden">
+  <div class="sectionhead"><div><h2>Charges fixes</h2><div class="hint">Mensuel, annuel ou pluriannuel (2, 3, 5 ans) : tout est ramené au mois.</div></div><button class="btn gold" id="addFixed">+ Ajouter</button></div>
   <div id="fixedList"></div>
  </section>
  <section id="variablePanel" class="section hidden">
@@ -144,7 +159,9 @@ const now=new Date(), localDate=d=>{const x=new Date(d.getTime()-d.getTimezoneOf
 $('month').value=localDate(now).slice(0,7);$('vDate').value=localDate(now);
 function save(){try{localStorage.setItem('pvtd_expenses_v2',JSON.stringify(data));localStorage.setItem('pvtd_expenses_v1',JSON.stringify(data))}catch(e){alert("Stockage saturé : téléchargez une sauvegarde et libérez de l'espace.")}render()}
 function mth(){return $('month').value||localDate(now).slice(0,7)}
-function fixedMonthly(c){return (Number(c.amount)||0)/(c.period==='year'?12:1)}
+function periodMonths(p){return p==='year'?12:p==='2y'?24:p==='3y'?36:p==='5y'?60:1}
+function periodLabel(p){return p==='year'?'€/an':p==='2y'?'€/2 ans':p==='3y'?'€/3 ans':p==='5y'?'€/5 ans':'€/mois'}
+function fixedMonthly(c){return (Number(c.amount)||0)/periodMonths(c.period)}
 function monthExpenses(m=mth()){return data.expenses.filter(e=>e.date&&e.date.slice(0,7)===m)}
 function perf(m=mth()){return data.performance[m]||{revenue:0,km:0,days:0}}
 function totals(m=mth()){let f=data.fixed.reduce((s,c)=>s+fixedMonthly(c),0),v=monthExpenses(m).reduce((s,e)=>s+Number(e.amount||0),0);return {f,v,total:f+v}}
@@ -168,8 +185,9 @@ function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 function render(){
  const m=mth(),[yy,mm]=m.split('-'),{f,v,total}=totals(m),p=perf(m),label=new Date(+yy,+mm-1,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
  $('grandTotal').textContent=money(total);$('fixedTotal').textContent=money(f);$('variableTotal').textContent=money(v);$('monthLabel').textContent=label;
- $('fixedList').innerHTML=data.fixed.map(c=>`<div class="charge"><div><label>${esc(c.name)}</label><small>${c.period==='year'?'Montant annuel · mensualisé sur 12 mois':'Montant mensuel'}</small></div><div><input class="money fixedAmount" data-id="${esc(c.id)}" type="number" min="0" step="0.01" value="${Number(c.amount)||''}" placeholder="0,00" aria-label="Montant ${esc(c.name)}"><div class="period">${c.period==='year'?'€/an':'€/mois'}</div></div>${c.base?'<span></span>':`<button class="remove" data-remove="${esc(c.id)}" aria-label="Supprimer">×</button>`}</div>`).join('');
+ $('fixedList').innerHTML=data.fixed.map(c=>`<div class="charge"><div><label>${esc(c.name)}</label><small>${(c.period&&c.period!=='month')?'≈ '+money(fixedMonthly(c))+' /mois (mensualisé)':'Montant mensuel'}</small></div><div><input class="money fixedAmount" data-id="${esc(c.id)}" type="number" min="0" step="0.01" value="${Number(c.amount)||''}" placeholder="0,00" aria-label="Montant ${esc(c.name)}"><select class="fixedPeriod" data-id="${esc(c.id)}" aria-label="Période"><option value="month"${(!c.period||c.period==='month')?' selected':''}>€/mois</option><option value="year"${c.period==='year'?' selected':''}>€/an</option><option value="2y"${c.period==='2y'?' selected':''}>€/2 ans</option><option value="3y"${c.period==='3y'?' selected':''}>€/3 ans</option><option value="5y"${c.period==='5y'?' selected':''}>€/5 ans</option></select></div>${c.base?'<span></span>':`<button class="remove" data-remove="${esc(c.id)}" aria-label="Supprimer">×</button>`}</div>`).join('');
  document.querySelectorAll('.fixedAmount').forEach(el=>el.addEventListener('change',()=>{let c=data.fixed.find(x=>x.id===el.dataset.id);if(c){c.amount=Math.max(0,Number(el.value)||0);save()}}));
+ document.querySelectorAll('.fixedPeriod').forEach(el=>el.addEventListener('change',()=>{let c=data.fixed.find(x=>x.id===el.dataset.id);if(c){c.period=el.value;save()}}));
  document.querySelectorAll('[data-remove]').forEach(el=>el.addEventListener('click',()=>{data.fixed=data.fixed.filter(c=>c.id!==el.dataset.remove);save()}));
  const list=monthExpenses(m).sort((a,b)=>b.date.localeCompare(a.date));
  $('variableList').innerHTML=list.length?list.map(e=>`<div class="entry"><div><div class="entrytitle">${esc(e.category)}</div><div class="entrymeta">${esc(e.date)}${e.note?' · '+esc(e.note):''}</div></div><div class="entryright">${money(e.amount)}<br><button class="remove" data-expense="${esc(e.id)}">Supprimer ×</button></div></div>`).join(''):'<div class="empty">Aucune dépense enregistrée pour ce mois.</div>';
@@ -184,6 +202,16 @@ function render(){
  $('enPriceLbl').textContent=isEl?'Prix énergie (€ / kWh)':'Prix carburant (€ / L)';
  var epk=energyPerKm();$('kEnergy').textContent=epk>0?money(epk):'—';$('kEnergy100').textContent=epk>0?money(epk*100):'—';
  var be=breakevenKm(m),fl=floorKm(m);$('kBreakeven').textContent=be!=null?money(be):'—';$('kFloor').textContent=fl!=null?money(fl):'—';
+ var _days=Number(p.days)||0,_rev=Number(p.revenue)||0,_mg=Number((data.vehicle||{}).margin)||0;
+ var fraisJour=_days>0?total/_days:null,goalJour=fraisJour!=null?fraisJour*(1+_mg/100):null,caJour=_days>0?_rev/_days:null;
+ $('hGoal').textContent=goalJour!=null?money(goalJour):'—';
+ $('hGoalSub').textContent=fraisJour!=null?('Seuil pour couvrir les frais : '+money(fraisJour)+'/jour · marge cible '+_mg+' %'):'Renseignez vos jours travaillés et vos charges.';
+ $('hPerDay').textContent=fraisJour!=null?money(fraisJour):'—';
+ $('hCaDay').textContent=caJour!=null?money(caJour):'—';
+ $('hPerKm').textContent=be!=null?money(be):'—';
+ $('hProfit').textContent=money(profit);$('hProfit').className=profit>=0?'positive':'negative';
+ if(fraisJour==null){$('hHint').textContent="Pour activer le tableau de bord : renseignez vos charges fixes, puis vos jours travaillés et votre chiffre d'affaires dans l'onglet Rentabilité.";}
+ else{var _hm="Avec "+_days+" jour(s) travaillé(s) et "+money(total)+" de frais, visez "+money(goalJour)+"/jour pour dégager "+_mg+" % de marge.";if(caJour!=null)_hm+=" Vous êtes à "+money(caJour)+"/jour en moyenne — "+(caJour>=goalJour?"objectif atteint ✅":"encore sous l'objectif.");$('hHint').textContent=_hm;}
  renderSim();
  renderAnnual();
 }
@@ -193,9 +221,9 @@ function renderAnnual(){
  $('annualFixed').textContent=money(fixed);$('annualVariable').textContent=money(variable);$('annualRevenue').textContent=money(revenue);$('annualProfit').textContent=money(revenue-fixed-variable);
  const max=Math.max(1,...chart.map(x=>x.total));$('annualChart').innerHTML=chart.map(x=>`<div class="barcol"><div class="barval">${x.total?Math.round(x.total):''}</div><div class="bar" style="height:${Math.max(2,x.total/max*85)}%"></div><div class="barlabel">${x.month}</div></div>`).join('');
 }
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));['fixed','variable','performance','annual','backup'].forEach(k=>$(k+'Panel').classList.toggle('hidden',k!==b.dataset.tab));if(b.dataset.tab==='annual')renderAnnual()}));
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));['home','fixed','variable','performance','annual','backup'].forEach(k=>$(k+'Panel').classList.toggle('hidden',k!==b.dataset.tab));if(b.dataset.tab==='annual')renderAnnual()}));
 $('month').addEventListener('change',render);
-$('addFixed').addEventListener('click',()=>{const name=prompt('Nom de cette charge fixe :');if(!name||!name.trim())return;const amount=Number(prompt('Montant de la charge :','0'));if(!Number.isFinite(amount)||amount<0)return;const annual=confirm('Cette charge est-elle annuelle ?\\nOK = annuelle · Annuler = mensuelle');data.fixed.push({id:'custom_'+Date.now(),name:name.trim(),amount,period:annual?'year':'month',base:false});save()});
+$('addFixed').addEventListener('click',()=>{const name=prompt('Nom de cette charge fixe :');if(!name||!name.trim())return;const amount=Number(prompt('Montant de la charge :','0'));if(!Number.isFinite(amount)||amount<0)return;const _pm=prompt('Durée de cette charge :\n1 = Mensuel\n2 = Annuel\n3 = 2 ans\n4 = 3 ans\n5 = 5 ans','1');if(_pm===null)return;const _period={'1':'month','2':'year','3':'2y','4':'3y','5':'5y'}[String(_pm).trim()]||'month';data.fixed.push({id:'custom_'+Date.now(),name:name.trim(),amount,period:_period,base:false});save()});
 $('variableForm').addEventListener('submit',e=>{e.preventDefault();const amount=Number($('vAmount').value);if(!(amount>0))return;data.expenses.push({id:'e_'+Date.now(),category:$('vCategory').value,amount,date:$('vDate').value,note:$('vNote').value.trim()});$('vAmount').value='';$('vNote').value='';save()});
 $('savePerformance').addEventListener('click',()=>{data.performance[mth()]={revenue:Math.max(0,Number($('revenue').value)||0),km:Math.max(0,Number($('km').value)||0),days:Math.max(0,Number($('days').value)||0)};save();alert('Chiffres du mois enregistrés.')});
 function csvAll(){const rows=[['Type','Catégorie','Date','Montant (€)','Précision']];data.fixed.forEach(c=>rows.push(['Charge fixe',c.name,'',fixedMonthly(c).toFixed(2),'Montant mensuel estimé']));data.expenses.forEach(e=>rows.push(['Variable',e.category,e.date,Number(e.amount).toFixed(2),e.note||'']));const content='\\ufeff'+rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(';')).join('\\r\\n');download(content,'text/csv;charset=utf-8;','ParisVTCDriver-depenses.csv')}
