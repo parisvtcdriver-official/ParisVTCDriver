@@ -164,10 +164,11 @@ function periodLabel(p){return p==='year'?'€/an':p==='2y'?'€/2 ans':p==='3y'
 function fixedMonthly(c){return (Number(c.amount)||0)/periodMonths(c.period)}
 function monthExpenses(m=mth()){return data.expenses.filter(e=>e.date&&e.date.slice(0,7)===m)}
 function perf(m=mth()){return data.performance[m]||{revenue:0,km:0,days:0}}
-function totals(m=mth()){let f=data.fixed.reduce((s,c)=>s+fixedMonthly(c),0),v=monthExpenses(m).reduce((s,e)=>s+Number(e.amount||0),0);return {f,v,total:f+v}}
+function totals(m=mth()){const f=data.fixed.reduce((s,c)=>s+fixedMonthly(c),0);const allVar=monthExpenses(m).reduce((s,e)=>s+Number(e.amount||0),0);const em=energyMonth(m);const v=(em==null)?allVar:(otherVarMonth(m)+em);return {f,v,total:f+v,em:em}}
 function energyPerKm(){var ve=data.vehicle||{};return (Number(ve.conso)||0)*(Number(ve.price)||0)/100;}
 function otherVarMonth(m){return monthExpenses(m).filter(function(e){return e.category!=='Carburant / Électricité';}).reduce(function(s,e){return s+Number(e.amount||0);},0);}
-function breakevenKm(m){var km=Number(perf(m).km)||0;if(km<=0)return null;var f=data.fixed.reduce(function(s,c){return s+fixedMonthly(c);},0);return (f+otherVarMonth(m))/km + energyPerKm();}
+function energyMonth(m){var epk=energyPerKm();var km=Number(perf(m).km)||0;if(epk<=0||km<=0)return null;return epk*km;}
+function breakevenKm(m){var km=Number(perf(m).km)||0;if(km<=0)return null;return totals(m).total/km;}
 function floorKm(m){var be=breakevenKm(m);if(be==null)return null;return be*(1+(Number((data.vehicle||{}).margin)||0)/100);}
 function renderSim(){
  var m=mth(),be=breakevenKm(m),fl=floorKm(m);
@@ -211,7 +212,7 @@ function render(){
  $('hPerKm').textContent=be!=null?money(be):'—';
  $('hProfit').textContent=money(profit);$('hProfit').className=profit>=0?'positive':'negative';
  if(fraisJour==null){$('hHint').textContent="Pour activer le tableau de bord : renseignez vos charges fixes, puis vos jours travaillés et votre chiffre d'affaires dans l'onglet Rentabilité.";}
- else{var _hm="Avec "+_days+" jour(s) travaillé(s) et "+money(total)+" de frais, visez "+money(goalJour)+"/jour pour dégager "+_mg+" % de marge.";if(caJour!=null)_hm+=" Vous êtes à "+money(caJour)+"/jour en moyenne — "+(caJour>=goalJour?"objectif atteint ✅":"encore sous l'objectif.");$('hHint').textContent=_hm;}
+ else{var _hm="Avec "+_days+" jour(s) travaillé(s) et "+money(total)+" de frais, visez "+money(goalJour)+"/jour pour dégager "+_mg+" % de marge.";var _em=totals(m).em;if(_em!=null)_hm+=" Carburant/énergie estimé inclus : "+money(_em)+"/mois.";if(caJour!=null)_hm+=" Vous êtes à "+money(caJour)+"/jour en moyenne — "+(caJour>=goalJour?"objectif atteint ✅":"encore sous l'objectif.");$('hHint').textContent=_hm;}
  renderSim();
  renderAnnual();
 }
