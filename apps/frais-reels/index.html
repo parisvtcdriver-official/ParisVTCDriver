@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PVTC Frais">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>ParisVTCDriver — Gestion des frais</title>
+<style>
+:root{--navy:#101827;--navy2:#202e43;--gold:#d6ad63;--gold2:#f0d49c;--ink:#172033;--muted:#718096;--line:#e7ebf1;--bg:#f3f5f8;--white:#fff;--green:#168568;--red:#c64c4c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+header{background:linear-gradient(145deg,var(--navy),#202e43);color:white;padding:25px 18px 21px;border-bottom:3px solid var(--gold)}
+.brand{display:flex;align-items:center;gap:11px}.mark{width:48px;height:48px;border:1px solid var(--gold);border-radius:12px;display:block;object-fit:cover;box-shadow:0 2px 12px #0008}.brandname{font-size:15px;font-weight:800;letter-spacing:1.2px}.subbrand{font-size:10px;letter-spacing:2px;color:#c2cbd8;margin-top:3px}
+.headerrow{display:flex;justify-content:space-between;align-items:end;margin-top:22px;gap:10px}.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:1.8px;color:var(--gold2);font-weight:700}.headerrow h1{font-size:24px;line-height:1.15;margin:6px 0 0}.month{background:#ffffff14;color:white;border:1px solid #ffffff40;border-radius:11px;padding:10px 8px;font:inherit;font-size:13px;max-width:145px}
+main{max-width:760px;margin:auto;padding:15px}.summary{background:white;border-radius:18px;padding:18px;box-shadow:0 7px 24px #1522380b;border:1px solid var(--line)}
+.sumtop{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}.total{font-size:34px;font-weight:850;letter-spacing:-1.2px;margin:7px 0 13px;color:var(--navy)}.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px}.stat{background:#f5f7fa;border-radius:12px;padding:11px}.stat span{display:block;color:var(--muted);font-size:10px}.stat strong{display:block;font-size:16px;margin-top:4px}
+.tabs{display:flex;gap:6px;margin:15px 0 13px;overflow:auto}.tab{flex:1;min-width:max-content;border:1px solid var(--line);background:white;color:#526075;border-radius:10px;padding:11px 10px;font-weight:700;font-size:12px}.tab.active{background:var(--navy);color:white;border-color:var(--navy)}
+.section{background:white;border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}.section h2{font-size:15px;margin:0}.hint{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4}
+.btn{border:0;border-radius:10px;padding:10px 12px;background:var(--navy);color:white;font-weight:700;font-size:12px}.btn.gold{background:var(--gold);color:#1b2431}.btn.light{background:#f1f3f6;color:#273449}.btn.danger{background:#fff0f0;color:var(--red)}
+.charge{display:grid;grid-template-columns:minmax(0,1fr) 108px 22px;align-items:center;gap:7px;padding:10px 0;border-top:1px solid #eef1f5}.charge label{font-size:13px;font-weight:650}.charge small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.money{width:100%;border:1px solid var(--line);background:#fafbfd;border-radius:9px;padding:10px 6px;text-align:right;font:inherit;font-size:13px}.period{font-size:10px;color:var(--muted);margin-top:4px;text-align:right}.fixedPeriod{width:100%;margin-top:5px;border:1px solid var(--line);background:#fafbfd;border-radius:9px;padding:6px 4px;font:inherit;font-size:11px;color:#596579}.remove{border:0;background:none;color:#a1aab7;font-size:18px;padding:0}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:11px;font-weight:700;color:#596579}.field input,.field select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fbfcfd;font:inherit;font-size:14px;color:var(--ink)}
+.actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.actions .btn{flex:1}.entry{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #eef1f5}.entrytitle{font-size:13px;font-weight:700}.entrymeta{font-size:10px;color:var(--muted);margin-top:3px}.entryright{text-align:right;white-space:nowrap;font-weight:750;font-size:13px}.empty{text-align:center;color:var(--muted);font-size:12px;padding:18px 8px}
+.breakrow{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eef1f5;font-size:13px}.breakrow span{color:var(--muted)}.breakrow strong{font-variant-numeric:tabular-nums;text-align:right}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.kpi{background:#f5f7fa;border-radius:12px;padding:12px}.kpi span{display:block;font-size:10px;color:var(--muted)}.kpi strong{display:block;font-size:17px;margin-top:5px}.positive{color:var(--green)}.negative{color:var(--red)}
+.barwrap{display:flex;align-items:end;gap:5px;height:130px;padding:12px 2px 0;border-bottom:1px solid var(--line)}.barcol{flex:1;display:flex;flex-direction:column;justify-content:end;align-items:center;height:100%;gap:5px;min-width:0}.bar{width:100%;max-width:28px;background:linear-gradient(180deg,var(--gold),#a97d37);border-radius:5px 5px 0 0;min-height:2px}.barlabel{font-size:9px;color:var(--muted)}.barval{font-size:8px;color:#596579;white-space:nowrap}
+.notice{background:#fff8e9;border:1px solid #f0dfbd;color:#755c2f;padding:11px;border-radius:11px;font-size:11px;line-height:1.45;margin-top:12px}
+.footer{text-align:center;color:#8993a2;font-size:10px;padding:12px}.hidden{display:none!important}
+@media(min-width:600px){main{padding:22px}.total{font-size:40px}.section{padding:19px}}
+</style>
+</head>
+<body>
+<div id="authgate" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(145deg,#101827,#202e43);display:flex;align-items:center;justify-content:center;padding:20px">
+  <form id="authform" style="background:#fff;border-radius:18px;padding:26px 22px;max-width:340px;width:100%;box-shadow:0 10px 40px #0006;border-top:3px solid #d6ad63">
+    <div style="text-align:center;margin-bottom:16px"><img src="icon-192.png" alt="" style="width:54px;height:54px;border-radius:12px;border:1px solid #d6ad63"><div style="font-weight:800;letter-spacing:1px;margin-top:8px;color:#101827">ACCÈS PRIVÉ</div><div style="font-size:11px;color:#718096;margin-top:3px">Suivi des frais réels — réservé</div></div>
+    <label style="font-size:11px;font-weight:700;color:#596579">Identifiant</label>
+    <input id="authuser" autocomplete="username" style="width:100%;padding:11px;border:1px solid #e7ebf1;border-radius:10px;margin:5px 0 12px;font-size:14px">
+    <label style="font-size:11px;font-weight:700;color:#596579">Mot de passe</label>
+    <input id="authpass" type="password" autocomplete="current-password" style="width:100%;padding:11px;border:1px solid #e7ebf1;border-radius:10px;margin:5px 0 14px;font-size:14px">
+    <button type="submit" style="width:100%;border:0;border-radius:10px;padding:12px;background:#101827;color:#fff;font-weight:700;font-size:14px">Entrer</button>
+    <div id="autherr" style="color:#c64c4c;font-size:12px;text-align:center;margin-top:10px;display:none">Identifiant ou mot de passe incorrect.</div>
+  </form>
+</div>
+
+<header>
+ <div class="brand"><img class="mark" src="icon-192.png" alt="Logo ParisVTCDriver Frais réels"><div><div class="brandname">PARIS VTC DRIVER</div><div class="subbrand">OUTIL DE GESTION INTERNE</div></div></div>
+ <div class="headerrow"><div><div class="eyebrow">Pilotage de votre activité</div><h1>Suivi des frais réels</h1></div><input id="month" class="month" type="month" aria-label="Mois affiché"></div>
+</header>
+<main>
+ <section class="summary">
+  <div class="sumtop"><span>TOTAL DES FRAIS DU MOIS</span><span id="monthLabel"></span></div>
+  <div class="total" id="grandTotal">0,00 €</div>
+  <div class="stats"><div class="stat"><span>Charges fixes / mois</span><strong id="fixedTotal">0,00 €</strong></div><div class="stat"><span>Charges variables</span><strong id="variableTotal">0,00 €</strong></div></div>
+ </section>
+ <nav class="tabs">
+  <button class="tab active" data-tab="home">Accueil</button><button class="tab" data-tab="fixed">Charges fixes</button><button class="tab" data-tab="variable">Dépenses</button><button class="tab" data-tab="performance">Rentabilité</button><button class="tab" data-tab="annual">Année</button><button class="tab" data-tab="backup">Sauvegarde</button>
+ </nav>
+  <section id="homePanel" class="section">
+  <div class="sectionhead"><div><h2>Tableau de bord</h2><div class="hint">Votre objectif du jour, calculé sur vos jours travaillés et vos charges.</div></div></div>
+  <div style="text-align:center;padding:4px 0 10px">
+   <div style="font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)">À faire par jour pour être rentable</div>
+   <div id="hGoal" style="font-size:40px;font-weight:850;color:var(--navy);letter-spacing:-1px;margin-top:4px">—</div>
+   <div id="hGoalSub" class="hint" style="margin-top:4px">Renseignez vos jours travaillés et vos charges.</div>
+  </div>
+  <div class="kpis">
+   <div class="kpi"><span>Frais par jour travaillé</span><strong id="hPerDay">—</strong></div>
+   <div class="kpi"><span>CA moyen par jour</span><strong id="hCaDay">—</strong></div>
+   <div class="kpi"><span>Coût de revient / km</span><strong id="hPerKm">—</strong></div>
+   <div class="kpi"><span>Résultat du mois</span><strong id="hProfit">—</strong></div>
+  </div>
+  <div id="hHint" class="notice" style="margin-top:12px">Pour activer le tableau de bord : renseignez vos charges fixes, puis vos jours travaillés et votre chiffre d'affaires dans l'onglet Rentabilité.</div>
+ </section>
+ <section id="fixedPanel" class="section hidden">
+  <div class="sectionhead"><div><h2>Charges fixes</h2><div class="hint">Mensuel, annuel ou pluriannuel (2, 3, 5 ans) : tout est ramené au mois.</div></div><button class="btn gold" id="addFixed">+ Ajouter</button></div>
+  <div id="fixedList"></div>
+ </section>
+ <section id="variablePanel" class="section hidden">
+  <div class="sectionhead"><div><h2>Ajouter une dépense</h2><div class="hint">Saisissez vos frais au fil du mois.</div></div></div>
+  <form id="variableForm"><div class="formgrid">
+   <div class="field"><label for="vCategory">Catégorie</label><select id="vCategory"><option>Carburant / Électricité</option><option>Réparations véhicule</option><option>Amende / Stationnement</option><option>Péages</option><option>Autre dépense</option></select></div>
+   <div class="field"><label for="vAmount">Montant (€)</label><input id="vAmount" type="number" min="0.01" step="0.01" placeholder="0,00" required></div>
+   <div class="field"><label for="vDate">Date</label><input id="vDate" type="date" required></div>
+   <div class="field"><label for="vNote">Précision (facultatif)</label><input id="vNote" type="text" placeholder="Ex. recharge Tesla"></div>
+  </div><div class="actions"><button class="btn" type="submit">Enregistrer la dépense</button></div></form>
+  <div class="sectionhead" style="margin:20px 0 4px"><h2>Historique du mois</h2><button class="btn light" id="exportCsv">Exporter CSV</button></div><div id="variableList"></div>
+ </section>
+ <section id="performancePanel" class="section hidden">
+  <div class="sectionhead"><div><h2>Rentabilité du mois</h2><div class="hint">Renseignez votre chiffre d'affaires, vos kilomètres et vos jours travaillés.</div></div></div>
+  <div class="formgrid">
+   <div class="field"><label for="revenue">Chiffre d'affaires TTC (€)</label><input id="revenue" type="number" min="0" step="0.01" placeholder="0,00"></div>
+   <div class="field"><label for="km">Kilomètres du mois</label><input id="km" type="number" min="0" step="1" placeholder="Ex. 1800"></div>
+   <div class="field"><label for="days">Jours travaillés</label><input id="days" type="number" min="0" step="1" placeholder="Ex. 18"></div>
+  </div>
+  <div class="actions"><button class="btn" id="savePerformance" type="button">Enregistrer les chiffres</button></div>
+  <div class="kpis">
+   <div class="kpi"><span>Résultat après frais saisis*</span><strong id="profit">0,00 €</strong></div>
+   <div class="kpi"><span>Coût réel par kilomètre</span><strong id="perKm">—</strong></div>
+   <div class="kpi"><span>Coût moyen par jour travaillé</span><strong id="perDay">—</strong></div>
+   <div class="kpi"><span>Frais / chiffre d'affaires</span><strong id="expenseRate">—</strong></div>
+  </div>
+  <div class="notice">* Résultat indicatif : chiffre d'affaires TTC moins les frais saisis dans l'application. Ce n'est pas un bénéfice comptable ou fiscal. Le coût au kilomètre et par jour utilise le total des frais du mois.</div>
+  <div class="sectionhead" style="margin:22px 0 4px"><div><h2>Énergie &amp; coût de revient</h2><div class="hint">Renseignez votre motorisation pour obtenir le coût au km, tout compris.</div></div></div>
+  <div class="formgrid">
+   <div class="field"><label for="enType">Motorisation</label><select id="enType"><option value="electric">Électrique</option><option value="essence">Essence</option><option value="diesel">Diesel</option></select></div>
+   <div class="field"><label id="enConsoLbl" for="enConso">Consommation (kWh / 100 km)</label><input id="enConso" type="number" min="0" step="0.1" placeholder="Ex. 18"></div>
+   <div class="field"><label id="enPriceLbl" for="enPrice">Prix énergie (€ / kWh)</label><input id="enPrice" type="number" min="0" step="0.001" placeholder="Ex. 0,20"></div>
+   <div class="field"><label for="enMargin">Marge cible (%)</label><input id="enMargin" type="number" min="0" step="1" placeholder="Ex. 20"></div>
+  </div>
+  <div class="kpis">
+   <div class="kpi"><span>Coût énergie / km</span><strong id="kEnergy">—</strong></div>
+   <div class="kpi"><span>Énergie / 100 km</span><strong id="kEnergy100">—</strong></div>
+   <div class="kpi"><span>Coût de revient / km (seuil)</span><strong id="kBreakeven">—</strong></div>
+   <div class="kpi"><span>Prix plancher conseillé / km</span><strong id="kFloor">—</strong></div>
+  </div>
+  <div class="notice">Coût de revient = charges fixes mensualisées + frais variables (hors énergie) ramenés aux km du mois + coût énergie calculé. Le prix plancher applique votre marge cible. Renseignez les km du mois (ci-dessus) pour activer le calcul.</div>
+  <div class="sectionhead" style="margin:22px 0 4px"><div><h2>Cette course vaut-elle le coup&nbsp;?</h2><div class="hint">Distance et prix proposé (Uber, Bolt, transfert…) → verdict immédiat.</div></div></div>
+  <div class="formgrid">
+   <div class="field"><label for="simKm">Distance de la course (km)</label><input id="simKm" type="number" min="0" step="0.1" placeholder="Ex. 25"></div>
+   <div class="field"><label for="simPrice">Prix proposé (€)</label><input id="simPrice" type="number" min="0" step="0.01" placeholder="Ex. 22"></div>
+  </div>
+  <div class="kpis">
+   <div class="kpi"><span>Coût de revient de la course</span><strong id="simCost">—</strong></div>
+   <div class="kpi"><span>Marge estimée</span><strong id="simMargin">—</strong></div>
+  </div>
+  <div id="simVerdict" class="notice" style="margin-top:10px">Renseignez l'énergie et les km du mois, puis une distance et un prix de course.</div>
+ </section>
+ <section id="annualPanel" class="section hidden">
+  <div class="sectionhead"><div><h2>Bilan annuel</h2><div class="hint">Synthèse calculée à partir des dépenses enregistrées et des chiffres mensuels.</div></div><select id="year" class="month" style="color:var(--ink);background:#fafbfd;border-color:var(--line)"></select></div>
+  <div class="kpis">
+   <div class="kpi"><span>Frais fixes annualisés*</span><strong id="annualFixed">0,00 €</strong></div>
+   <div class="kpi"><span>Dépenses variables</span><strong id="annualVariable">0,00 €</strong></div>
+   <div class="kpi"><span>Chiffre d'affaires saisi</span><strong id="annualRevenue">0,00 €</strong></div>
+   <div class="kpi"><span>Résultat indicatif</span><strong id="annualProfit">0,00 €</strong></div>
+  </div>
+  <h2 style="font-size:13px;margin:20px 0 0">Frais par mois</h2><div id="annualChart" class="barwrap"></div>
+  <div class="notice">* Les charges fixes sont estimées sur 12 mois à partir des montants fixes actuellement enregistrés. Pour un historique exact, les changements de tarifs doivent être conservés mois par mois : ce bilan est donc une estimation pour les charges fixes.</div>
+ </section>
+ <section id="backupPanel" class="section hidden">
+  <div class="sectionhead"><div><h2>Sauvegarde et restauration</h2><div class="hint">Conservez une copie de vos charges, dépenses et chiffres mensuels.</div></div></div>
+  <div class="notice">Conseil : téléchargez régulièrement une sauvegarde JSON et conservez-la dans Fichiers ou iCloud Drive. La sauvegarde locale du navigateur ne remplace pas cette copie.</div>
+  <div class="actions"><button class="btn" id="backupBtn">Télécharger ma sauvegarde complète</button></div>
+  <div class="field" style="margin-top:15px"><label for="restoreFile">Restaurer une sauvegarde JSON</label><input id="restoreFile" type="file" accept="application/json,.json"></div>
+  <div class="actions"><button class="btn light" id="restoreBtn">Importer la sauvegarde sélectionnée</button></div>
+  <div class="actions"><button class="btn light" id="exportAllCsv">Exporter les dépenses en CSV</button></div>
+  <div class="notice">Les données restent enregistrées dans le stockage de ce navigateur sur cet appareil. Pour synchroniser automatiquement entre plusieurs téléphones, il faudra ajouter un espace serveur sécurisé.</div>
+ </section>
+ <div class="footer">PARISVTCDriver · Gestion interne · Sauvegarde locale sur cet appareil</div>
+</main>
+<script>
+const $=id=>document.getElementById(id), money=n=>new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format(Number(n)||0);
+const defaultFixed=[{id:'insurance',name:'Assurance véhicule',amount:0,period:'month',base:true},{id:'registry',name:'Registre VTC + macaron',amount:0,period:'year',base:true},{id:'accountant',name:'Comptable',amount:0,period:'month',base:true},{id:'phone',name:'Mobile + box Internet',amount:0,period:'month',base:true},{id:'loa',name:'LOA véhicule',amount:0,period:'month',base:true}];
+const emptyData=()=>({version:2,fixed:defaultFixed.map(x=>({...x})),expenses:[],performance:{}});
+let data;try{data=JSON.parse(localStorage.getItem('pvtd_expenses_v2')||localStorage.getItem('pvtd_expenses_v1'))||emptyData()}catch(e){data=emptyData()}
+if(!data.fixed)data.fixed=emptyData().fixed;if(!data.expenses)data.expenses=[];if(!data.performance)data.performance={};if(!data.vehicle)data.vehicle={type:'electric',conso:0,price:0,margin:20};data.version=2;
+const now=new Date(), localDate=d=>{const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)};
+$('month').value=localDate(now).slice(0,7);$('vDate').value=localDate(now);
+function save(){try{localStorage.setItem('pvtd_expenses_v2',JSON.stringify(data));localStorage.setItem('pvtd_expenses_v1',JSON.stringify(data))}catch(e){alert("Stockage saturé : téléchargez une sauvegarde et libérez de l'espace.")}render()}
+function mth(){return $('month').value||localDate(now).slice(0,7)}
+function periodMonths(p){return p==='year'?12:p==='2y'?24:p==='3y'?36:p==='5y'?60:1}
+function periodLabel(p){return p==='year'?'€/an':p==='2y'?'€/2 ans':p==='3y'?'€/3 ans':p==='5y'?'€/5 ans':'€/mois'}
+function fixedMonthly(c){return (Number(c.amount)||0)/periodMonths(c.period)}
+function monthExpenses(m=mth()){return data.expenses.filter(e=>e.date&&e.date.slice(0,7)===m)}
+function perf(m=mth()){return data.performance[m]||{revenue:0,km:0,days:0}}
+function totals(m=mth()){const f=data.fixed.reduce((s,c)=>s+fixedMonthly(c),0);const allVar=monthExpenses(m).reduce((s,e)=>s+Number(e.amount||0),0);const em=energyMonth(m);const v=(em==null)?allVar:(otherVarMonth(m)+em);return {f,v,total:f+v,em:em}}
+function energyPerKm(){var ve=data.vehicle||{};return (Number(ve.conso)||0)*(Number(ve.price)||0)/100;}
+function otherVarMonth(m){return monthExpenses(m).filter(function(e){return e.category!=='Carburant / Électricité';}).reduce(function(s,e){return s+Number(e.amount||0);},0);}
+function energyMonth(m){var epk=energyPerKm();var km=Number(perf(m).km)||0;if(epk<=0||km<=0)return null;return epk*km;}
+function breakevenKm(m){var km=Number(perf(m).km)||0;if(km<=0)return null;return totals(m).total/km;}
+function floorKm(m){var be=breakevenKm(m);if(be==null)return null;return be*(1+(Number((data.vehicle||{}).margin)||0)/100);}
+function renderSim(){
+ var m=mth(),be=breakevenKm(m),fl=floorKm(m);
+ var km=Number($('simKm').value)||0,price=Number($('simPrice').value)||0,v=$('simVerdict');
+ function paint(bg,col,bd){v.style.background=bg;v.style.color=col;v.style.borderColor=bd;}
+ if(be==null||km<=0){$('simCost').textContent='—';$('simMargin').textContent='—';$('simMargin').className='';v.textContent="Renseignez l'énergie et les km du mois, puis une distance et un prix de course.";paint('#fff8e9','#755c2f','#f0dfbd');return;}
+ var cost=be*km,margin=price-cost,pkm=km>0?price/km:0;
+ $('simCost').textContent=money(cost);$('simMargin').textContent=money(margin);$('simMargin').className=margin>=0?'positive':'negative';
+ if(price<=0){v.textContent="Saisissez le prix proposé de la course.";paint('#fff8e9','#755c2f','#f0dfbd');return;}
+ if(pkm<be){v.textContent="❌ À PERTE — "+money(pkm)+"/km proposé contre "+money(be)+"/km de coût de revient. Course à refuser.";paint('#fdecec','#9a2b2b','#f3c6c6');}
+ else if(fl!=null&&pkm<fl){v.textContent="⚠️ Couvre les frais mais SOUS ta marge cible (plancher "+money(fl)+"/km). Marge faible : "+money(margin)+".";paint('#fff8e9','#755c2f','#f0dfbd');}
+ else{v.textContent="✅ RENTABLE — "+money(pkm)+"/km proposé, au-dessus du plancher "+money(fl!=null?fl:be)+"/km. Marge : "+money(margin)+".";paint('#eaf7f1','#17694f','#bfe3d4');}
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){
+ const m=mth(),[yy,mm]=m.split('-'),{f,v,total}=totals(m),p=perf(m),label=new Date(+yy,+mm-1,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+ $('grandTotal').textContent=money(total);$('fixedTotal').textContent=money(f);$('variableTotal').textContent=money(v);$('monthLabel').textContent=label;
+ $('fixedList').innerHTML=data.fixed.map(c=>`<div class="charge"><div><label>${esc(c.name)}</label><small>${(c.period&&c.period!=='month')?'≈ '+money(fixedMonthly(c))+' /mois (mensualisé)':'Montant mensuel'}</small></div><div><input class="money fixedAmount" data-id="${esc(c.id)}" type="number" min="0" step="0.01" value="${Number(c.amount)||''}" placeholder="0,00" aria-label="Montant ${esc(c.name)}"><select class="fixedPeriod" data-id="${esc(c.id)}" aria-label="Période"><option value="month"${(!c.period||c.period==='month')?' selected':''}>€/mois</option><option value="year"${c.period==='year'?' selected':''}>€/an</option><option value="2y"${c.period==='2y'?' selected':''}>€/2 ans</option><option value="3y"${c.period==='3y'?' selected':''}>€/3 ans</option><option value="5y"${c.period==='5y'?' selected':''}>€/5 ans</option></select></div>${c.base?'<span></span>':`<button class="remove" data-remove="${esc(c.id)}" aria-label="Supprimer">×</button>`}</div>`).join('');
+ document.querySelectorAll('.fixedAmount').forEach(el=>el.addEventListener('change',()=>{let c=data.fixed.find(x=>x.id===el.dataset.id);if(c){c.amount=Math.max(0,Number(el.value)||0);save()}}));
+ document.querySelectorAll('.fixedPeriod').forEach(el=>el.addEventListener('change',()=>{let c=data.fixed.find(x=>x.id===el.dataset.id);if(c){c.period=el.value;save()}}));
+ document.querySelectorAll('[data-remove]').forEach(el=>el.addEventListener('click',()=>{data.fixed=data.fixed.filter(c=>c.id!==el.dataset.remove);save()}));
+ const list=monthExpenses(m).sort((a,b)=>b.date.localeCompare(a.date));
+ $('variableList').innerHTML=list.length?list.map(e=>`<div class="entry"><div><div class="entrytitle">${esc(e.category)}</div><div class="entrymeta">${esc(e.date)}${e.note?' · '+esc(e.note):''}</div></div><div class="entryright">${money(e.amount)}<br><button class="remove" data-expense="${esc(e.id)}">Supprimer ×</button></div></div>`).join(''):'<div class="empty">Aucune dépense enregistrée pour ce mois.</div>';
+ document.querySelectorAll('[data-expense]').forEach(el=>el.addEventListener('click',()=>{data.expenses=data.expenses.filter(e=>e.id!==el.dataset.expense);save()}));
+ $('revenue').value=p.revenue||'';$('km').value=p.km||'';$('days').value=p.days||'';
+ const profit=Number(p.revenue||0)-total;
+ $('profit').textContent=money(profit);$('profit').className=profit>=0?'positive':'negative';
+ $('perKm').textContent=Number(p.km)>0?money(total/Number(p.km)):'—';$('perDay').textContent=Number(p.days)>0?money(total/Number(p.days)):'—';$('expenseRate').textContent=Number(p.revenue)>0?(total/Number(p.revenue)*100).toLocaleString('fr-FR',{maximumFractionDigits:1})+' %':'—';
+ var ve=data.vehicle||{},isEl=(ve.type||'electric')==='electric';
+ $('enType').value=ve.type||'electric';$('enConso').value=ve.conso||'';$('enPrice').value=ve.price||'';$('enMargin').value=(ve.margin!=null&&ve.margin!==''?ve.margin:'');
+ $('enConsoLbl').textContent=isEl?'Consommation (kWh / 100 km)':'Consommation (L / 100 km)';
+ $('enPriceLbl').textContent=isEl?'Prix énergie (€ / kWh)':'Prix carburant (€ / L)';
+ var epk=energyPerKm();$('kEnergy').textContent=epk>0?money(epk):'—';$('kEnergy100').textContent=epk>0?money(epk*100):'—';
+ var be=breakevenKm(m),fl=floorKm(m);$('kBreakeven').textContent=be!=null?money(be):'—';$('kFloor').textContent=fl!=null?money(fl):'—';
+ var _days=Number(p.days)||0,_rev=Number(p.revenue)||0,_mg=Number((data.vehicle||{}).margin)||0;
+ var fraisJour=_days>0?total/_days:null,goalJour=fraisJour!=null?fraisJour*(1+_mg/100):null,caJour=_days>0?_rev/_days:null;
+ $('hGoal').textContent=goalJour!=null?money(goalJour):'—';
+ $('hGoalSub').textContent=fraisJour!=null?('Seuil pour couvrir les frais : '+money(fraisJour)+'/jour · marge cible '+_mg+' %'):'Renseignez vos jours travaillés et vos charges.';
+ $('hPerDay').textContent=fraisJour!=null?money(fraisJour):'—';
+ $('hCaDay').textContent=caJour!=null?money(caJour):'—';
+ $('hPerKm').textContent=be!=null?money(be):'—';
+ $('hProfit').textContent=money(profit);$('hProfit').className=profit>=0?'positive':'negative';
+ if(fraisJour==null){$('hHint').textContent="Pour activer le tableau de bord : renseignez vos charges fixes, puis vos jours travaillés et votre chiffre d'affaires dans l'onglet Rentabilité.";}
+ else{var _hm="Avec "+_days+" jour(s) travaillé(s) et "+money(total)+" de frais, visez "+money(goalJour)+"/jour pour dégager "+_mg+" % de marge.";var _em=totals(m).em;if(_em!=null)_hm+=" Carburant/énergie estimé inclus : "+money(_em)+"/mois.";if(caJour!=null)_hm+=" Vous êtes à "+money(caJour)+"/jour en moyenne — "+(caJour>=goalJour?"objectif atteint ✅":"encore sous l'objectif.");$('hHint').textContent=_hm;}
+ renderSim();
+ renderAnnual();
+}
+function renderAnnual(){
+ const year=Number($('year').value||now.getFullYear());let fixed=0,variable=0,revenue=0,chart=[];
+ for(let i=0;i<12;i++){const m=year+'-'+String(i+1).padStart(2,'0'),t=totals(m),p=perf(m);fixed+=t.f;variable+=t.v;revenue+=Number(p.revenue||0);chart.push({m,total:t.total,month:new Date(year,i,1).toLocaleDateString('fr-FR',{month:'short'})})}
+ $('annualFixed').textContent=money(fixed);$('annualVariable').textContent=money(variable);$('annualRevenue').textContent=money(revenue);$('annualProfit').textContent=money(revenue-fixed-variable);
+ const max=Math.max(1,...chart.map(x=>x.total));$('annualChart').innerHTML=chart.map(x=>`<div class="barcol"><div class="barval">${x.total?Math.round(x.total):''}</div><div class="bar" style="height:${Math.max(2,x.total/max*85)}%"></div><div class="barlabel">${x.month}</div></div>`).join('');
+}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));['home','fixed','variable','performance','annual','backup'].forEach(k=>$(k+'Panel').classList.toggle('hidden',k!==b.dataset.tab));if(b.dataset.tab==='annual')renderAnnual()}));
+$('month').addEventListener('change',render);
+$('addFixed').addEventListener('click',()=>{const name=prompt('Nom de cette charge fixe :');if(!name||!name.trim())return;const amount=Number(prompt('Montant de la charge :','0'));if(!Number.isFinite(amount)||amount<0)return;const _pm=prompt('Durée de cette charge :\n1 = Mensuel\n2 = Annuel\n3 = 2 ans\n4 = 3 ans\n5 = 5 ans','1');if(_pm===null)return;const _period={'1':'month','2':'year','3':'2y','4':'3y','5':'5y'}[String(_pm).trim()]||'month';data.fixed.push({id:'custom_'+Date.now(),name:name.trim(),amount,period:_period,base:false});save()});
+$('variableForm').addEventListener('submit',e=>{e.preventDefault();const amount=Number($('vAmount').value);if(!(amount>0))return;data.expenses.push({id:'e_'+Date.now(),category:$('vCategory').value,amount,date:$('vDate').value,note:$('vNote').value.trim()});$('vAmount').value='';$('vNote').value='';save()});
+$('savePerformance').addEventListener('click',()=>{data.performance[mth()]={revenue:Math.max(0,Number($('revenue').value)||0),km:Math.max(0,Number($('km').value)||0),days:Math.max(0,Number($('days').value)||0)};save();alert('Chiffres du mois enregistrés.')});
+function csvAll(){const rows=[['Type','Catégorie','Date','Montant (€)','Précision']];data.fixed.forEach(c=>rows.push(['Charge fixe',c.name,'',fixedMonthly(c).toFixed(2),'Montant mensuel estimé']));data.expenses.forEach(e=>rows.push(['Variable',e.category,e.date,Number(e.amount).toFixed(2),e.note||'']));const content='\\ufeff'+rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(';')).join('\\r\\n');download(content,'text/csv;charset=utf-8;','ParisVTCDriver-depenses.csv')}
+function download(content,type,name){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$('exportCsv').addEventListener('click',csvAll);$('exportAllCsv').addEventListener('click',csvAll);
+$('backupBtn').addEventListener('click',()=>download(JSON.stringify(data,null,2),'application/json','ParisVTCDriver-sauvegarde-'+localDate(now)+'.json'));
+$('restoreBtn').addEventListener('click',async()=>{const file=$('restoreFile').files[0];if(!file){alert('Choisissez d’abord un fichier JSON.');return}try{const incoming=JSON.parse(await file.text());if(!incoming||!Array.isArray(incoming.fixed)||!Array.isArray(incoming.expenses))throw Error('format');if(!confirm('Cette opération remplacera les données actuellement enregistrées sur cet appareil. Continuer ?'))return;data={version:2,fixed:incoming.fixed,expenses:incoming.expenses,performance:incoming.performance||{},vehicle:incoming.vehicle||{type:'electric',conso:0,price:0,margin:20}};save();alert('Sauvegarde restaurée.')}catch(e){alert('Fichier invalide ou illisible. Aucune donnée modifiée.')}});
+const yearNow=now.getFullYear();for(let y=yearNow-3;y<=yearNow+1;y++){const o=document.createElement('option');o.value=y;o.textContent=y;if(y===yearNow)o.selected=true;$('year').appendChild(o)}$('year').addEventListener('change',renderAnnual);
+['enType','enConso','enPrice','enMargin'].forEach(function(id){var el=$(id);if(el)el.addEventListener('change',function(){data.vehicle={type:$('enType').value,conso:Math.max(0,Number($('enConso').value)||0),price:Math.max(0,Number($('enPrice').value)||0),margin:Math.max(0,Number($('enMargin').value)||0)};save();});});
+['simKm','simPrice'].forEach(function(id){var el=$(id);if(el)el.addEventListener('input',renderSim);});
+render();
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+</script>
+<script>
+(function(){
+  var U="Timus";
+  var H="be9c54864699f8abaa4e60d1e262d154760b4ee22835293c26451e5735c4aeb6";
+  function reveal(){var g=document.getElementById('authgate');if(g)g.remove();}
+  try{ if(localStorage.getItem('fr_auth')===H){ reveal(); return; } }catch(e){}
+  async function sha(t){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0');}).join('');}
+  window.addEventListener('DOMContentLoaded',function(){
+    var f=document.getElementById('authform'); if(!f) return;
+    f.addEventListener('submit',async function(e){e.preventDefault();
+      var u=(document.getElementById('authuser').value||'').trim().toLowerCase();
+      var p=document.getElementById('authpass').value||'';
+      var hp=await sha(p);
+      if(u===U.toLowerCase() && hp===H){ try{localStorage.setItem('fr_auth',H);}catch(e){} reveal(); }
+      else { var er=document.getElementById('autherr'); if(er)er.style.display='block'; document.getElementById('authpass').value=''; }
+    });
+    document.getElementById('authuser').focus();
+  });
+})();
+</script>
+</body></html>
