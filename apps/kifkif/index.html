@@ -36,7 +36,7 @@ header{display:flex;align-items:center;gap:14px;padding:4px 0 6px}
 header img{width:72px;height:72px;border-radius:18px;flex:none;box-shadow:0 0 0 1px rgba(240,185,42,.5),0 6px 24px rgba(240,185,42,.25)}
 header h1{margin:0;font-size:2rem;font-weight:900;font-style:italic;letter-spacing:-.02em;line-height:1}
 header h1 .k1{color:var(--silver)}
-header h1 .k2{background:var(--goldgrad);-webkit-background-clip:text;background-clip:text;color:transparent}
+header h1 .k2{background:var(--goldgrad);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block;padding-right:.14em}
 header p{margin:6px 0 0;color:var(--ink);font-style:italic;font-weight:600;font-size:.95rem}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:14px}
 .head{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -96,6 +96,47 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .confirm .yes{background:var(--danger);color:#1a0500;border-color:var(--danger);font-weight:700}
 @media (max-width:360px){.item{grid-template-columns:1fr 92px 36px}.bar .pp{font-size:2rem}header h1{font-size:1.7rem}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Bouton + feuille de récap partageable */
+.sharebtn{font:inherit;font-weight:800;font-size:1rem;border:0;border-radius:14px;padding:14px;cursor:pointer;
+  background:var(--goldgrad);color:#1a1100;box-shadow:0 6px 20px rgba(240,185,42,.3);
+  display:flex;align-items:center;justify-content:center;gap:9px;width:100%}
+.sharebtn svg{width:20px;height:20px;stroke:#1a1100;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#recapSheet{position:fixed;inset:0;z-index:60;background:rgba(5,4,2,.82);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  display:grid;place-items:start center;padding:22px 14px 40px;overflow:auto}
+#recapSheet[hidden]{display:none!important}
+.rclose{position:fixed;top:14px;right:14px;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);
+  background:var(--card);color:var(--ink);font-size:1.5rem;line-height:1;cursor:pointer;z-index:2}
+.rsheet{width:100%;max-width:440px;background:linear-gradient(180deg,#171511,#121110);border:1px solid var(--line);
+  border-radius:22px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.rhead{padding:26px 22px 20px;text-align:center;border-bottom:1px solid var(--line);
+  background:radial-gradient(ellipse 120% 90% at 50% 0%,rgba(240,185,42,.16),transparent 70%)}
+.rbrand{font-size:2rem;font-weight:900;font-style:italic;letter-spacing:-.02em;line-height:1}
+.rbrand .k1{color:var(--silver)}
+.rbrand .k2{background:var(--goldgrad);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block;padding-right:.14em}
+.rtag{color:var(--gold);font-style:italic;font-weight:600;font-size:.9rem;margin-top:4px}
+.rdate{color:var(--muted);font-size:.8rem;margin-top:8px}
+.rbody{padding:4px 22px}
+.rr{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.rr.col{flex-direction:column;gap:8px}
+.rl b{font-weight:700;color:var(--ink)}
+.rl small{display:block;color:var(--muted);font-size:.8rem;margin-top:2px}
+.rv{font-weight:800;color:var(--gold);white-space:nowrap}
+.ilist{width:100%;display:grid;gap:6px}
+.il{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:.9rem}
+.il span:last-child{color:var(--ink);font-weight:600;white-space:nowrap}
+.rsub{align-self:flex-end;color:var(--muted);font-size:.85rem}
+.rsub b{color:var(--gold)}
+.rtotal{display:flex;justify-content:space-between;align-items:center;margin:0 22px;padding:16px 0;
+  border-top:2px solid var(--line);font-weight:800;font-size:1.1rem}
+.rtotal span:last-child{color:var(--gold)}
+.rpers{text-align:center;color:var(--muted);font-size:.9rem;padding:4px 0}
+.rpers b{color:var(--ink)}
+.rpp{text-align:center;padding:12px 22px 4px}
+.rpp small{color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-size:.72rem;font-weight:700}
+.rppv{font-size:2.6rem;font-weight:900;font-style:italic;line-height:1.15;
+  background:var(--goldgrad);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block;padding-right:.1em}
+.rfoot{text-align:center;color:var(--muted);font-size:.72rem;padding:14px 22px 22px;border-top:1px solid var(--line);margin-top:10px}
 </style>
 
 <div class="wrap">
@@ -179,6 +220,11 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
     <div class="recap" id="recap"></div>
   </section>
 
+  <button type="button" class="sharebtn" id="shareBtn">
+    <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    Récap à partager
+  </button>
+
   <button type="button" class="reset" id="reset">Tout effacer</button>
   <div class="confirm" id="confirm" hidden>
     <span>Tout remettre à zéro ?</span>
@@ -193,6 +239,8 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
     <div class="right" id="barRight">Total 0,00 €<br>÷ 4 pers.</div>
   </div>
 </div>
+
+<div id="recapSheet" hidden></div>
 
 <script>
 (function(){
@@ -222,6 +270,9 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   function num(v){ if(v==null) return 0; var n = parseFloat(String(v).replace(/\s/g,'').replace(',','.')); return isFinite(n)&&n>0 ? n : 0; }
   function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
   function show(n){ return String(n).replace('.',','); }
+  function escapeHtml(t){ return String(t==null?'':t).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  var LAST = {transport:0,stay:0,courses:0,total:0,pp:0,n:4};
+  var TYPE_LABEL = {essence:'Essence', diesel:'Diesel', electrique:'Électrique'};
 
   function setType(t){
     state.type = t;
@@ -292,8 +343,44 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
       '<div><span>Courses et frais ('+state.items.filter(function(i){return num(i.amount)>0;}).length+')</span><span>'+fmt.format(courses)+'</span></div>'+
       '<div class="tot"><span>Total</span><span>'+fmt.format(total)+'</span></div>'+
       '<div><span>Par personne ('+n+')</span><span><b>'+fmt.format(pp)+'</b></span></div>';
+    LAST = {transport:transport, stay:stay, courses:courses, total:total, pp:pp, n:n};
     save();
   }
+
+  function openRecap(){
+    update();
+    var s = state, L = LAST;
+    var dateStr = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+    var rows = '';
+    if(s.withCar){
+      rows += '<div class="rr"><div class="rl"><b>Transport</b><small>'+TYPE_LABEL[s.type]+' · '+fmtN(s.km,0)+' km'+(s.toll>0?' · péage '+fmt.format(s.toll):'')+'</small></div><div class="rv">'+fmt.format(L.transport)+'</div></div>';
+    } else {
+      rows += '<div class="rr"><div class="rl"><b>Transport</b><small>Sans véhicule</small></div><div class="rv">'+fmt.format(0)+'</div></div>';
+    }
+    if(s.withStay){
+      rows += '<div class="rr"><div class="rl"><b>Hébergement</b><small>'+fmtN(s.nights,0)+' nuit'+(s.nights>1?'s':'')+' × '+fmt.format(s.night)+'</small></div><div class="rv">'+fmt.format(L.stay)+'</div></div>';
+    }
+    var items = s.items.filter(function(i){ return num(i.amount)>0; });
+    if(items.length){
+      var li = '';
+      items.forEach(function(it){ li += '<div class="il"><span>'+(escapeHtml(it.name)||'Article')+'</span><span>'+fmt.format(num(it.amount))+'</span></div>'; });
+      rows += '<div class="rr col"><div class="rl"><b>Courses et frais</b></div><div class="ilist">'+li+'</div><div class="rsub">Sous-total <b>'+fmt.format(L.courses)+'</b></div></div>';
+    }
+    var html = '<div class="rsheet">'
+      + '<div class="rhead"><div class="rbrand"><span class="k1">Kif</span><span class="k2">Kif</span></div><div class="rtag">On partage les frais !</div><div class="rdate">'+dateStr+'</div></div>'
+      + '<div class="rbody">'+rows+'</div>'
+      + '<div class="rtotal"><span>Total</span><span>'+fmt.format(L.total)+'</span></div>'
+      + '<div class="rpers">Partagé entre <b>'+L.n+'</b> personne'+(L.n>1?'s':'')+'</div>'
+      + '<div class="rpp"><small>Chacun paie</small><div class="rppv">'+fmt.format(L.pp)+'</div></div>'
+      + '<div class="rfoot">Calculé avec KifKif · parisvtcdriver.com</div>'
+      + '</div>';
+    var sheet = $('recapSheet');
+    sheet.innerHTML = '<button type="button" class="rclose" id="rclose" aria-label="Fermer">×</button>' + html;
+    sheet.hidden = false;
+    document.body.style.overflow = 'hidden';
+    $('rclose').addEventListener('click', closeRecap);
+  }
+  function closeRecap(){ $('recapSheet').hidden = true; document.body.style.overflow = ''; }
 
   // Wiring
   document.querySelectorAll('.seg button').forEach(function(b){ b.addEventListener('click',function(){ setType(b.dataset.type); update(); }); });
@@ -303,6 +390,9 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   $('addItem').addEventListener('click',addItem);
   $('minus').addEventListener('click',function(){ if(state.persons>1){ state.persons--; update(); } });
   $('plus').addEventListener('click',function(){ if(state.persons<99){ state.persons++; update(); } });
+  $('shareBtn').addEventListener('click',openRecap);
+  $('recapSheet').addEventListener('click',function(e){ if(e.target===this) closeRecap(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape' && !$('recapSheet').hidden) closeRecap(); });
   $('reset').addEventListener('click',function(){ $('confirm').hidden=false; $('reset').hidden=true; });
   $('no').addEventListener('click',function(){ $('confirm').hidden=true; $('reset').hidden=false; });
   $('yes').addEventListener('click',function(){
