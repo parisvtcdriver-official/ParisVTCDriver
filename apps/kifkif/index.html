@@ -137,105 +137,127 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .rppv{font-size:2.6rem;font-weight:900;font-style:italic;line-height:1.15;
   background:var(--goldgrad);-webkit-background-clip:text;background-clip:text;color:transparent;display:inline-block;padding-right:.1em}
 .rfoot{text-align:center;color:var(--muted);font-size:.72rem;padding:14px 22px 22px;border-top:1px solid var(--line);margin-top:10px}
+
+/* Sélecteur de langue */
+.langbar{display:flex;gap:3px;margin-left:auto;align-self:flex-start;background:var(--field);border:1px solid var(--line);border-radius:12px;padding:3px;flex:none}
+.langbar button{font:inherit;font-size:.78rem;font-weight:700;border:0;background:transparent;color:var(--muted);padding:6px 8px;border-radius:9px;cursor:pointer;transition:all .15s}
+.langbar button[aria-pressed="true"]{background:var(--goldgrad);color:#1a1100}
+/* Lien VTC / réservation */
+.vtc-link{display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-weight:800;font-size:.95rem;
+  color:#1a1100;background:var(--goldgrad);border-radius:12px;padding:13px;box-shadow:0 6px 18px rgba(240,185,42,.3)}
+.vtc-link:active{transform:translateY(1px)}
 </style>
 
 <div class="wrap">
   <header>
     <img src="data:image/jpeg;base64,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" alt="Logo KifKif">
     <div><h1><span class="k1">Kif</span><span class="k2">Kif</span></h1>
-    <p>On partage les frais !</p></div>
+    <p data-i18n="tagline">On partage les frais !</p></div>
+    <div class="langbar" id="langbar">
+      <button type="button" data-lang="fr">FR</button>
+      <button type="button" data-lang="en">EN</button>
+      <button type="button" data-lang="tr">TR</button>
+      <button type="button" data-lang="es">ES</button>
+    </div>
   </header>
 
   <section class="card" aria-labelledby="t-transport">
     <div class="head">
-      <h2 id="t-transport"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 17h14v-5l-2-5H7l-2 5z"/><path d="M5 12h14"/><circle cx="8" cy="15" r=".6"/><circle cx="16" cy="15" r=".6"/><path d="M6 17v2M18 17v2"/></svg></span>Transport</h2>
+      <h2 id="t-transport"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 17h14v-5l-2-5H7l-2 5z"/><path d="M5 12h14"/><circle cx="8" cy="15" r=".6"/><circle cx="16" cy="15" r=".6"/><path d="M6 17v2M18 17v2"/></svg></span><span data-i18n="t_transport">Transport</span></h2>
       <span class="sub" id="subTransport">0,00 €</span>
     </div>
-    <label class="switch"><input type="checkbox" id="withCar" checked> Avec véhicule</label>
+    <label class="switch"><input type="checkbox" id="withCar" checked> <span data-i18n="with_car">Avec véhicule</span></label>
     <div id="carBlock" style="display:grid;gap:14px">
-      <div class="seg" role="group" aria-label="Type de véhicule">
-        <button type="button" data-type="essence">Essence</button>
-        <button type="button" data-type="diesel">Diesel</button>
-        <button type="button" data-type="electrique">Électrique</button>
+      <div class="seg" role="group" aria-label="Type">
+        <button type="button" data-type="essence" data-i18n="fuel_essence">Essence</button>
+        <button type="button" data-type="diesel" data-i18n="fuel_diesel">Diesel</button>
+        <button type="button" data-type="electrique" data-i18n="fuel_elec">Électrique</button>
       </div>
       <div class="grid2">
-        <label>Consommation
+        <label><span data-i18n="conso_label">Consommation</span>
           <div class="unit"><input id="conso" inputmode="decimal" autocomplete="off"><span id="consoUnit">L/100</span></div>
         </label>
-        <label>Prix
+        <label><span data-i18n="price_label">Prix</span>
           <div class="unit"><input id="price" inputmode="decimal" autocomplete="off"><span id="priceUnit">€/L</span></div>
         </label>
       </div>
       <div class="grid2">
-        <label>Kilomètres aller-retour
+        <label><span data-i18n="km_label">Kilomètres aller-retour</span>
           <div class="unit"><input id="km" inputmode="decimal" autocomplete="off"><span>km</span></div>
         </label>
-        <label>Péage aller-retour
+        <label><span data-i18n="toll_label">Péage aller-retour</span>
           <div class="unit"><input id="toll" inputmode="decimal" autocomplete="off" placeholder="0"><span>€</span></div>
         </label>
       </div>
       <div class="calc" id="calcDetail"></div>
     </div>
+    <label class="switch" style="margin-top:2px"><input type="checkbox" id="withVtc"> <span data-i18n="vtc_toggle">En VTC (course privée)</span></label>
+    <div id="vtcBlock" style="display:grid;gap:12px">
+      <label><span data-i18n="vtc_price_label">Prix du VTC (aller-retour)</span>
+        <div class="unit"><input id="vtcPrice" inputmode="decimal" autocomplete="off" placeholder="0"><span>€</span></div>
+      </label>
+      <a class="vtc-link" href="https://www.parisvtcdriver.com/#booking" target="_blank" rel="noopener" data-i18n="vtc_book">Réserver un VTC privé →</a>
+    </div>
   </section>
 
   <section class="card" aria-labelledby="t-stay">
     <div class="head">
-      <h2 id="t-stay"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.8"/></svg></span>Hébergement</h2>
+      <h2 id="t-stay"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.8"/></svg></span><span data-i18n="t_stay">Hébergement</span></h2>
       <span class="sub" id="subStay">0,00 €</span>
     </div>
-    <label class="switch"><input type="checkbox" id="withStay"> Hôtel, gîte, location…</label>
+    <label class="switch"><input type="checkbox" id="withStay"> <span data-i18n="stay_toggle">Hôtel, gîte, location…</span></label>
     <div id="stayBlock" style="display:grid;gap:14px">
       <div class="grid2">
-        <label>Prix par nuit
+        <label><span data-i18n="night_label">Prix par nuit</span>
           <div class="unit"><input id="night" inputmode="decimal" autocomplete="off" placeholder="0"><span>€</span></div>
         </label>
-        <label>Nombre de nuits
-          <div class="unit"><input id="nights" inputmode="numeric" autocomplete="off" placeholder="1"><span>nuits</span></div>
+        <label><span data-i18n="nights_label">Nombre de nuits</span>
+          <div class="unit"><input id="nights" inputmode="numeric" autocomplete="off" placeholder="1"><span id="nightsUnit" data-i18n="nights_unit">nuits</span></div>
         </label>
       </div>
-      <p class="empty">Indiquez le prix total pour le groupe (toutes les chambres).</p>
+      <p class="empty" data-i18n="stay_hint">Indiquez le prix total pour le groupe (toutes les chambres).</p>
     </div>
   </section>
 
   <section class="card" aria-labelledby="t-courses">
     <div class="head">
-      <h2 id="t-courses"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.5 11h10L20 8H6.5"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg></span>Courses et frais</h2>
+      <h2 id="t-courses"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h2l2.5 11h10L20 8H6.5"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg></span><span data-i18n="t_courses">Courses et frais</span></h2>
       <span class="sub" id="subCourses">0,00 €</span>
     </div>
     <div class="items" id="items"></div>
-    <button type="button" class="add" id="addItem">+ Ajouter un article</button>
+    <button type="button" class="add" id="addItem" data-i18n="add_item">+ Ajouter un article</button>
   </section>
 
   <section class="card" aria-labelledby="t-pers">
-    <h2 id="t-pers"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><circle cx="5.5" cy="10" r="2.2"/><circle cx="18.5" cy="10" r="2.2"/><path d="M6.5 19a5.5 5.5 0 0 1 11 0M1.5 18a4 4 0 0 1 5-3.8M22.5 18a4 4 0 0 0-5-3.8"/></svg></span>Nombre de personnes</h2>
+    <h2 id="t-pers"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><circle cx="5.5" cy="10" r="2.2"/><circle cx="18.5" cy="10" r="2.2"/><path d="M6.5 19a5.5 5.5 0 0 1 11 0M1.5 18a4 4 0 0 1 5-3.8M22.5 18a4 4 0 0 0-5-3.8"/></svg></span><span data-i18n="t_persons">Nombre de personnes</span></h2>
     <div class="stepper">
-      <button type="button" id="minus" aria-label="Une personne de moins">−</button>
+      <button type="button" id="minus" aria-label="−">−</button>
       <output id="persons" aria-live="polite">4</output>
-      <button type="button" id="plus" aria-label="Une personne de plus">+</button>
+      <button type="button" id="plus" aria-label="+">+</button>
     </div>
   </section>
 
   <section class="card" aria-labelledby="t-recap">
-    <h2 id="t-recap"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span>Récapitulatif</h2>
+    <h2 id="t-recap"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span><span data-i18n="t_recap">Récapitulatif</span></h2>
     <div class="recap" id="recap"></div>
   </section>
 
   <button type="button" class="sharebtn" id="shareBtn">
     <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-    Récap à partager
+    <span data-i18n="share_btn">Récap à partager</span>
   </button>
 
-  <button type="button" class="reset" id="reset">Tout effacer</button>
+  <button type="button" class="reset" id="reset" data-i18n="reset_btn">Tout effacer</button>
   <div class="confirm" id="confirm" hidden>
-    <span>Tout remettre à zéro ?</span>
-    <button type="button" class="yes" id="yes">Effacer</button>
-    <button type="button" id="no">Annuler</button>
+    <span data-i18n="confirm_q">Tout remettre à zéro ?</span>
+    <button type="button" class="yes" id="yes" data-i18n="confirm_yes">Effacer</button>
+    <button type="button" id="no" data-i18n="confirm_no">Annuler</button>
   </div>
 </div>
 
 <div class="bar" role="status" aria-live="polite">
   <div class="in">
-    <div><small>Chacun paie</small><div class="pp" id="perPerson">0,00 €</div></div>
+    <div><small data-i18n="per_person_label">Chacun paie</small><div class="pp" id="perPerson">0,00 €</div></div>
     <div class="right" id="barRight">Total 0,00 €<br>÷ 4 pers.</div>
   </div>
 </div>
@@ -256,6 +278,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
     params:JSON.parse(JSON.stringify(DEFAULTS)),
     km:250, toll:14.2, persons:4,
     withStay:false, night:120, nights:2,
+    withVtc:false, vtc:0,
     items:[
       {name:'Baguettes et viennoiseries', amount:'8,40'},
       {name:'Viande barbecue', amount:'32,90'},
@@ -265,14 +288,39 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   try{ var s = localStorage.getItem(KEY); if(s){ var p = JSON.parse(s); if(p && p.params) state = Object.assign(state,p); } }catch(e){}
 
   var $ = function(id){ return document.getElementById(id); };
-  var fmt = new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'});
-  var fmtN = function(n,d){ return n.toLocaleString('fr-FR',{minimumFractionDigits:d||0,maximumFractionDigits:d==null?2:d}); };
+  var LOCALES = {fr:'fr-FR', en:'en-GB', tr:'tr-TR', es:'es-ES'};
+  var LANG = 'fr';
+  try{ var _sl=localStorage.getItem('kifkif-lang'); if(_sl&&LOCALES[_sl]){ LANG=_sl; } else { var _nl=(navigator.language||'fr').slice(0,2); if(LOCALES[_nl]) LANG=_nl; } }catch(e){}
+  var fmt, fmtN, LOC;
+  function setLocale(){ LOC = LOCALES[LANG]||'fr-FR';
+    fmt = new Intl.NumberFormat(LOC,{style:'currency',currency:'EUR'});
+    fmtN = function(n,d){ return (+n).toLocaleString(LOC,{minimumFractionDigits:d||0,maximumFractionDigits:d==null?2:d}); };
+  }
+  setLocale();
   function num(v){ if(v==null) return 0; var n = parseFloat(String(v).replace(/\s/g,'').replace(',','.')); return isFinite(n)&&n>0 ? n : 0; }
   function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
-  function show(n){ return String(n).replace('.',','); }
+  function show(n){ return String(n).replace('.', (LANG==='en'?'.':',')); }
   function escapeHtml(t){ return String(t==null?'':t).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   var LAST = {transport:0,stay:0,courses:0,total:0,pp:0,n:4};
-  var TYPE_LABEL = {essence:'Essence', diesel:'Diesel', electrique:'Électrique'};
+  var I18N = {
+    fr:{tagline:"On partage les frais !",t_transport:"Transport",with_car:"Avec véhicule",fuel_essence:"Essence",fuel_diesel:"Diesel",fuel_elec:"Électrique",conso_label:"Consommation",price_label:"Prix",km_label:"Kilomètres aller-retour",toll_label:"Péage aller-retour",vtc_toggle:"En VTC (course privée)",vtc_price_label:"Prix du VTC (aller-retour)",vtc_book:"Réserver un VTC privé →",t_stay:"Hébergement",stay_toggle:"Hôtel, gîte, location…",night_label:"Prix par nuit",nights_label:"Nombre de nuits",nights_unit:"nuits",stay_hint:"Indiquez le prix total pour le groupe (toutes les chambres).",t_courses:"Courses et frais",add_item:"+ Ajouter un article",items_empty:"Aucun article. Ajoutez vos courses, parking, activités…",ph_item:"Article",t_persons:"Nombre de personnes",t_recap:"Récapitulatif",share_btn:"Récap à partager",reset_btn:"Tout effacer",confirm_q:"Tout remettre à zéro ?",confirm_yes:"Effacer",confirm_no:"Annuler",per_person_label:"Chacun paie",total_word:"Total",pers_word:"pers.",per_person_recap:"Par personne",no_vehicle:"sans véhicule",cost_100:"Coût aux 100 km :",wear_label:"Usure +10 % :",toll_word:"Péage :",toll_short:"péage",vtc_word:"VTC :",subtotal:"Sous-total",shared_between:"Partagé entre",person_sing:"personne",person_plur:"personnes",night_sing:"nuit",night_plur:"nuits",calc_with:"Calculé avec KifKif · parisvtcdriver.com"},
+    en:{tagline:"We split the costs!",t_transport:"Transport",with_car:"With a vehicle",fuel_essence:"Petrol",fuel_diesel:"Diesel",fuel_elec:"Electric",conso_label:"Consumption",price_label:"Price",km_label:"Round-trip kilometres",toll_label:"Round-trip toll",vtc_toggle:"By private hire (VTC)",vtc_price_label:"VTC price (round trip)",vtc_book:"Book a private VTC →",t_stay:"Accommodation",stay_toggle:"Hotel, lodge, rental…",night_label:"Price per night",nights_label:"Number of nights",nights_unit:"nights",stay_hint:"Enter the total price for the group (all rooms).",t_courses:"Groceries & expenses",add_item:"+ Add an item",items_empty:"No items. Add groceries, parking, activities…",ph_item:"Item",t_persons:"Number of people",t_recap:"Summary",share_btn:"Shareable summary",reset_btn:"Clear all",confirm_q:"Reset everything?",confirm_yes:"Clear",confirm_no:"Cancel",per_person_label:"Each pays",total_word:"Total",pers_word:"ppl",per_person_recap:"Per person",no_vehicle:"no vehicle",cost_100:"Cost per 100 km:",wear_label:"Wear +10%:",toll_word:"Toll:",toll_short:"toll",vtc_word:"VTC:",subtotal:"Subtotal",shared_between:"Shared among",person_sing:"person",person_plur:"people",night_sing:"night",night_plur:"nights",calc_with:"Calculated with KifKif · parisvtcdriver.com"},
+    tr:{tagline:"Masrafları paylaşıyoruz!",t_transport:"Ulaşım",with_car:"Araç ile",fuel_essence:"Benzin",fuel_diesel:"Dizel",fuel_elec:"Elektrik",conso_label:"Tüketim",price_label:"Fiyat",km_label:"Gidiş-dönüş kilometre",toll_label:"Gidiş-dönüş geçiş ücreti",vtc_toggle:"VTC ile (özel transfer)",vtc_price_label:"VTC fiyatı (gidiş-dönüş)",vtc_book:"Özel VTC rezervasyonu →",t_stay:"Konaklama",stay_toggle:"Otel, pansiyon, kiralık…",night_label:"Gecelik fiyat",nights_label:"Gece sayısı",nights_unit:"gece",stay_hint:"Grup için toplam fiyatı girin (tüm odalar).",t_courses:"Alışveriş ve masraflar",add_item:"+ Ürün ekle",items_empty:"Ürün yok. Alışveriş, otopark, aktivite ekleyin…",ph_item:"Ürün",t_persons:"Kişi sayısı",t_recap:"Özet",share_btn:"Paylaşılacak özet",reset_btn:"Tümünü sil",confirm_q:"Her şey sıfırlansın mı?",confirm_yes:"Sil",confirm_no:"İptal",per_person_label:"Kişi başı",total_word:"Toplam",pers_word:"kişi",per_person_recap:"Kişi başına",no_vehicle:"araçsız",cost_100:"100 km maliyeti:",wear_label:"Aşınma +%10:",toll_word:"Geçiş ücreti:",toll_short:"geçiş",vtc_word:"VTC:",subtotal:"Ara toplam",shared_between:"Paylaşan kişi:",person_sing:"kişi",person_plur:"kişi",night_sing:"gece",night_plur:"gece",calc_with:"KifKif ile hesaplandı · parisvtcdriver.com"},
+    es:{tagline:"¡Compartimos los gastos!",t_transport:"Transporte",with_car:"Con vehículo",fuel_essence:"Gasolina",fuel_diesel:"Diésel",fuel_elec:"Eléctrico",conso_label:"Consumo",price_label:"Precio",km_label:"Kilómetros ida y vuelta",toll_label:"Peaje ida y vuelta",vtc_toggle:"En VTC (traslado privado)",vtc_price_label:"Precio del VTC (ida y vuelta)",vtc_book:"Reservar un VTC privado →",t_stay:"Alojamiento",stay_toggle:"Hotel, alojamiento, alquiler…",night_label:"Precio por noche",nights_label:"Número de noches",nights_unit:"noches",stay_hint:"Indique el precio total para el grupo (todas las habitaciones).",t_courses:"Compras y gastos",add_item:"+ Añadir un artículo",items_empty:"Sin artículos. Añade compras, parking, actividades…",ph_item:"Artículo",t_persons:"Número de personas",t_recap:"Resumen",share_btn:"Resumen para compartir",reset_btn:"Borrar todo",confirm_q:"¿Restablecer todo?",confirm_yes:"Borrar",confirm_no:"Cancelar",per_person_label:"Cada uno paga",total_word:"Total",pers_word:"pers.",per_person_recap:"Por persona",no_vehicle:"sin vehículo",cost_100:"Coste cada 100 km:",wear_label:"Desgaste +10 %:",toll_word:"Peaje:",toll_short:"peaje",vtc_word:"VTC:",subtotal:"Subtotal",shared_between:"Repartido entre",person_sing:"persona",person_plur:"personas",night_sing:"noche",night_plur:"noches",calc_with:"Calculado con KifKif · parisvtcdriver.com"}
+  };
+  function t(k){ var d=I18N[LANG]||I18N.fr; return d[k]!=null?d[k]:(I18N.fr[k]!=null?I18N.fr[k]:k); }
+  function typeLabel(ty){ var m={essence:'fuel_essence',diesel:'fuel_diesel',electrique:'fuel_elec'}; return t(m[ty]||'fuel_essence'); }
+  function personWord(n){ return n>1?t('person_plur'):t('person_sing'); }
+  function nightWord(n){ return n>1?t('night_plur'):t('night_sing'); }
+  function applyLang(lang){
+    if(!LOCALES[lang]) lang='fr';
+    LANG = lang; try{ localStorage.setItem('kifkif-lang', lang); }catch(e){}
+    setLocale();
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(function(el){ var k=el.getAttribute('data-i18n'); var d=I18N[lang]; if(d&&d[k]!=null) el.textContent=d[k]; });
+    document.querySelectorAll('#langbar button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.lang===lang?'true':'false'); });
+    renderItems(); update();
+  }
 
   function setType(t){
     state.type = t;
@@ -286,10 +334,10 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
   function renderItems(){
     var box = $('items'); box.innerHTML = '';
-    if(!state.items.length){ var p=document.createElement('p'); p.className='empty'; p.textContent='Aucun article. Ajoutez vos courses, parking, activités…'; box.appendChild(p); }
+    if(!state.items.length){ var p=document.createElement('p'); p.className='empty'; p.textContent=t('items_empty'); box.appendChild(p); }
     state.items.forEach(function(it,i){
       var row = document.createElement('div'); row.className='item';
-      var n = document.createElement('input'); n.id='item-name-'+i; n.placeholder='Article'; n.value=it.name; n.setAttribute('aria-label','Article '+(i+1));
+      var n = document.createElement('input'); n.id='item-name-'+i; n.placeholder=t('ph_item'); n.value=it.name; n.setAttribute('aria-label',t('ph_item')+' '+(i+1));
       var a = document.createElement('input'); a.id='item-amt-'+i; a.placeholder='0,00 €'; a.inputMode='decimal'; a.value=it.amount; a.setAttribute('aria-label','Montant article '+(i+1));
       var d = document.createElement('button'); d.type='button'; d.className='del'; d.textContent='×'; d.setAttribute('aria-label','Supprimer '+(it.name||'article'));
       n.addEventListener('input',function(){ it.name=n.value; save(); });
@@ -314,13 +362,17 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
     var energy = p.conso*state.km/100;
     var fuel = energy*p.price;
     var wear = fuel*WEAR;
-    var transport = state.withCar ? Math.round((fuel+wear+state.toll)*100)/100 : 0;
+    var carCost = state.withCar ? (fuel+wear+state.toll) : 0;
+    state.vtc = num($('vtcPrice').value);
+    var vtcCost = state.withVtc ? state.vtc : 0;
+    var transport = Math.round((carCost+vtcCost)*100)/100;
     $('carBlock').hidden = !state.withCar;
+    $('vtcBlock').hidden = !state.withVtc;
     $('calcDetail').innerHTML =
-      'Coût aux 100 km : <b>'+fmt.format(per100)+'</b><br>'+
+      t('cost_100')+' <b>'+fmt.format(per100)+'</b><br>'+
       fmtN(energy,1)+(el?' kWh':' L')+' × '+fmtN(p.price,3)+' € = <b>'+fmt.format(fuel)+'</b><br>'+
-      'Usure +10 % : <b>'+fmt.format(wear)+'</b><br>'+
-      'Péage : <b>'+fmt.format(state.toll)+'</b>';
+      t('wear_label')+' <b>'+fmt.format(wear)+'</b><br>'+
+      t('toll_word')+' <b>'+fmt.format(state.toll)+'</b>';
 
     state.night = num($('night').value);
     state.nights = num($('nights').value);
@@ -336,43 +388,50 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
     $('subCourses').textContent = fmt.format(courses);
     $('persons').textContent = n;
     $('perPerson').textContent = fmt.format(pp);
-    $('barRight').innerHTML = 'Total '+fmt.format(total)+'<br>÷ '+n+' pers.';
+    $('barRight').innerHTML = t('total_word')+' '+fmt.format(total)+'<br>÷ '+n+' '+t('pers_word');
+    var transLabel = t('t_transport');
+    if(state.withVtc && !state.withCar) transLabel += ' ('+t('vtc_toggle')+')';
+    else if(!state.withCar && !state.withVtc) transLabel += ' ('+t('no_vehicle')+')';
     $('recap').innerHTML =
-      '<div><span>Transport'+(state.withCar?'':' (sans véhicule)')+'</span><span>'+fmt.format(transport)+'</span></div>'+
-      (state.withStay ? '<div><span>Hébergement ('+fmtN(state.nights,0)+' nuit'+(state.nights>1?'s':'')+')</span><span>'+fmt.format(stay)+'</span></div>' : '')+
-      '<div><span>Courses et frais ('+state.items.filter(function(i){return num(i.amount)>0;}).length+')</span><span>'+fmt.format(courses)+'</span></div>'+
-      '<div class="tot"><span>Total</span><span>'+fmt.format(total)+'</span></div>'+
-      '<div><span>Par personne ('+n+')</span><span><b>'+fmt.format(pp)+'</b></span></div>';
-    LAST = {transport:transport, stay:stay, courses:courses, total:total, pp:pp, n:n};
+      '<div><span>'+transLabel+'</span><span>'+fmt.format(transport)+'</span></div>'+
+      (state.withStay ? '<div><span>'+t('t_stay')+' ('+fmtN(state.nights,0)+' '+nightWord(state.nights)+')</span><span>'+fmt.format(stay)+'</span></div>' : '')+
+      '<div><span>'+t('t_courses')+' ('+state.items.filter(function(i){return num(i.amount)>0;}).length+')</span><span>'+fmt.format(courses)+'</span></div>'+
+      '<div class="tot"><span>'+t('total_word')+'</span><span>'+fmt.format(total)+'</span></div>'+
+      '<div><span>'+t('per_person_recap')+' ('+n+')</span><span><b>'+fmt.format(pp)+'</b></span></div>';
+    LAST = {transport:transport, stay:stay, courses:courses, total:total, pp:pp, n:n, carCost:Math.round(carCost*100)/100, vtcCost:Math.round(vtcCost*100)/100};
     save();
   }
 
   function openRecap(){
     update();
     var s = state, L = LAST;
-    var dateStr = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+    var dateStr = new Date().toLocaleDateString(LOC,{day:'numeric',month:'long',year:'numeric'});
     var rows = '';
     if(s.withCar){
-      rows += '<div class="rr"><div class="rl"><b>Transport</b><small>'+TYPE_LABEL[s.type]+' · '+fmtN(s.km,0)+' km'+(s.toll>0?' · péage '+fmt.format(s.toll):'')+'</small></div><div class="rv">'+fmt.format(L.transport)+'</div></div>';
-    } else {
-      rows += '<div class="rr"><div class="rl"><b>Transport</b><small>Sans véhicule</small></div><div class="rv">'+fmt.format(0)+'</div></div>';
+      rows += '<div class="rr"><div class="rl"><b>'+t('t_transport')+'</b><small>'+typeLabel(s.type)+' · '+fmtN(s.km,0)+' km'+(s.toll>0?' · '+t('toll_short')+' '+fmt.format(s.toll):'')+'</small></div><div class="rv">'+fmt.format(L.carCost)+'</div></div>';
+    }
+    if(s.withVtc){
+      rows += '<div class="rr"><div class="rl"><b>VTC</b><small>'+t('vtc_toggle')+'</small></div><div class="rv">'+fmt.format(L.vtcCost)+'</div></div>';
+    }
+    if(!s.withCar && !s.withVtc){
+      rows += '<div class="rr"><div class="rl"><b>'+t('t_transport')+'</b><small>'+t('no_vehicle')+'</small></div><div class="rv">'+fmt.format(0)+'</div></div>';
     }
     if(s.withStay){
-      rows += '<div class="rr"><div class="rl"><b>Hébergement</b><small>'+fmtN(s.nights,0)+' nuit'+(s.nights>1?'s':'')+' × '+fmt.format(s.night)+'</small></div><div class="rv">'+fmt.format(L.stay)+'</div></div>';
+      rows += '<div class="rr"><div class="rl"><b>'+t('t_stay')+'</b><small>'+fmtN(s.nights,0)+' '+nightWord(s.nights)+' × '+fmt.format(s.night)+'</small></div><div class="rv">'+fmt.format(L.stay)+'</div></div>';
     }
     var items = s.items.filter(function(i){ return num(i.amount)>0; });
     if(items.length){
       var li = '';
-      items.forEach(function(it){ li += '<div class="il"><span>'+(escapeHtml(it.name)||'Article')+'</span><span>'+fmt.format(num(it.amount))+'</span></div>'; });
-      rows += '<div class="rr col"><div class="rl"><b>Courses et frais</b></div><div class="ilist">'+li+'</div><div class="rsub">Sous-total <b>'+fmt.format(L.courses)+'</b></div></div>';
+      items.forEach(function(it){ li += '<div class="il"><span>'+(escapeHtml(it.name)||t('ph_item'))+'</span><span>'+fmt.format(num(it.amount))+'</span></div>'; });
+      rows += '<div class="rr col"><div class="rl"><b>'+t('t_courses')+'</b></div><div class="ilist">'+li+'</div><div class="rsub">'+t('subtotal')+' <b>'+fmt.format(L.courses)+'</b></div></div>';
     }
     var html = '<div class="rsheet">'
-      + '<div class="rhead"><div class="rbrand"><span class="k1">Kif</span><span class="k2">Kif</span></div><div class="rtag">On partage les frais !</div><div class="rdate">'+dateStr+'</div></div>'
+      + '<div class="rhead"><div class="rbrand"><span class="k1">Kif</span><span class="k2">Kif</span></div><div class="rtag">'+t('tagline')+'</div><div class="rdate">'+dateStr+'</div></div>'
       + '<div class="rbody">'+rows+'</div>'
-      + '<div class="rtotal"><span>Total</span><span>'+fmt.format(L.total)+'</span></div>'
-      + '<div class="rpers">Partagé entre <b>'+L.n+'</b> personne'+(L.n>1?'s':'')+'</div>'
-      + '<div class="rpp"><small>Chacun paie</small><div class="rppv">'+fmt.format(L.pp)+'</div></div>'
-      + '<div class="rfoot">Calculé avec KifKif · parisvtcdriver.com</div>'
+      + '<div class="rtotal"><span>'+t('total_word')+'</span><span>'+fmt.format(L.total)+'</span></div>'
+      + '<div class="rpers">'+t('shared_between')+' <b>'+L.n+'</b> '+personWord(L.n)+'</div>'
+      + '<div class="rpp"><small>'+t('per_person_label')+'</small><div class="rppv">'+fmt.format(L.pp)+'</div></div>'
+      + '<div class="rfoot">'+t('calc_with')+'</div>'
       + '</div>';
     var sheet = $('recapSheet');
     sheet.innerHTML = '<button type="button" class="rclose" id="rclose" aria-label="Fermer">×</button>' + html;
@@ -385,8 +444,10 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   // Wiring
   document.querySelectorAll('.seg button').forEach(function(b){ b.addEventListener('click',function(){ setType(b.dataset.type); update(); }); });
   $('withStay').addEventListener('change',function(){ state.withStay=this.checked; update(); });
-  ['conso','price','km','toll','night','nights'].forEach(function(id){ $(id).addEventListener('input',update); });
+  ['conso','price','km','toll','night','nights','vtcPrice'].forEach(function(id){ $(id).addEventListener('input',update); });
   $('withCar').addEventListener('change',function(){ state.withCar=this.checked; update(); });
+  $('withVtc').addEventListener('change',function(){ state.withVtc=this.checked; update(); });
+  document.querySelectorAll('#langbar button').forEach(function(b){ b.addEventListener('click',function(){ applyLang(b.dataset.lang); }); });
   $('addItem').addEventListener('click',addItem);
   $('minus').addEventListener('click',function(){ if(state.persons>1){ state.persons--; update(); } });
   $('plus').addEventListener('click',function(){ if(state.persons<99){ state.persons++; update(); } });
@@ -398,6 +459,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   $('yes').addEventListener('click',function(){
     state.items=[]; state.km=0; state.toll=0; $('km').value=''; $('toll').value='';
     state.withStay=false; $('withStay').checked=false;
+    state.withVtc=false; $('withVtc').checked=false; state.vtc=0; $('vtcPrice').value='';
     $('confirm').hidden=true; $('reset').hidden=false; renderItems(); update();
   });
 
@@ -408,9 +470,10 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   $('withStay').checked = state.withStay;
   $('night').value = state.night ? show(state.night) : '';
   $('nights').value = state.nights ? show(state.nights) : '';
+  $('withVtc').checked = state.withVtc;
+  $('vtcPrice').value = state.vtc ? show(state.vtc) : '';
   setType(state.type);
-  renderItems();
-  update();
+  applyLang(LANG);
 })();
 </script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}</script>
