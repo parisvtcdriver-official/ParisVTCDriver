@@ -524,14 +524,20 @@ async function buildInvoicePDF(inv, lines){
   };
   if(vat>0){ totLine('Total HT',pdfAmount(inv.amount_ht)); totLine('TVA '+vat+' %',pdfAmount(inv.vat_amount)); }
   totLine('TOTAL'+(vat>0?' TTC':''),pdfAmount(inv.amount_ttc),true);
-  // --- Mentions de bas de page ---
-  y+=5; doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(90);
-  const foot=[];
-  if(inv.due_date) foot.push('Echeance : '+pdfDate(inv.due_date)+'.');
-  if(co.payment_terms) foot.push(co.payment_terms);
-  if(co.iban) foot.push('IBAN : '+co.iban+(co.bic?('    BIC : '+co.bic):''));
-  if(vat<=0 && co.vat_note) foot.push(co.vat_note);
-  foot.forEach(f=>{ doc.splitTextToSize(asciiClean(f),RW).forEach(p=>{doc.text(p,M,y);y+=4.8;}); });
+  // --- Règlement : échéance + coordonnées de paiement ---
+  y+=6; doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...G);
+  T('CONDITIONS DE REGLEMENT',M,y); y+=5;
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(80);
+  const pay=[];
+  if(inv.due_date) pay.push('Date limite de paiement : '+pdfDate(inv.due_date)+'.');
+  if(co.payment_terms) pay.push(co.payment_terms);
+  if(co.iban) pay.push('IBAN : '+co.iban+(co.bic?('    BIC : '+co.bic):''));
+  if(vat<=0 && co.vat_note) pay.push(co.vat_note);
+  pay.forEach(f=>{ doc.splitTextToSize(asciiClean(f),RW).forEach(p=>{doc.text(p,M,y);y+=4.6;}); });
+  // --- Mentions légales de retard / escompte ---
+  y+=3; doc.setFontSize(7.6); doc.setTextColor(120);
+  const legalPay=[co.late_penalty_text, co.early_discount_text, co.legal_mentions].filter(Boolean);
+  legalPay.forEach(f=>{ doc.splitTextToSize(asciiClean(f),RW).forEach(p=>{doc.text(p,M,y);y+=3.9;}); y+=1; });
   // --- Pied de page légal ---
   doc.setDrawColor(230); doc.line(M,283,210-M,283);
   doc.setFontSize(7.3); doc.setTextColor(135);
@@ -599,8 +605,9 @@ async function genDriverInvoice(){
     const ht=vat>0?+(ttc/(1+vat/100)).toFixed(2):ttc, vatAmt=+(ttc-ht).toFixed(2);
     const number=await rpcNumber('PVTCD');
     const issue=new Date().toISOString().slice(0,10);
+    const due=addDays(issue, co.payment_due_days||30);
     const inv={flow:'company_to_driver',contract_id:r.contract_id,invoice_number:number,
-      issuer:co.legal_name,recipient:(d.full_name||d.email),issue_date:issue,period_label:period,
+      issuer:co.legal_name,recipient:(d.full_name||d.email),issue_date:issue,due_date:due,period_label:period,
       amount_ht:ht,vat_rate:vat,vat_amount:vatAmt,amount_ttc:ttc,status:'issued',
       _issuer:[co.legal_name,co.legal_form,co.address,'SIRET '+co.siret,co.vat_number&&('TVA '+co.vat_number),co.representative],
       _recipient:[d.full_name||'',d.email||'',d.phone||'']};
@@ -629,14 +636,16 @@ async function genOwnerInvoice(){
     const lines=[{label:'Mise à disposition du véhicule '+(v.make||'')+' '+(v.model||'')+' ('+(v.registration||'')+') — '+period, amount:amt}];
     const ttc=amt, ht=vat>0?+(ttc/(1+vat/100)).toFixed(2):ttc, vatAmt=+(ttc-ht).toFixed(2);
     const number=await rpcNumber('PVTCD-PROP');
+    const issueO=new Date().toISOString().slice(0,10);
     const inv={flow:'owner_to_company',contract_id:null,invoice_number:number,
-      issuer:(co.owner_name||co.representative),recipient:co.legal_name,issue_date:new Date().toISOString().slice(0,10),
+      issuer:(co.owner_name||co.representative),recipient:co.legal_name,issue_date:issueO,due_date:addDays(issueO,co.payment_due_days||30),
       period_label:period,amount_ht:ht,vat_rate:vat,vat_amount:vatAmt,amount_ttc:ttc,status:'issued',
       _issuer:[co.owner_name||co.representative,co.owner_address||'',co.owner_siret?('SIRET '+co.owner_siret):''],
       _recipient:[co.legal_name,co.legal_form,co.address,'SIRET '+co.siret,co.vat_number&&('TVA '+co.vat_number)]};
     await finalizeInvoice(inv,lines);
   }catch(e){ err.textContent='Erreur : '+(e.message||e); }
 }
+function addDays(iso,n){ const d=new Date(iso); d.setDate(d.getDate()+(+n||0)); return d.toISOString().slice(0,10); }
 async function rpcNumber(prefix){
   const {data,error}=await sb.rpc('pvtcd_next_number',{p_prefix:prefix});
   if(error) throw error; return data;
@@ -667,8 +676,12 @@ async function billingSettings(){
     '<div><label>SIRET propriétaire (option)</label><input id="bs_os" value="'+esc(co.owner_siret||'')+'"></div></div>'+
     '<label>IBAN (option)</label><input id="bs_iban" value="'+esc(co.iban||'')+'">'+
     '<div class="row"><div><label>BIC (option)</label><input id="bs_bic" value="'+esc(co.bic||'')+'"></div>'+
-    '<div><label>Conditions de paiement</label><input id="bs_pt" value="'+esc(co.payment_terms||'')+'"></div></div>'+
+    '<div><label>Délai de paiement (jours)</label><input id="bs_due" type="number" value="'+(co.payment_due_days!=null?co.payment_due_days:30)+'"></div></div>'+
+    '<label>Conditions de paiement</label><input id="bs_pt" value="'+esc(co.payment_terms||'')+'">'+
     '<label>Mention TVA (si hors TVA)</label><input id="bs_vn" value="'+esc(co.vat_note||'')+'">'+
+    '<label>Pénalités de retard (mention légale)</label><textarea id="bs_lp" rows="3" style="width:100%;padding:12px 13px;border-radius:12px;border:1px solid var(--line);background:#0a1122;color:var(--txt);font-size:14px;font-family:inherit">'+esc(co.late_penalty_text||'')+'</textarea>'+
+    '<label>Escompte anticipé (mention)</label><input id="bs_ed" value="'+esc(co.early_discount_text||'')+'">'+
+    '<label>Autres mentions légales (option)</label><input id="bs_lm" value="'+esc(co.legal_mentions||'')+'">'+
     '<div class="err" id="bs_err"></div>'+
     '<div class="actions"><button class="btn gold" onclick="saveBilling()">Enregistrer</button><button class="btn ghost" onclick="closeModal()">Annuler</button></div>');
 }
@@ -677,7 +690,10 @@ async function saveBilling(){
   const patch={owner_name:$('bs_on').value.trim(),owner_address:$('bs_oa').value.trim(),
     owner_monthly_amount:+$('bs_oamt').value||0,owner_siret:$('bs_os').value.trim(),
     iban:$('bs_iban').value.trim(),bic:$('bs_bic').value.trim(),
-    payment_terms:$('bs_pt').value.trim(),vat_note:$('bs_vn').value.trim()};
+    payment_due_days:+$('bs_due').value||30,
+    payment_terms:$('bs_pt').value.trim(),vat_note:$('bs_vn').value.trim(),
+    late_penalty_text:$('bs_lp').value.trim(),early_discount_text:$('bs_ed').value.trim(),
+    legal_mentions:$('bs_lm').value.trim()};
   const {error}=await sb.from('pvtcd_company').update(patch).eq('id',co.id);
   if(error){ $('bs_err').textContent='Erreur : '+error.message; return; }
   company=null; closeModal(); loadInvoices();
