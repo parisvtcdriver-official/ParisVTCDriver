@@ -678,7 +678,11 @@ async function genDriverInvoice(){
     const ttc=lines.reduce((s,l)=>s+l.amount,0);
     const ht=vat>0?+(ttc/(1+vat/100)).toFixed(2):ttc, vatAmt=+(ttc-ht).toFixed(2);
     const manual=$('iv_num').value.trim();
-    const number= manual || await rpcNumber('PVTCD');
+    let number;
+    if(manual){
+      if(await invoiceExists(manual)){ err.textContent='Ce numéro de facture existe déjà. Choisissez-en un autre ou laissez le champ vide.'; return; }
+      number=manual;
+    } else { number=await nextFreeNumber('PVTCD'); }
     const issue=new Date().toISOString().slice(0,10);
     const due=addDays(issue, co.payment_due_days||7);
     const inv={flow:'company_to_driver',contract_id:r.contract_id,invoice_number:number,
@@ -712,7 +716,11 @@ async function genOwnerInvoice(){
     const lines=[{label:'Mise à disposition du véhicule '+(v.make||'')+' '+(v.model||'')+' ('+(v.registration||'')+') — '+period, amount:amt}];
     const ttc=amt, ht=vat>0?+(ttc/(1+vat/100)).toFixed(2):ttc, vatAmt=+(ttc-ht).toFixed(2);
     const manualO=$('ov_num').value.trim();
-    const number= manualO || await rpcNumber('PVTCD-PROP');
+    let number;
+    if(manualO){
+      if(await invoiceExists(manualO)){ err.textContent='Ce numéro de facture existe déjà. Choisissez-en un autre ou laissez le champ vide.'; return; }
+      number=manualO;
+    } else { number=await nextFreeNumber('PVTCD-PROP'); }
     const issueO=new Date().toISOString().slice(0,10);
     const inv={flow:'owner_to_company',contract_id:null,invoice_number:number,
       issuer:(co.owner_name||co.representative),recipient:co.legal_name,issue_date:issueO,due_date:addDays(issueO,co.payment_due_days||7),
@@ -723,6 +731,16 @@ async function genOwnerInvoice(){
   }catch(e){ err.textContent='Erreur : '+(e.message||e); }
 }
 function addDays(iso,n){ const d=new Date(iso); d.setDate(d.getDate()+(+n||0)); return d.toISOString().slice(0,10); }
+async function invoiceExists(num){
+  const {data}=await sb.from('pvtcd_invoices').select('id').eq('invoice_number',num).maybeSingle();
+  return !!data;
+}
+// Numéro automatique garanti libre (le compteur peut être en retard sur des numéros saisis à la main).
+async function nextFreeNumber(prefix){
+  let n=await rpcNumber(prefix), guard=0;
+  while(guard++<30 && await invoiceExists(n)){ n=await rpcNumber(prefix); }
+  return n;
+}
 async function rpcNumber(prefix){
   const {data,error}=await sb.rpc('pvtcd_next_number',{p_prefix:prefix});
   if(error) throw error; return data;
