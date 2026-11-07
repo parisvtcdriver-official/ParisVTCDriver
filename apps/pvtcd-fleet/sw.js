@@ -1,6 +1,6 @@
 // Service worker PRUDENT — ne met en cache QUE la coquille statique (même origine).
 // Jamais de requête Supabase (cross-origin), jamais de données privées en cache.
-const C = 'pvtcd-fleet-v1';
+const C = 'pvtcd-fleet-v2';
 const SHELL = ['./', 'index.html', 'config.js', 'manifest.webmanifest',
                'icon-192.png', 'icon-512.png', 'icon-180.png'];
 

@@ -15,20 +15,16 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:radial-gradient(1200px 700px at 50% -10%,#13203b 0%,var(--bg) 55%);
-    color:var(--txt); min-height:100vh; -webkit-font-smoothing:antialiased;
-  }
-  .wrap{max-width:960px;margin:0 auto;padding:18px 16px 40px}
-  header.appbar{display:flex;align-items:center;gap:12px;padding:14px 4px 18px}
-  .logo{width:42px;height:42px;border-radius:11px;border:1.5px solid var(--gold);
+    color:var(--txt); min-height:100vh; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:16px 16px 48px}
+  header.appbar{display:flex;align-items:center;gap:12px;padding:12px 2px 10px}
+  .logo{width:40px;height:40px;border-radius:11px;border:1.5px solid var(--gold);
     background:#000;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
-  .logo b{font-size:12px;letter-spacing:.5px}
-  .logo .s{color:var(--silver)} .logo .g{color:var(--gold)}
-  .brand h1{font-size:16px;margin:0;letter-spacing:.6px}
-  .brand h1 .g{color:var(--gold2)}
-  .brand p{margin:2px 0 0;font-size:11px;color:var(--muted);letter-spacing:.4px}
+  .logo b{font-size:12px;letter-spacing:.5px} .logo .s{color:var(--silver)} .logo .g{color:var(--gold)}
+  .brand h1{font-size:15px;margin:0;letter-spacing:.6px} .brand h1 .g{color:var(--gold2)}
+  .brand p{margin:2px 0 0;font-size:10.5px;color:var(--muted);letter-spacing:.4px}
   .spacer{flex:1}
   .btn{cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--txt);
     padding:11px 15px;border-radius:12px;font-size:14px;font-weight:600;transition:.15s}
@@ -36,138 +32,138 @@
   .btn.gold{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#211a06;border-color:var(--gold)}
   .btn.ghost{background:transparent}
   .btn.sm{padding:7px 11px;font-size:12.5px;border-radius:10px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin:14px 0;
+  .btn.danger{color:var(--bad);border-color:#3a2330}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0;
     box-shadow:0 18px 50px rgba(0,0,0,.35)}
-  .card h2{margin:0 0 4px;font-size:17px}
-  .card h2 .g{color:var(--gold2)}
+  .card h2{margin:0 0 4px;font-size:16px} .card h2 .g{color:var(--gold2)}
   label{display:block;font-size:12.5px;color:var(--muted);margin:12px 0 6px}
   input,select{width:100%;padding:12px 13px;border-radius:12px;border:1px solid var(--line);
     background:#0a1122;color:var(--txt);font-size:15px}
+  input[type=file]{padding:9px}
   input:focus,select:focus{outline:none;border-color:var(--gold)}
-  .row{display:flex;gap:10px;flex-wrap:wrap}
-  .row>*{flex:1;min-width:0}
+  .row{display:flex;gap:10px;flex-wrap:wrap} .row>*{flex:1;min-width:0}
   .muted{color:var(--muted);font-size:13px}
   .err{color:var(--bad);font-size:13px;margin-top:10px;min-height:16px}
   .ok{color:var(--ok)}
   .hide{display:none!important}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:8px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:8px}
   .stat{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:16px}
-  .stat .n{font-size:28px;font-weight:800;color:var(--gold2)}
-  .stat .l{font-size:12px;color:var(--muted);margin-top:4px}
-  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;border:1px solid var(--line)}
-  .pill.admin{color:var(--gold2);border-color:var(--gold)}
-  .pill.driver{color:var(--silver)}
+  .stat .n{font-size:26px;font-weight:800;color:var(--gold2)} .stat .l{font-size:12px;color:var(--muted);margin-top:4px}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid var(--line)}
+  .pill.admin{color:var(--gold2);border-color:var(--gold)} .pill.driver{color:var(--silver)}
+  .pill.ok{color:var(--ok);border-color:#1d3a2d} .pill.warn{color:var(--warn);border-color:#3a3220}
+  .pill.bad{color:var(--bad);border-color:#3a2330} .pill.sub{color:var(--silver)}
   .center{min-height:60vh;display:flex;align-items:center;justify-content:center}
   .boot{text-align:center;color:var(--muted)}
   a.link{color:var(--gold2);text-decoration:none;font-size:13px;cursor:pointer}
-  .foot{color:var(--muted);font-size:11px;text-align:center;margin-top:26px;line-height:1.6}
-  .divider{height:1px;background:var(--line);margin:16px 0}
+  .foot{color:var(--muted);font-size:11px;text-align:center;margin-top:22px;line-height:1.6}
+  .divider{height:1px;background:var(--line);margin:14px 0}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
+  .tab{cursor:pointer;padding:9px 13px;border-radius:11px;border:1px solid var(--line);background:var(--card);
+    font-size:13px;font-weight:600;color:var(--muted)}
+  .tab.active{color:#211a06;background:linear-gradient(180deg,var(--gold2),var(--gold));border-color:var(--gold)}
+  .item{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:10px}
+  .item .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .item .ttl{font-weight:700;font-size:14px}
+  .item .sub{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .kv{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .kv b{color:var(--txt)}
+  .empty{color:var(--muted);font-size:13px;padding:8px 2px}
+  dialog{border:none;background:transparent;max-width:92vw}
+  .modal{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;max-width:440px;width:92vw}
+  img.photo{max-width:100%;border-radius:12px;border:1px solid var(--line);margin-top:10px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="appbar">
     <div class="logo"><b><span class="s">P</span><span class="g">F</span></b></div>
-    <div class="brand">
-      <h1>PVTCD <span class="g">FLEET</span></h1>
-      <p>LOCATION PVTCD · PARISVTCDRIVER</p>
-    </div>
+    <div class="brand"><h1>PVTCD <span class="g">FLEET</span></h1><p>LOCATION PVTCD · PARISVTCDRIVER</p></div>
     <div class="spacer"></div>
     <button id="logoutBtn" class="btn sm ghost hide" onclick="doLogout()">Déconnexion</button>
   </header>
 
   <!-- CHARGEMENT -->
-  <section id="booting" class="center">
-    <div class="boot">
-      <div style="font-size:30px">⏳</div>
-      <p>Initialisation…</p>
-    </div>
-  </section>
+  <section id="booting" class="center"><div class="boot"><div style="font-size:30px">⏳</div><p>Initialisation…</p></div></section>
 
-  <!-- CONNEXION -->
+  <!-- CONNEXION / INSCRIPTION -->
   <section id="loginView" class="hide">
     <div class="card">
-      <h2>Connexion <span class="g">·</span> espace sécurisé</h2>
-      <p class="muted">Accédez à votre espace. Les comptes chauffeurs sont créés par l'administrateur.</p>
+      <h2 id="authTitle">Connexion <span class="g">·</span> espace sécurisé</h2>
+      <p class="muted" id="authHint">Accédez à votre espace.</p>
+      <label for="full" id="fullLbl" class="hide">Nom complet</label>
+      <input id="full" class="hide" type="text" autocomplete="name" placeholder="Prénom Nom">
       <label for="email">E-mail</label>
       <input id="email" type="email" autocomplete="email" placeholder="vous@exemple.com">
       <label for="pwd">Mot de passe</label>
       <input id="pwd" type="password" autocomplete="current-password" placeholder="••••••••">
       <div class="err" id="loginErr"></div>
-      <div class="row" style="margin-top:14px">
-        <button class="btn gold" style="flex:2" onclick="doLogin()">Se connecter</button>
-      </div>
+      <button id="authBtn" class="btn gold" style="width:100%;margin-top:14px" onclick="doAuth()">Se connecter</button>
       <div class="divider"></div>
-      <a class="link" onclick="doReset()">Mot de passe oublié ?</a>
-    </div>
-    <div class="foot">
-      Connexion chiffrée via Supabase. Vos données (kilométrages, photos, documents)
-      sont privées et protégées par des règles d'accès au niveau serveur.
-    </div>
-  </section>
-
-  <!-- COMPTE NON RATTACHÉ -->
-  <section id="noMemberView" class="hide">
-    <div class="card">
-      <h2>Compte non rattaché</h2>
-      <p class="muted">Votre connexion fonctionne, mais votre compte n'est pas encore
-        rattaché à la flotte. Demandez à l'administrateur de vous ajouter comme chauffeur.</p>
-      <p class="muted" id="noMemberEmail" style="margin-top:6px"></p>
-    </div>
-  </section>
-
-  <!-- TABLEAU DE BORD ADMIN -->
-  <section id="adminView" class="hide">
-    <div class="card">
-      <h2>Espace <span class="g">administrateur</span></h2>
-      <p class="muted">Bonjour <span id="adminName"></span> · <span class="pill admin">ADMIN</span></p>
-      <div class="grid">
-        <div class="stat"><div class="n" id="stPending">–</div><div class="l">Relevés à valider</div></div>
-        <div class="stat"><div class="n" id="stContracts">–</div><div class="l">Contrats actifs</div></div>
-        <div class="stat"><div class="n" id="stDrivers">–</div><div class="l">Chauffeurs</div></div>
-        <div class="stat"><div class="n" id="stVehicles">–</div><div class="l">Véhicules</div></div>
+      <div class="row">
+        <a class="link" id="toSignup" onclick="setMode('signup')">Créer un compte chauffeur</a>
+        <a class="link" id="toLogin" style="text-align:right" onclick="doReset()">Mot de passe oublié ?</a>
       </div>
     </div>
+    <div class="foot">Connexion chiffrée via Supabase. Vos données (kilométrages, photos, documents)
+      sont privées et protégées par des règles d'accès au niveau serveur.</div>
+  </section>
+
+  <!-- EN ATTENTE DE VALIDATION -->
+  <section id="pendingView" class="hide">
     <div class="card">
-      <h2>Prochaines étapes</h2>
-      <p class="muted">Les modules de gestion (chauffeurs, contrats, validation des relevés,
-        facturation PDF, documents) s'activent progressivement. La base de données et la
-        sécurité sont en place.</p>
+      <h2>Compte <span class="g">en attente</span></h2>
+      <p class="muted">Votre inscription est enregistrée. L'administrateur doit valider votre
+        compte et vous attribuer un contrat avant que vous puissiez saisir votre kilométrage.</p>
+      <p class="muted" id="pendingEmail" style="margin-top:6px"></p>
     </div>
   </section>
 
-  <!-- TABLEAU DE BORD CHAUFFEUR -->
+  <!-- ADMIN -->
+  <section id="adminView" class="hide">
+    <div class="tabs">
+      <div class="tab active" data-tab="dash" onclick="adminTab('dash')">Tableau de bord</div>
+      <div class="tab" data-tab="drivers" onclick="adminTab('drivers')">Chauffeurs</div>
+      <div class="tab" data-tab="vehicles" onclick="adminTab('vehicles')">Véhicules</div>
+      <div class="tab" data-tab="contracts" onclick="adminTab('contracts')">Contrats</div>
+      <div class="tab" data-tab="readings" onclick="adminTab('readings')">Relevés</div>
+    </div>
+    <div id="a_dash"></div>
+    <div id="a_drivers" class="hide"></div>
+    <div id="a_vehicles" class="hide"></div>
+    <div id="a_contracts" class="hide"></div>
+    <div id="a_readings" class="hide"></div>
+  </section>
+
+  <!-- CHAUFFEUR -->
   <section id="driverView" class="hide">
-    <div class="card">
-      <h2>Mon <span class="g">espace</span></h2>
-      <p class="muted">Bonjour <span id="driverName"></span> · <span class="pill driver">CHAUFFEUR</span></p>
-      <div id="driverContract"></div>
-    </div>
-    <div class="card">
-      <h2>Mon kilométrage du mois</h2>
-      <p class="muted">Chaque mois, saisissez le kilométrage de votre compteur et joignez une
-        photo. L'administrateur reçoit et valide votre relevé.</p>
-      <button class="btn gold" style="margin-top:12px" disabled>Envoyer mon kilométrage (bientôt)</button>
-    </div>
+    <div id="d_space"></div>
+    <div id="d_readings"></div>
   </section>
 </div>
+
+<dialog id="dlg"><div class="modal" id="dlgBody"></div></dialog>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script>
-let sb=null, me=null;
+let sb=null, me=null, mode='login';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const eur=n=>Number(n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+const km=n=>Number(n||0).toLocaleString('fr-FR')+' km';
+const monthLabel=d=>{const [y,m]=String(d).split('-');return new Date(y,m-1,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});};
 
 function show(id){
-  ['booting','loginView','noMemberView','adminView','driverView']
-    .forEach(v=>document.getElementById(v).classList.toggle('hide', v!==id));
-  document.getElementById('logoutBtn').classList.toggle('hide', id==='booting'||id==='loginView');
+  ['booting','loginView','pendingView','adminView','driverView']
+    .forEach(v=>$(v).classList.toggle('hide', v!==id));
+  $('logoutBtn').classList.toggle('hide', id==='booting'||id==='loginView');
 }
 
 function boot(){
-  if(!window.PVTCD_CFG||!window.supabase){
-    document.getElementById('booting').innerHTML='<div class="boot err">Configuration manquante.</div>';
-    return;
-  }
+  if(!window.PVTCD_CFG||!window.supabase){ $('booting').innerHTML='<div class="boot err">Configuration manquante.</div>'; return; }
   sb=window.supabase.createClient(PVTCD_CFG.SUPABASE_URL, PVTCD_CFG.SUPABASE_ANON_KEY);
   sb.auth.getSession().then(({data})=>route(data.session));
   sb.auth.onAuthStateChange((_e,session)=>route(session));
@@ -176,80 +172,352 @@ function boot(){
 async function route(session){
   if(!session){ show('loginView'); return; }
   show('booting');
-  // Récupère la fiche membre pour connaître le rôle (vérifié côté serveur par RLS).
-  const {data:member, error} = await sb.from('pvtcd_members')
+  const {data:member} = await sb.from('pvtcd_members')
     .select('id,email,full_name,role,active').eq('id', session.user.id).maybeSingle();
-  if(error){ console.warn(error); }
-  if(!member || member.active===false){
-    document.getElementById('noMemberEmail').textContent='Compte : '+session.user.email;
-    show('noMemberView'); return;
+  if(!member){
+    // Pas encore de fiche : on crée une inscription chauffeur en attente.
+    const full = (session.user.user_metadata && session.user.user_metadata.full_name) || '';
+    await sb.from('pvtcd_members').insert({id:session.user.id, email:session.user.email, full_name:full});
+    $('pendingEmail').textContent='Compte : '+session.user.email;
+    show('pendingView'); return;
   }
   me=member;
-  if(member.role==='admin'){ await loadAdmin(); show('adminView'); }
-  else { await loadDriver(); show('driverView'); }
+  if(member.role==='admin'){ show('adminView'); adminTab('dash'); }
+  else if(member.active===false){ $('pendingEmail').textContent='Compte : '+member.email; show('pendingView'); }
+  else { show('driverView'); await loadDriver(); }
 }
 
-async function loadAdmin(){
-  document.getElementById('adminName').textContent = me.full_name||me.email;
-  const q=(t,f)=>sb.from(t).select('*',{count:'exact',head:true});
-  try{
-    const [pending,contracts,drivers,vehicles]=await Promise.all([
-      sb.from('pvtcd_readings').select('*',{count:'exact',head:true}).eq('status','submitted'),
-      sb.from('pvtcd_contracts').select('*',{count:'exact',head:true}).eq('status','active'),
-      sb.from('pvtcd_members').select('*',{count:'exact',head:true}).eq('role','driver'),
-      sb.from('pvtcd_vehicles').select('*',{count:'exact',head:true})
-    ]);
-    document.getElementById('stPending').textContent   = pending.count ?? 0;
-    document.getElementById('stContracts').textContent = contracts.count ?? 0;
-    document.getElementById('stDrivers').textContent   = drivers.count ?? 0;
-    document.getElementById('stVehicles').textContent  = vehicles.count ?? 0;
-  }catch(e){ console.warn(e); }
+/* ---------------- AUTH ---------------- */
+function setMode(m){
+  mode=m;
+  const signup=m==='signup';
+  $('authTitle').innerHTML = signup?'Créer un <span class="g">compte chauffeur</span>':'Connexion <span class="g">·</span> espace sécurisé';
+  $('authHint').textContent = signup?'Créez votre accès. L’administrateur validera votre compte.':'Accédez à votre espace.';
+  $('authBtn').textContent = signup?'Créer mon compte':'Se connecter';
+  $('fullLbl').classList.toggle('hide',!signup);
+  $('full').classList.toggle('hide',!signup);
+  $('toSignup').textContent = signup?'← Revenir à la connexion':'Créer un compte chauffeur';
+  $('toSignup').onclick = ()=>setMode(signup?'login':'signup');
+  $('pwd').setAttribute('autocomplete', signup?'new-password':'current-password');
+  $('loginErr').textContent='';
 }
-
-async function loadDriver(){
-  document.getElementById('driverName').textContent = me.full_name||me.email;
-  const box=document.getElementById('driverContract');
-  try{
-    const {data:c}=await sb.from('pvtcd_contracts')
-      .select('monthly_rent,included_km,excess_km_rate,status,vehicle_id,pvtcd_vehicles(registration,make,model)')
-      .eq('driver_id', me.id).limit(1).maybeSingle();
-    if(c){
-      const v=c.pvtcd_vehicles||{};
-      box.innerHTML='<div class="divider"></div><p class="muted">Véhicule : <b>'+
-        (v.make||'')+' '+(v.model||'')+'</b> · '+(v.registration||'')+'<br>Loyer : <b>'+
-        Number(c.monthly_rent).toLocaleString('fr-FR')+' € / mois</b> · '+
-        c.included_km+' km inclus · surplus '+Number(c.excess_km_rate).toLocaleString('fr-FR',{minimumFractionDigits:2})+' €/km</p>';
-    } else {
-      box.innerHTML='<div class="divider"></div><p class="muted">Aucun contrat actif pour le moment.</p>';
-    }
-  }catch(e){ console.warn(e); }
-}
-
-async function doLogin(){
-  const email=document.getElementById('email').value.trim();
-  const password=document.getElementById('pwd').value;
-  const err=document.getElementById('loginErr'); err.textContent='';
+async function doAuth(){
+  const email=$('email').value.trim(), password=$('pwd').value, err=$('loginErr'); err.textContent='';
   if(!email||!password){ err.textContent='E-mail et mot de passe requis.'; return; }
-  const {error}=await sb.auth.signInWithPassword({email,password});
-  if(error){ err.textContent='Connexion impossible : '+(error.message||'identifiants invalides'); }
+  if(mode==='signup'){
+    const full=$('full').value.trim();
+    const {error}=await sb.auth.signUp({email,password,options:{data:{full_name:full}}});
+    if(error){ err.textContent='Inscription impossible : '+error.message; return; }
+    err.innerHTML='<span class="ok">Compte créé. Si une confirmation par e-mail est demandée, validez-la puis connectez-vous.</span>';
+    setTimeout(()=>setMode('login'),400);
+  } else {
+    const {error}=await sb.auth.signInWithPassword({email,password});
+    if(error){ err.textContent='Connexion impossible : '+(error.message||'identifiants invalides'); }
+  }
 }
-
 async function doReset(){
-  const email=document.getElementById('email').value.trim();
-  const err=document.getElementById('loginErr'); err.textContent='';
+  const email=$('email').value.trim(), err=$('loginErr'); err.textContent='';
   if(!email){ err.textContent='Saisissez d’abord votre e-mail ci-dessus.'; return; }
-  const {error}=await sb.auth.resetPasswordForEmail(email,
-    {redirectTo:location.origin+location.pathname});
-  err.innerHTML = error ? ('Erreur : '+error.message)
-    : '<span class="ok">E-mail de réinitialisation envoyé (vérifiez vos spams).</span>';
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  err.innerHTML = error?('Erreur : '+error.message):'<span class="ok">E-mail de réinitialisation envoyé (vérifiez vos spams).</span>';
+}
+async function doLogout(){ await sb.auth.signOut(); me=null; show('loginView'); setMode('login'); }
+
+/* ---------------- ADMIN ---------------- */
+function adminTab(t){
+  document.querySelectorAll('#adminView .tab').forEach(e=>e.classList.toggle('active',e.dataset.tab===t));
+  ['dash','drivers','vehicles','contracts','readings'].forEach(k=>$('a_'+k).classList.toggle('hide',k!==t));
+  if(t==='dash') loadDash();
+  if(t==='drivers') loadDrivers();
+  if(t==='vehicles') loadVehicles();
+  if(t==='contracts') loadContracts();
+  if(t==='readings') loadReadings();
 }
 
-async function doLogout(){ await sb.auth.signOut(); me=null; show('loginView'); }
+async function loadDash(){
+  $('a_dash').innerHTML='<div class="card"><h2>Espace <span class="g">administrateur</span></h2>'+
+    '<p class="muted">Bonjour '+esc(me.full_name||me.email)+' · <span class="pill admin">ADMIN</span></p>'+
+    '<div class="grid">'+
+    ['stPending|Relevés à valider','stContracts|Contrats actifs','stDrivers|Chauffeurs','stVehicles|Véhicules']
+      .map(s=>{const[i,l]=s.split('|');return '<div class="stat"><div class="n" id="'+i+'">–</div><div class="l">'+l+'</div></div>';}).join('')+
+    '</div></div>'+
+    '<div class="card"><h2>Chauffeurs <span class="g">en attente</span></h2><div id="pendingList"><p class="empty">…</p></div></div>';
+  const [p,c,d,v]=await Promise.all([
+    sb.from('pvtcd_readings').select('*',{count:'exact',head:true}).eq('status','submitted'),
+    sb.from('pvtcd_contracts').select('*',{count:'exact',head:true}).eq('status','active'),
+    sb.from('pvtcd_members').select('*',{count:'exact',head:true}).eq('role','driver'),
+    sb.from('pvtcd_vehicles').select('*',{count:'exact',head:true})
+  ]);
+  $('stPending').textContent=p.count??0; $('stContracts').textContent=c.count??0;
+  $('stDrivers').textContent=d.count??0; $('stVehicles').textContent=v.count??0;
+  const {data:pend}=await sb.from('pvtcd_members').select('id,full_name,email').eq('role','driver').eq('active',false).order('created_at');
+  $('pendingList').innerHTML = (pend&&pend.length)? pend.map(m=>
+    '<div class="item"><div class="top"><span class="ttl">'+esc(m.full_name||'(sans nom)')+'</span><span class="pill warn">EN ATTENTE</span></div>'+
+    '<div class="sub">'+esc(m.email)+'</div><div class="actions">'+
+    '<button class="btn sm gold" onclick="approveDriver(\''+m.id+'\')">Valider le compte</button></div></div>'
+  ).join('') : '<p class="empty">Aucun chauffeur en attente.</p>';
+}
+async function approveDriver(id){
+  const {error}=await sb.from('pvtcd_members').update({active:true}).eq('id',id);
+  if(error) return alert('Erreur : '+error.message);
+  loadDash();
+}
+
+async function loadDrivers(){
+  $('a_drivers').innerHTML='<div class="card"><h2>Chauffeurs</h2><div id="drvList"><p class="empty">…</p></div></div>';
+  const {data}=await sb.from('pvtcd_members').select('*').eq('role','driver').order('created_at');
+  $('drvList').innerHTML=(data&&data.length)? data.map(m=>
+    '<div class="item"><div class="top"><span class="ttl">'+esc(m.full_name||'(sans nom)')+'</span>'+
+    (m.active?'<span class="pill ok">ACTIF</span>':'<span class="pill warn">EN ATTENTE</span>')+'</div>'+
+    '<div class="sub">'+esc(m.email)+(m.phone?(' · '+esc(m.phone)):'')+'</div><div class="actions">'+
+    (m.active?'<button class="btn sm danger" onclick="setActive(\''+m.id+'\',false)">Désactiver</button>'
+             :'<button class="btn sm gold" onclick="setActive(\''+m.id+'\',true)">Valider</button>')+
+    '</div></div>').join('') : '<p class="empty">Aucun chauffeur. Ils apparaissent ici après leur inscription.</p>';
+}
+async function setActive(id,v){
+  const {error}=await sb.from('pvtcd_members').update({active:v}).eq('id',id);
+  if(error) return alert('Erreur : '+error.message); loadDrivers();
+}
+
+async function loadVehicles(){
+  $('a_vehicles').innerHTML='<div class="card"><h2>Véhicules</h2><div id="vehList"><p class="empty">…</p></div>'+
+    '<div class="divider"></div><button class="btn sm gold" onclick="vehicleForm()">+ Ajouter un véhicule</button></div>';
+  const {data}=await sb.from('pvtcd_vehicles').select('*').order('created_at');
+  $('vehList').innerHTML=(data&&data.length)? data.map(v=>
+    '<div class="item"><div class="top"><span class="ttl">'+esc(v.make)+' '+esc(v.model)+'</span><span class="pill sub">'+esc(v.registration)+'</span></div>'+
+    '<div class="kv">'+esc(v.energy||'')+' · '+esc(v.gearbox||'')+(v.vin?(' · VIN '+esc(v.vin)):'')+'</div></div>'
+  ).join('') : '<p class="empty">Aucun véhicule.</p>';
+}
+function vehicleForm(){
+  openModal('<h2>Nouveau véhicule</h2>'+
+    '<label>Immatriculation</label><input id="f_reg" placeholder="GS-124-XS">'+
+    '<div class="row"><div><label>Marque</label><input id="f_make"></div><div><label>Modèle</label><input id="f_model"></div></div>'+
+    '<div class="row"><div><label>Énergie</label><input id="f_energy" placeholder="hybride essence"></div><div><label>Boîte</label><input id="f_gb" placeholder="automatique"></div></div>'+
+    '<label>VIN (optionnel)</label><input id="f_vin">'+
+    '<div class="err" id="f_err"></div>'+
+    '<div class="actions"><button class="btn gold" onclick="saveVehicle()">Enregistrer</button><button class="btn ghost" onclick="closeModal()">Annuler</button></div>');
+}
+async function saveVehicle(){
+  const reg=$('f_reg').value.trim(), make=$('f_make').value.trim(), model=$('f_model').value.trim();
+  if(!reg||!make||!model){ $('f_err').textContent='Immatriculation, marque et modèle requis.'; return; }
+  const {error}=await sb.from('pvtcd_vehicles').insert({registration:reg,make:make,model:model,
+    energy:$('f_energy').value.trim(),gearbox:$('f_gb').value.trim(),vin:$('f_vin').value.trim()||null});
+  if(error){ $('f_err').textContent='Erreur : '+error.message; return; }
+  closeModal(); loadVehicles();
+}
+
+async function loadContracts(){
+  $('a_contracts').innerHTML='<div class="card"><h2>Contrats</h2><div id="ctrList"><p class="empty">…</p></div>'+
+    '<div class="divider"></div><button class="btn sm gold" onclick="contractForm()">+ Nouveau contrat</button></div>';
+  const {data}=await sb.from('pvtcd_contracts')
+    .select('*,pvtcd_vehicles(registration,make,model),pvtcd_members!pvtcd_contracts_driver_id_fkey(full_name,email)')
+    .order('created_at',{ascending:false});
+  $('ctrList').innerHTML=(data&&data.length)? data.map(c=>{
+    const v=c.pvtcd_vehicles||{}, d=c.pvtcd_members||{};
+    const st=c.status==='active'?'<span class="pill ok">ACTIF</span>':c.status==='closed'?'<span class="pill bad">CLOS</span>':'<span class="pill warn">BROUILLON</span>';
+    return '<div class="item"><div class="top"><span class="ttl">'+esc(d.full_name||d.email||'chauffeur')+'</span>'+st+'</div>'+
+      '<div class="sub">'+esc(v.make||'')+' '+esc(v.model||'')+' · '+esc(v.registration||'')+'</div>'+
+      '<div class="kv">Loyer <b>'+eur(c.monthly_rent)+'</b>/mois · <b>'+km(c.included_km)+'</b> inclus · surplus <b>'+eur(c.excess_km_rate)+'</b>/km · départ <b>'+(c.start_odometer!=null?km(c.start_odometer):'—')+'</b></div>'+
+      '<div class="actions">'+
+        (c.status!=='active'?'<button class="btn sm gold" onclick="setContract(\''+c.id+'\',\'active\')">Activer</button>':'')+
+        (c.status!=='closed'?'<button class="btn sm danger" onclick="setContract(\''+c.id+'\',\'closed\')">Clôturer</button>':'')+
+      '</div></div>';
+  }).join('') : '<p class="empty">Aucun contrat.</p>';
+}
+async function setContract(id,status){
+  const {error}=await sb.from('pvtcd_contracts').update({status}).eq('id',id);
+  if(error) return alert('Erreur : '+error.message); loadContracts();
+}
+async function contractForm(){
+  const [{data:veh},{data:drv}]=await Promise.all([
+    sb.from('pvtcd_vehicles').select('id,registration,make,model').order('created_at'),
+    sb.from('pvtcd_members').select('id,full_name,email').eq('role','driver').eq('active',true).order('full_name')
+  ]);
+  if(!veh||!veh.length) return alert('Ajoutez d’abord un véhicule.');
+  if(!drv||!drv.length) return alert('Validez d’abord un chauffeur (onglet Chauffeurs).');
+  openModal('<h2>Nouveau contrat</h2>'+
+    '<label>Chauffeur</label><select id="c_drv">'+drv.map(d=>'<option value="'+d.id+'">'+esc(d.full_name||d.email)+'</option>').join('')+'</select>'+
+    '<label>Véhicule</label><select id="c_veh">'+veh.map(v=>'<option value="'+v.id+'">'+esc(v.make+' '+v.model+' — '+v.registration)+'</option>').join('')+'</select>'+
+    '<div class="row"><div><label>Loyer €/mois</label><input id="c_rent" type="number" value="1200"></div><div><label>Dépôt €</label><input id="c_dep" type="number" value="1200"></div></div>'+
+    '<div class="row"><div><label>Km inclus/mois</label><input id="c_inc" type="number" value="5000"></div><div><label>Surplus €/km</label><input id="c_rate" type="number" step="0.01" value="0.20"></div></div>'+
+    '<div class="row"><div><label>Km de départ (compteur)</label><input id="c_start" type="number" placeholder="ex. 185000"></div><div><label>Début</label><input id="c_date" type="date"></div></div>'+
+    '<div class="err" id="c_err"></div>'+
+    '<div class="actions"><button class="btn gold" onclick="saveContract()">Créer (brouillon)</button><button class="btn ghost" onclick="closeModal()">Annuler</button></div>');
+  $('c_date').value=new Date().toISOString().slice(0,10);
+}
+async function saveContract(){
+  const p={vehicle_id:$('c_veh').value, driver_id:$('c_drv').value,
+    monthly_rent:+$('c_rent').value, deposit:+$('c_dep').value,
+    included_km:+$('c_inc').value, excess_km_rate:+$('c_rate').value,
+    start_odometer: $('c_start').value!==''?+$('c_start').value:null,
+    start_date:$('c_date').value||null, status:'draft', created_by:me.id};
+  if(!p.vehicle_id||!p.driver_id||!p.monthly_rent||!p.included_km){ $('c_err').textContent='Champs requis manquants.'; return; }
+  const {error}=await sb.from('pvtcd_contracts').insert(p);
+  if(error){ $('c_err').textContent='Erreur : '+error.message; return; }
+  closeModal(); loadContracts();
+}
+
+async function loadReadings(){
+  $('a_readings').innerHTML='<div class="card"><h2>Relevés de kilométrage</h2><p class="muted">Validez, corrigez ou refusez les relevés envoyés par les chauffeurs.</p><div id="rdList"><p class="empty">…</p></div></div>';
+  const {data}=await sb.from('pvtcd_readings')
+    .select('*,pvtcd_contracts(included_km,excess_km_rate,start_odometer,pvtcd_members!pvtcd_contracts_driver_id_fkey(full_name,email),pvtcd_vehicles(registration))')
+    .order('period_month',{ascending:false});
+  if(!data||!data.length){ $('rdList').innerHTML='<p class="empty">Aucun relevé pour le moment.</p>'; return; }
+  $('rdList').innerHTML=data.map(r=>{
+    const c=r.pvtcd_contracts||{}, d=(c.pvtcd_members||{}), v=(c.pvtcd_vehicles||{});
+    const stMap={submitted:['warn','À VALIDER'],validated:['ok','VALIDÉ'],needs_correction:['sub','À CORRIGER'],rejected:['bad','REFUSÉ']};
+    const st=stMap[r.status]||['sub',r.status];
+    let calc='';
+    if(r.status==='validated' && r.distance_km!=null)
+      calc='<div class="kv">Distance <b>'+km(r.distance_km)+'</b> · inclus '+km(r.included_km)+' · dépassement <b>'+km(r.excess_km)+'</b> → <b>'+eur(r.excess_amount)+'</b></div>';
+    return '<div class="item"><div class="top"><span class="ttl">'+esc(d.full_name||d.email||'chauffeur')+'</span><span class="pill '+st[0]+'">'+st[1]+'</span></div>'+
+      '<div class="sub">'+monthLabel(r.period_month)+' · '+esc(v.registration||'')+'</div>'+
+      '<div class="kv">Compteur relevé : <b>'+km(r.odometer_km)+'</b> · le '+new Date(r.reading_date).toLocaleDateString('fr-FR')+'</div>'+
+      calc+(r.admin_comment?'<div class="kv">Note : '+esc(r.admin_comment)+'</div>':'')+
+      '<div class="actions">'+
+        (r.photo_path?'<button class="btn sm" onclick="viewPhoto(\''+r.photo_path+'\')">Voir la photo</button>':'<span class="pill bad">sans photo</span>')+
+        (r.status==='submitted'?
+          '<button class="btn sm gold" onclick="validateReading(\''+r.id+'\')">Valider</button>'+
+          '<button class="btn sm" onclick="commentReading(\''+r.id+'\',\'needs_correction\')">Demander correction</button>'+
+          '<button class="btn sm danger" onclick="commentReading(\''+r.id+'\',\'rejected\')">Refuser</button>':'')+
+      '</div></div>';
+  }).join('');
+}
+async function viewPhoto(path){
+  const {data,error}=await sb.storage.from('pvtcd-meter-photos').createSignedUrl(path,3600);
+  if(error||!data) return alert('Photo indisponible : '+(error?error.message:''));
+  openModal('<h2>Photo du compteur</h2><img class="photo" src="'+data.signedUrl+'"><div class="actions"><button class="btn ghost" onclick="closeModal()">Fermer</button></div>');
+}
+async function validateReading(id){
+  const {data:r}=await sb.from('pvtcd_readings').select('*,pvtcd_contracts(included_km,excess_km_rate,start_odometer)').eq('id',id).single();
+  const c=r.pvtcd_contracts||{};
+  // base = dernier relevé validé antérieur, sinon km de départ du contrat
+  const {data:prev}=await sb.from('pvtcd_readings').select('odometer_km,period_month')
+    .eq('contract_id',r.contract_id).eq('status','validated').lt('period_month',r.period_month)
+    .order('period_month',{ascending:false}).limit(1);
+  let base = (prev&&prev.length)?prev[0].odometer_km : c.start_odometer;
+  if(base==null){ if(!confirm('Aucune base de départ (km de départ du contrat non renseigné). Valider sans calcul du dépassement ?')) return; }
+  let distance=null,excess=null,amount=null, inc=c.included_km;
+  if(base!=null){
+    distance = r.odometer_km - base;
+    if(distance<0){ if(!confirm('Le compteur ('+r.odometer_km+') est inférieur à la base ('+base+'). Valider quand même ?')) return; }
+    excess = Math.max(0, distance - inc);
+    amount = +(excess * c.excess_km_rate).toFixed(2);
+  }
+  const {error}=await sb.from('pvtcd_readings').update({status:'validated',distance_km:distance,
+    included_km:inc,excess_km:excess,excess_amount:amount,reviewed_by:me.id,reviewed_at:new Date().toISOString()}).eq('id',id);
+  if(error) return alert('Erreur : '+error.message); loadReadings();
+}
+function commentReading(id,status){
+  openModal('<h2>'+(status==='rejected'?'Refuser':'Demander une correction')+'</h2>'+
+    '<label>Message au chauffeur</label><input id="rc" placeholder="Ex. photo illisible, compteur erroné…">'+
+    '<div class="err" id="rc_err"></div>'+
+    '<div class="actions"><button class="btn gold" onclick="saveComment(\''+id+'\',\''+status+'\')">Envoyer</button><button class="btn ghost" onclick="closeModal()">Annuler</button></div>');
+}
+async function saveComment(id,status){
+  const {error}=await sb.from('pvtcd_readings').update({status,admin_comment:$('rc').value.trim(),
+    reviewed_by:me.id,reviewed_at:new Date().toISOString()}).eq('id',id);
+  if(error){ $('rc_err').textContent='Erreur : '+error.message; return; }
+  closeModal(); loadReadings();
+}
+
+/* ---------------- CHAUFFEUR ---------------- */
+let myContract=null;
+async function loadDriver(){
+  const {data:c}=await sb.from('pvtcd_contracts')
+    .select('*,pvtcd_vehicles(registration,make,model)')
+    .eq('driver_id',me.id).in('status',['active','draft']).order('created_at',{ascending:false}).limit(1).maybeSingle();
+  myContract=c||null;
+  const v=(c&&c.pvtcd_vehicles)||{};
+  $('d_space').innerHTML='<div class="card"><h2>Mon <span class="g">espace</span></h2>'+
+    '<p class="muted">Bonjour '+esc(me.full_name||me.email)+' · <span class="pill driver">CHAUFFEUR</span></p>'+
+    (c?('<div class="divider"></div><div class="kv">Véhicule <b>'+esc(v.make||'')+' '+esc(v.model||'')+'</b> · '+esc(v.registration||'')+'</div>'+
+        '<div class="kv">Loyer <b>'+eur(c.monthly_rent)+'</b>/mois · <b>'+km(c.included_km)+'</b> inclus · surplus <b>'+eur(c.excess_km_rate)+'</b>/km</div>'+
+        (c.status==='draft'?'<p class="muted" style="margin-top:8px">Contrat en préparation par l’administrateur.</p>':''))
+      :'<div class="divider"></div><p class="muted">Aucun contrat actif pour le moment. L’administrateur doit vous attribuer un véhicule.</p>')+
+    '</div>';
+  // saisie + historique
+  if(c && c.status==='active'){
+    const month=new Date().toISOString().slice(0,7); // yyyy-mm
+    $('d_readings').innerHTML='<div class="card"><h2>Mon kilométrage du mois</h2>'+
+      '<p class="muted">Saisissez le kilométrage affiché au compteur et joignez une photo nette du compteur.</p>'+
+      '<div class="row"><div><label>Mois concerné</label><input id="dr_month" type="month" value="'+month+'"></div>'+
+      '<div><label>Kilométrage (compteur)</label><input id="dr_km" type="number" inputmode="numeric" placeholder="ex. 190250"></div></div>'+
+      '<label>Photo du compteur</label><input id="dr_photo" type="file" accept="image/*" capture="environment">'+
+      '<div class="err" id="dr_err"></div>'+
+      '<button class="btn gold" style="width:100%;margin-top:12px" id="dr_send" onclick="submitReading()">Envoyer mon relevé</button></div>'+
+      '<div class="card"><h2>Mes relevés</h2><div id="dr_hist"><p class="empty">…</p></div></div>';
+    loadMyReadings();
+  } else {
+    $('d_readings').innerHTML='';
+  }
+}
+async function loadMyReadings(){
+  const {data}=await sb.from('pvtcd_readings').select('*').eq('contract_id',myContract.id).order('period_month',{ascending:false});
+  const stMap={submitted:['warn','Envoyé'],validated:['ok','Validé'],needs_correction:['sub','À corriger'],rejected:['bad','Refusé']};
+  $('dr_hist').innerHTML=(data&&data.length)? data.map(r=>{
+    const st=stMap[r.status]||['sub',r.status];
+    let line='';
+    if(r.status==='validated'&&r.excess_amount!=null) line='<div class="kv">Dépassement <b>'+km(r.excess_km)+'</b> → <b>'+eur(r.excess_amount)+'</b></div>';
+    if((r.status==='needs_correction'||r.status==='rejected')&&r.admin_comment) line='<div class="kv">Admin : '+esc(r.admin_comment)+'</div>';
+    return '<div class="item"><div class="top"><span class="ttl">'+monthLabel(r.period_month)+'</span><span class="pill '+st[0]+'">'+st[1]+'</span></div>'+
+      '<div class="kv">Compteur : <b>'+km(r.odometer_km)+'</b></div>'+line+
+      (r.status==='needs_correction'?'<div class="actions"><button class="btn sm gold" onclick="editReading(\''+r.id+'\','+r.odometer_km+',\''+r.period_month+'\')">Corriger</button></div>':'')+
+      '</div>';
+  }).join('') : '<p class="empty">Aucun relevé envoyé.</p>';
+}
+async function submitReading(){
+  const err=$('dr_err'); err.textContent='';
+  const month=$('dr_month').value, odo=$('dr_km').value, file=$('dr_photo').files[0];
+  if(!month||!odo){ err.textContent='Mois et kilométrage requis.'; return; }
+  if(!file){ err.textContent='La photo du compteur est obligatoire.'; return; }
+  $('dr_send').disabled=true; $('dr_send').textContent='Envoi…';
+  try{
+    const period=month+'-01';
+    const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+    const path=myContract.id+'/'+period+'-'+Date.now()+'.'+ext;
+    const up=await sb.storage.from('pvtcd-meter-photos').upload(path,file,{upsert:false,contentType:file.type});
+    if(up.error) throw up.error;
+    const ins=await sb.from('pvtcd_readings').insert({contract_id:myContract.id,period_month:period,
+      odometer_km:+odo,photo_path:path,submitted_by:me.id});
+    if(ins.error) throw ins.error;
+    err.innerHTML='<span class="ok">Relevé envoyé à l’administrateur.</span>';
+    $('dr_km').value=''; $('dr_photo').value='';
+    loadMyReadings();
+  }catch(e){
+    err.textContent='Erreur : '+(e.message||e)+ (String(e.message||'').includes('duplicate')?' (un relevé existe déjà pour ce mois)':'');
+  }finally{ $('dr_send').disabled=false; $('dr_send').textContent='Envoyer mon relevé'; }
+}
+function editReading(id,odo,period){
+  openModal('<h2>Corriger le relevé</h2><p class="muted">'+monthLabel(period)+'</p>'+
+    '<label>Kilométrage (compteur)</label><input id="er_km" type="number" value="'+odo+'">'+
+    '<label>Nouvelle photo (optionnel)</label><input id="er_photo" type="file" accept="image/*" capture="environment">'+
+    '<div class="err" id="er_err"></div>'+
+    '<div class="actions"><button class="btn gold" id="er_send" onclick="saveEdit(\''+id+'\',\''+period+'\')">Renvoyer</button><button class="btn ghost" onclick="closeModal()">Annuler</button></div>');
+}
+async function saveEdit(id,period){
+  const err=$('er_err'); err.textContent=''; $('er_send').disabled=true;
+  try{
+    const patch={odometer_km:+$('er_km').value, status:'submitted'};
+    const f=$('er_photo').files[0];
+    if(f){
+      const ext=(f.name.split('.').pop()||'jpg').toLowerCase();
+      const path=myContract.id+'/'+(period)+'-'+Date.now()+'.'+ext;
+      const up=await sb.storage.from('pvtcd-meter-photos').upload(path,f,{contentType:f.type});
+      if(up.error) throw up.error; patch.photo_path=path;
+    }
+    const {error}=await sb.from('pvtcd_readings').update(patch).eq('id',id);
+    if(error) throw error;
+    closeModal(); loadMyReadings();
+  }catch(e){ err.textContent='Erreur : '+(e.message||e); }finally{ $('er_send').disabled=false; }
+}
+
+/* ---------------- MODAL ---------------- */
+function openModal(html){ $('dlgBody').innerHTML=html; $('dlg').showModal(); }
+function closeModal(){ $('dlg').close(); }
 
 boot();
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-}
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
 </script>
 </body>
 </html>
