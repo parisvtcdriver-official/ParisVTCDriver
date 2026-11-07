@@ -299,7 +299,9 @@ async function loadDash(){
 }
 const AUDIT_FR={approve_driver:'Compte chauffeur validé',validate_reading:'Relevé validé',
   review_reading:'Relevé commenté',issue_invoice:'Facture émise',invoice_status:'Statut facture modifié',
-  contract_status:'Statut contrat modifié',archive_invoice:'Facture archivée',delete_invoice:'Facture supprimée'};
+  contract_status:'Statut contrat modifié',archive_invoice:'Facture archivée',delete_invoice:'Facture supprimée',
+  archive_contract:'Contrat archivé',archive_reading:'Relevé archivé',delete_photo:'Photo de relevé supprimée',
+  doc_visibility:'Visibilité document modifiée',archive_document:'Document archivé',delete_document:'Document supprimé'};
 async function loadAudit(){
   const {data}=await sb.from('pvtcd_audit_log').select('*').order('created_at',{ascending:false}).limit(20);
   if(!data||!data.length){ $('auditList').innerHTML='<p class="empty">Aucune activité enregistrée.</p>'; return; }
@@ -360,27 +362,38 @@ async function saveVehicle(){
   closeModal(); loadVehicles();
 }
 
+let _showArchivedContracts=false;
 async function loadContracts(){
-  $('a_contracts').innerHTML='<div class="card"><h2>Contrats</h2><div id="ctrList"><p class="empty">…</p></div>'+
-    '<div class="divider"></div><button class="btn sm gold" onclick="contractForm()">+ Nouveau contrat</button></div>';
   const {data}=await sb.from('pvtcd_contracts')
     .select('*,pvtcd_vehicles(registration,make,model),pvtcd_members!pvtcd_contracts_driver_id_fkey(full_name,email)')
     .order('created_at',{ascending:false});
-  $('ctrList').innerHTML=(data&&data.length)? data.map(c=>{
+  const arch=(data||[]).filter(c=>c.archived).length;
+  $('a_contracts').innerHTML='<div class="card"><h2>Contrats</h2><div id="ctrList"><p class="empty">…</p></div>'+
+    '<div class="divider"></div><div class="actions"><button class="btn sm gold" onclick="contractForm()">+ Nouveau contrat</button>'+
+    (arch?('<button class="btn sm ghost" onclick="toggleArchContracts()">'+(_showArchivedContracts?'Masquer les archivés':'Voir les archivés ('+arch+')')+'</button>'):'')+
+    '</div></div>';
+  const list=(data||[]).filter(c=>_showArchivedContracts?c.archived:!c.archived);
+  $('ctrList').innerHTML=list.length? list.map(c=>{
     const v=c.pvtcd_vehicles||{}, d=c.pvtcd_members||{};
     const st=c.status==='active'?'<span class="pill ok">ACTIF</span>':c.status==='closed'?'<span class="pill bad">CLOS</span>':'<span class="pill warn">BROUILLON</span>';
-    return '<div class="item"><div class="top"><span class="ttl">'+esc(d.full_name||d.email||'chauffeur')+'</span>'+st+'</div>'+
+    return '<div class="item"><div class="top"><span class="ttl">'+esc(d.full_name||d.email||'chauffeur')+'</span>'+st+(c.archived?'<span class="pill sub">ARCHIVÉ</span>':'')+'</div>'+
       '<div class="sub">'+esc(v.make||'')+' '+esc(v.model||'')+' · '+esc(v.registration||'')+'</div>'+
       '<div class="kv">Loyer <b>'+eur(c.monthly_rent)+'</b>/mois · <b>'+km(c.included_km)+'</b> inclus · surplus <b>'+eur(c.excess_km_rate)+'</b>/km · départ <b>'+(c.start_odometer!=null?km(c.start_odometer):'—')+'</b></div>'+
       '<div class="actions">'+
         (c.status!=='active'?'<button class="btn sm gold" onclick="setContract(\''+c.id+'\',\'active\')">Activer</button>':'')+
-        (c.status!=='closed'?'<button class="btn sm danger" onclick="setContract(\''+c.id+'\',\'closed\')">Clôturer</button>':'')+
+        (c.status!=='closed'?'<button class="btn sm" onclick="setContract(\''+c.id+'\',\'closed\')">Clôturer</button>':'')+
+        '<button class="btn sm ghost" onclick="archiveContract(\''+c.id+'\','+(c.archived?'false':'true')+')">'+(c.archived?'Désarchiver':'Archiver')+'</button>'+
       '</div></div>';
-  }).join('') : '<p class="empty">Aucun contrat.</p>';
+  }).join('') : '<p class="empty">'+(_showArchivedContracts?'Aucun contrat archivé.':'Aucun contrat.')+'</p>';
 }
+function toggleArchContracts(){ _showArchivedContracts=!_showArchivedContracts; loadContracts(); }
 async function setContract(id,status){
   const {error}=await sb.from('pvtcd_contracts').update({status}).eq('id',id);
   if(error) return alert('Erreur : '+error.message); audit('contract_status','contract',id,{status}); loadContracts();
+}
+async function archiveContract(id,val){
+  const {error}=await sb.from('pvtcd_contracts').update({archived:val}).eq('id',id);
+  if(error) return alert('Erreur : '+error.message); audit('archive_contract','contract',id,{archived:val}); loadContracts();
 }
 async function contractForm(){
   const [{data:veh},{data:drv}]=await Promise.all([
@@ -411,34 +424,51 @@ async function saveContract(){
   closeModal(); loadContracts();
 }
 
-let _readingsCache=[];
+let _readingsCache=[], _showArchivedReadings=false;
 async function loadReadings(){
-  $('a_readings').innerHTML='<div class="card"><h2>Relevés de kilométrage</h2><p class="muted">Validez, corrigez ou refusez les relevés envoyés par les chauffeurs.</p>'+
-    '<button class="btn sm ghost" onclick="exportReadingsCSV()">Exporter CSV</button><div id="rdList" style="margin-top:8px"><p class="empty">…</p></div></div>';
   const {data}=await sb.from('pvtcd_readings')
     .select('*,pvtcd_contracts(included_km,excess_km_rate,start_odometer,pvtcd_members!pvtcd_contracts_driver_id_fkey(full_name,email),pvtcd_vehicles(registration))')
     .order('period_month',{ascending:false});
   _readingsCache=data||[];
-  if(!data||!data.length){ $('rdList').innerHTML='<p class="empty">Aucun relevé pour le moment.</p>'; return; }
-  $('rdList').innerHTML=data.map(r=>{
+  const arch=(data||[]).filter(r=>r.archived).length;
+  $('a_readings').innerHTML='<div class="card"><h2>Relevés de kilométrage</h2><p class="muted">Validez, corrigez ou refusez les relevés envoyés par les chauffeurs.</p>'+
+    '<div class="actions"><button class="btn sm ghost" onclick="exportReadingsCSV()">Exporter CSV</button>'+
+    (arch?('<button class="btn sm ghost" onclick="toggleArchReadings()">'+(_showArchivedReadings?'Masquer les archivés':'Voir les archivés ('+arch+')')+'</button>'):'')+
+    '</div><div id="rdList" style="margin-top:8px"><p class="empty">…</p></div></div>';
+  const list=(data||[]).filter(r=>_showArchivedReadings?r.archived:!r.archived);
+  if(!list.length){ $('rdList').innerHTML='<p class="empty">'+(_showArchivedReadings?'Aucun relevé archivé.':'Aucun relevé pour le moment.')+'</p>'; return; }
+  $('rdList').innerHTML=list.map(r=>{
     const c=r.pvtcd_contracts||{}, d=(c.pvtcd_members||{}), v=(c.pvtcd_vehicles||{});
     const stMap={submitted:['warn','À VALIDER'],validated:['ok','VALIDÉ'],needs_correction:['sub','À CORRIGER'],rejected:['bad','REFUSÉ']};
     const st=stMap[r.status]||['sub',r.status];
     let calc='';
     if(r.status==='validated' && r.distance_km!=null)
       calc='<div class="kv">Distance <b>'+km(r.distance_km)+'</b> · inclus '+km(r.included_km)+' · dépassement <b>'+km(r.excess_km)+'</b> → <b>'+eur(r.excess_amount)+'</b></div>';
-    return '<div class="item"><div class="top"><span class="ttl">'+esc(d.full_name||d.email||'chauffeur')+'</span><span class="pill '+st[0]+'">'+st[1]+'</span></div>'+
+    return '<div class="item"><div class="top"><span class="ttl">'+esc(d.full_name||d.email||'chauffeur')+'</span><span class="pill '+st[0]+'">'+st[1]+'</span>'+(r.archived?'<span class="pill sub">ARCHIVÉ</span>':'')+'</div>'+
       '<div class="sub">'+monthLabel(r.period_month)+' · '+esc(v.registration||'')+'</div>'+
       '<div class="kv">Compteur relevé : <b>'+km(r.odometer_km)+'</b> · le '+new Date(r.reading_date).toLocaleDateString('fr-FR')+'</div>'+
       calc+(r.admin_comment?'<div class="kv">Note : '+esc(r.admin_comment)+'</div>':'')+
       '<div class="actions">'+
-        (r.photo_path?'<button class="btn sm" onclick="viewPhoto(\''+r.photo_path+'\')">Voir la photo</button>':'<span class="pill bad">sans photo</span>')+
+        (r.photo_path?'<button class="btn sm" onclick="viewPhoto(\''+r.photo_path+'\')">Voir la photo</button>'+
+                      '<button class="btn sm danger" onclick="deleteReadingPhoto(\''+r.id+'\',\''+r.photo_path+'\')">Supprimer la photo</button>':'<span class="pill bad">sans photo</span>')+
         (r.status==='submitted'?
           '<button class="btn sm gold" onclick="validateReading(\''+r.id+'\')">Valider</button>'+
           '<button class="btn sm" onclick="commentReading(\''+r.id+'\',\'needs_correction\')">Demander correction</button>'+
           '<button class="btn sm danger" onclick="commentReading(\''+r.id+'\',\'rejected\')">Refuser</button>':'')+
+        '<button class="btn sm ghost" onclick="archiveReading(\''+r.id+'\','+(r.archived?'false':'true')+')">'+(r.archived?'Désarchiver':'Archiver')+'</button>'+
       '</div></div>';
   }).join('');
+}
+function toggleArchReadings(){ _showArchivedReadings=!_showArchivedReadings; loadReadings(); }
+async function archiveReading(id,val){
+  const {error}=await sb.from('pvtcd_readings').update({archived:val}).eq('id',id);
+  if(error) return alert('Erreur : '+error.message); audit('archive_reading','reading',id,{archived:val}); loadReadings();
+}
+async function deleteReadingPhoto(id,path){
+  if(!confirm('Supprimer définitivement la photo de ce relevé ? Le relevé lui-même est conservé.')) return;
+  if(path){ const rm=await sb.storage.from('pvtcd-meter-photos').remove([path]); if(rm.error) return alert('Erreur stockage : '+rm.error.message); }
+  const {error}=await sb.from('pvtcd_readings').update({photo_path:null}).eq('id',id);
+  if(error) return alert('Erreur : '+error.message); audit('delete_photo','reading',id); loadReadings();
 }
 function exportReadingsCSV(){
   const statusFR={submitted:'A valider',validated:'Valide',needs_correction:'A corriger',rejected:'Refuse'};
@@ -815,17 +845,41 @@ async function saveBilling(){
 }
 
 /* ---------------- DOCUMENTS (admin) ---------------- */
+let _showArchivedDocs=false;
 async function loadDocuments(){
+  const {data}=await sb.from('pvtcd_documents').select('*,pvtcd_contracts(pvtcd_members!pvtcd_contracts_driver_id_fkey(full_name,email),pvtcd_vehicles(registration))').order('created_at',{ascending:false});
+  const arch=(data||[]).filter(x=>x.archived).length;
   $('a_documents').innerHTML='<div class="card"><h2>Documents</h2>'+
     '<p class="muted">Contrats, états des lieux et pièces liées à un contrat. Vous choisissez si le chauffeur peut les voir.</p>'+
-    '<button class="btn sm gold" onclick="docForm()">+ Ajouter un document</button>'+
-    '<div id="docList" style="margin-top:8px"><p class="empty">…</p></div></div>';
-  const {data}=await sb.from('pvtcd_documents').select('*,pvtcd_contracts(pvtcd_members!pvtcd_contracts_driver_id_fkey(full_name,email),pvtcd_vehicles(registration))').order('created_at',{ascending:false});
-  if(!data||!data.length){ $('docList').innerHTML='<p class="empty">Aucun document.</p>'; return; }
-  $('docList').innerHTML=data.map(x=>{const c=x.pvtcd_contracts||{},d=(c.pvtcd_members||{});
-    return '<div class="item"><div class="top"><span class="ttl">'+esc(x.title)+'</span>'+(x.visible_to_driver?'<span class="pill ok">VISIBLE CHAUFFEUR</span>':'<span class="pill sub">PRIVÉ</span>')+'</div>'+
+    '<div class="actions"><button class="btn sm gold" onclick="docForm()">+ Ajouter un document</button>'+
+    (arch?('<button class="btn sm ghost" onclick="toggleArchDocs()">'+(_showArchivedDocs?'Masquer les archivés':'Voir les archivés ('+arch+')')+'</button>'):'')+
+    '</div><div id="docList" style="margin-top:8px"><p class="empty">…</p></div></div>';
+  const list=(data||[]).filter(x=>_showArchivedDocs?x.archived:!x.archived);
+  if(!list.length){ $('docList').innerHTML='<p class="empty">'+(_showArchivedDocs?'Aucun document archivé.':'Aucun document.')+'</p>'; return; }
+  $('docList').innerHTML=list.map(x=>{const c=x.pvtcd_contracts||{},d=(c.pvtcd_members||{});
+    return '<div class="item"><div class="top"><span class="ttl">'+esc(x.title)+'</span>'+(x.visible_to_driver?'<span class="pill ok">VISIBLE CHAUFFEUR</span>':'<span class="pill sub">PRIVÉ</span>')+(x.archived?'<span class="pill sub">ARCHIVÉ</span>':'')+'</div>'+
       '<div class="sub">'+esc(x.doc_type||'document')+(d.full_name?(' · '+esc(d.full_name)):'')+'</div>'+
-      '<div class="actions"><button class="btn sm" onclick="openDoc(\''+esc(x.storage_path)+'\')">Ouvrir</button></div></div>';}).join('');
+      '<div class="actions">'+
+        '<button class="btn sm" onclick="openDoc(\''+esc(x.storage_path)+'\')">Ouvrir</button>'+
+        '<button class="btn sm" onclick="toggleDocVisibility(\''+x.id+'\','+(x.visible_to_driver?'false':'true')+')">'+(x.visible_to_driver?'Rendre privé':'Rendre visible')+'</button>'+
+        '<button class="btn sm ghost" onclick="archiveDoc(\''+x.id+'\','+(x.archived?'false':'true')+')">'+(x.archived?'Désarchiver':'Archiver')+'</button>'+
+        '<button class="btn sm danger" onclick="deleteDoc(\''+x.id+'\',\''+esc(x.storage_path)+'\',\''+esc(x.title)+'\')">Supprimer</button>'+
+      '</div></div>';}).join('');
+}
+function toggleArchDocs(){ _showArchivedDocs=!_showArchivedDocs; loadDocuments(); }
+async function toggleDocVisibility(id,val){
+  const {error}=await sb.from('pvtcd_documents').update({visible_to_driver:val}).eq('id',id);
+  if(error) return alert('Erreur : '+error.message); audit('doc_visibility','document',id,{visible:val}); loadDocuments();
+}
+async function archiveDoc(id,val){
+  const {error}=await sb.from('pvtcd_documents').update({archived:val}).eq('id',id);
+  if(error) return alert('Erreur : '+error.message); audit('archive_document','document',id,{archived:val}); loadDocuments();
+}
+async function deleteDoc(id,path,title){
+  if(!confirm('Supprimer définitivement le document « '+title+' » ? Cette action est irréversible.')) return;
+  if(path){ const rm=await sb.storage.from('pvtcd-documents').remove([path]); if(rm.error) return alert('Erreur stockage : '+rm.error.message); }
+  const {error}=await sb.from('pvtcd_documents').delete().eq('id',id);
+  if(error) return alert('Erreur : '+error.message); audit('delete_document','document',id,{title}); loadDocuments();
 }
 async function docForm(){
   const {data:ct}=await sb.from('pvtcd_contracts').select('id,pvtcd_members!pvtcd_contracts_driver_id_fkey(full_name,email),pvtcd_vehicles(registration)').order('created_at',{ascending:false});
