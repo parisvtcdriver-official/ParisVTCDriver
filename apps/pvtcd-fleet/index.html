@@ -448,55 +448,96 @@ async function imgDataURL(src){ try{
   return await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(b);});
 }catch(e){ return null; } }
 
+// Montant formaté SANS espaces Unicode spéciaux (les polices intégrées de jsPDF
+// ne savent pas dessiner l'espace fine insécable de "fr-FR" -> caractères cassés).
+function pdfAmount(n){
+  const v=Math.abs(Number(n||0)).toFixed(2);
+  let [i,d]=v.split('.');
+  i=i.replace(/\B(?=(\d{3})+(?!\d))/g,' '); // séparateur de milliers = espace ASCII normal
+  return (Number(n)<0?'-':'')+i+','+d+' €';
+}
+function pdfDate(s){ const d=new Date(s); return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear(); }
+function asciiClean(s){ return String(s==null?'':s)
+  .replace(/ | /g,' ')   // espaces insécables -> espace normal
+  .replace(/’/g,"'").replace(/–|—/g,'-'); } // apostrophe/tirets typographiques
+
 // Construit le PDF d'une facture et renvoie un Blob.
 async function buildInvoicePDF(inv, lines){
   const co=await getCompany();
   const { jsPDF } = window.jspdf; const doc=new jsPDF({unit:'mm',format:'a4'});
-  const G=[201,162,74], D=[20,20,25], M=20; let y=16;
+  const G=[201,162,74], D=[22,22,28], GREY=[120,120,130], M=18, RW=210-2*M; let y=18;
+  const T=(s,x,yy,opt)=>doc.text(asciiClean(s),x,yy,opt);
+  // --- En-tête : logo + marque ---
   const logo=await imgDataURL('icon-192.png');
-  if(logo){ try{ doc.addImage(logo,'PNG',M,y-2,20,20); }catch(e){} }
-  doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(...D);
-  doc.text('PVTCD', M+24, y+5); doc.setTextColor(...G); doc.text('FLEET', M+46, y+5);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(110);
-  doc.text('Gestion des locations — PARISVTCDriver', M+24, y+11);
-  // Bloc facture (droite)
-  doc.setTextColor(...D); doc.setFont('helvetica','bold'); doc.setFontSize(15);
-  doc.text('FACTURE', 210-M, y+3, {align:'right'});
-  doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
-  doc.text('N° '+inv.invoice_number, 210-M, y+9, {align:'right'});
-  doc.text('Date : '+new Date(inv.issue_date).toLocaleDateString('fr-FR'), 210-M, y+14, {align:'right'});
-  if(inv.period_label) doc.text('Période : '+inv.period_label, 210-M, y+19, {align:'right'});
-  y+=30; doc.setDrawColor(...G); doc.setLineWidth(.4); doc.line(M,y,210-M,y); y+=8;
-  // Émetteur / Destinataire
-  const box=(title,lines2,x)=>{ doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...G);
-    doc.text(title,x,y); doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(40);
-    let yy=y+5; lines2.filter(Boolean).forEach(l=>{doc.text(String(l),x,yy,{maxWidth:80});yy+=4.6;}); return yy; };
-  const yL=box('ÉMETTEUR', inv._issuer, M);
-  const yR=box('DESTINATAIRE', inv._recipient, 115);
-  y=Math.max(yL,yR)+6;
-  // Tableau
-  doc.setFillColor(...D); doc.rect(M,y,210-2*M,8,'F');
-  doc.setTextColor(255);doc.setFont('helvetica','bold');doc.setFontSize(9);
-  doc.text('Désignation',M+3,y+5.5); doc.text('Montant',210-M-3,y+5.5,{align:'right'}); y+=8;
-  doc.setTextColor(40);doc.setFont('helvetica','normal');
-  lines.forEach((l,i)=>{ if(i%2){doc.setFillColor(245,245,247);doc.rect(M,y,210-2*M,8,'F');}
-    doc.text(String(l.label),M+3,y+5.5,{maxWidth:130});
-    doc.text(eur(l.amount),210-M-3,y+5.5,{align:'right'}); y+=8; });
-  y+=2; doc.setDrawColor(200);doc.line(M,y,210-M,y); y+=7;
-  const totLine=(lbl,val,bold)=>{ doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(bold?12:9.5);
-    doc.setTextColor(bold?20:90); doc.text(lbl,210-M-55,y,{align:'right'});
-    doc.setTextColor(bold?20:40); doc.text(val,210-M-3,y,{align:'right'}); y+=bold?8:5.5; };
-  if(Number(inv.vat_rate)>0){ totLine('Total HT',eur(inv.amount_ht)); totLine('TVA '+inv.vat_rate+' %',eur(inv.vat_amount)); }
-  totLine('TOTAL'+(Number(inv.vat_rate)>0?' TTC':''),eur(inv.amount_ttc),true);
-  y+=4; doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(90);
+  if(logo){ try{ doc.addImage(logo,'PNG',M,y-3,18,18); }catch(e){} }
+  const bx=M+22;
+  doc.setFont('helvetica','bold'); doc.setFontSize(17); doc.setTextColor(...D);
+  T('PVTCD', bx, y+4);
+  const w1=doc.getTextWidth('PVTCD ');
+  doc.setTextColor(...G); T('FLEET', bx+w1+1, y+4);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...GREY);
+  T('Gestion des locations de vehicules', bx, y+9.5);
+  // --- Cartouche FACTURE (droite) ---
+  doc.setTextColor(...D); doc.setFont('helvetica','bold'); doc.setFontSize(16);
+  T('FACTURE', 210-M, y+2, {align:'right'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(60);
+  T('N° '+inv.invoice_number, 210-M, y+8, {align:'right'});
+  T('Date : '+pdfDate(inv.issue_date), 210-M, y+13, {align:'right'});
+  if(inv.period_label) T('Periode : '+inv.period_label, 210-M, y+18, {align:'right'});
+  y+=26; doc.setDrawColor(...G); doc.setLineWidth(.5); doc.line(M,y,210-M,y); y+=9;
+  // --- Émetteur / Destinataire (avec vrai retour à la ligne) ---
+  const colW=84;
+  const partyBox=(title,arr,x)=>{
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...G);
+    T(title,x,y);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(45);
+    let yy=y+5.5;
+    arr.filter(Boolean).forEach(l=>{
+      doc.splitTextToSize(asciiClean(l), colW).forEach(p=>{ doc.text(p,x,yy); yy+=4.5; });
+    });
+    return yy;
+  };
+  const yL=partyBox('EMETTEUR', inv._issuer, M);
+  const yR=partyBox('DESTINATAIRE', inv._recipient, M+colW+14);
+  y=Math.max(yL,yR)+7;
+  // --- Tableau ---
+  const vat=Number(inv.vat_rate)||0, amtCol='Montant'+(vat>0?' HT':'');
+  doc.setFillColor(...D); doc.rect(M,y,RW,8.5,'F');
+  doc.setTextColor(255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+  T('Designation',M+3,y+5.7); T(amtCol,210-M-3,y+5.7,{align:'right'}); y+=8.5;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(45);
+  lines.forEach((l,i)=>{
+    const htAmount = vat>0 ? l.amount/(1+vat/100) : l.amount;
+    const parts=doc.splitTextToSize(asciiClean(l.label), RW-40);
+    const rowH=Math.max(8.5, parts.length*4.6+3.5);
+    if(i%2){ doc.setFillColor(246,246,249); doc.rect(M,y,RW,rowH,'F'); }
+    let ty=y+5.5; parts.forEach(p=>{ doc.text(p,M+3,ty); ty+=4.6; });
+    doc.text(pdfAmount(htAmount),210-M-3,y+5.5,{align:'right'});
+    y+=rowH;
+  });
+  doc.setDrawColor(210); doc.setLineWidth(.3); doc.line(M,y,210-M,y); y+=8;
+  // --- Totaux ---
+  const totLine=(lbl,val,bold)=>{
+    doc.setFont('helvetica',bold?'bold':'normal'); doc.setFontSize(bold?12.5:9.5);
+    doc.setTextColor(bold?20:95); T(lbl,210-M-58,y,{align:'right'});
+    doc.setTextColor(bold?20:45); T(val,210-M-3,y,{align:'right'}); y+=bold?8.5:5.8;
+  };
+  if(vat>0){ totLine('Total HT',pdfAmount(inv.amount_ht)); totLine('TVA '+vat+' %',pdfAmount(inv.vat_amount)); }
+  totLine('TOTAL'+(vat>0?' TTC':''),pdfAmount(inv.amount_ttc),true);
+  // --- Mentions de bas de page ---
+  y+=5; doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(90);
   const foot=[];
-  if(inv.due_date) foot.push('Échéance : '+new Date(inv.due_date).toLocaleDateString('fr-FR')+'.');
+  if(inv.due_date) foot.push('Echeance : '+pdfDate(inv.due_date)+'.');
   if(co.payment_terms) foot.push(co.payment_terms);
-  if(co.iban) foot.push('IBAN : '+co.iban+(co.bic?('   BIC : '+co.bic):''));
-  if(Number(inv.vat_rate)>0===false && co.vat_note) foot.push(co.vat_note);
-  foot.forEach(f=>{doc.text(String(f),M,y,{maxWidth:170});y+=4.6;});
-  y=285; doc.setFontSize(7.5);doc.setTextColor(130);
-  doc.text([co.legal_name,co.legal_form&&('— '+co.legal_form),co.siret&&('SIRET '+co.siret),co.vat_number&&('TVA '+co.vat_number),co.rcs].filter(Boolean).join('  ·  '),105,y,{align:'center',maxWidth:180});
+  if(co.iban) foot.push('IBAN : '+co.iban+(co.bic?('    BIC : '+co.bic):''));
+  if(vat<=0 && co.vat_note) foot.push(co.vat_note);
+  foot.forEach(f=>{ doc.splitTextToSize(asciiClean(f),RW).forEach(p=>{doc.text(p,M,y);y+=4.8;}); });
+  // --- Pied de page légal ---
+  doc.setDrawColor(230); doc.line(M,283,210-M,283);
+  doc.setFontSize(7.3); doc.setTextColor(135);
+  const legal=[co.legal_name,co.legal_form,co.siret&&('SIRET '+co.siret),co.vat_number&&('TVA '+co.vat_number),co.rcs].filter(Boolean).join('  -  ');
+  T(legal,105,287,{align:'center'});
+  if(co.address) T(co.address,105,291,{align:'center'});
   return doc.output('blob');
 }
 
