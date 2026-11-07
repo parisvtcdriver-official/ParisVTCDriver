@@ -169,6 +169,8 @@
 let sb=null, me=null, mode='login';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// Nom de fichier sûr pour Supabase Storage (ASCII, sans accents ni espaces).
+const slug=s=>String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,40);
 const eur=n=>Number(n||0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
 const km=n=>Number(n||0).toLocaleString('fr-FR')+' km';
 const monthLabel=d=>{const [y,m]=String(d).split('-');return new Date(y,m-1,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});};
@@ -254,6 +256,21 @@ function adminTab(t){
 }
 let company=null;
 async function getCompany(){ if(!company){ const {data}=await sb.from('pvtcd_company').select('*').limit(1).maybeSingle(); company=data||{}; } return company; }
+// Journal d'audit (best-effort : ne bloque jamais l'action si l'écriture échoue).
+async function audit(action,entity,entity_id,details){
+  try{ await sb.from('pvtcd_audit_log').insert({actor_id:me&&me.id,action,entity,entity_id,details:details||null}); }catch(e){}
+}
+// Export CSV générique.
+function toCSV(rows,cols){
+  const esc2=v=>{ v=(v==null?'':String(v)); return /[",;\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
+  const head=cols.map(c=>esc2(c.h)).join(';');
+  const body=rows.map(r=>cols.map(c=>esc2(typeof c.v==='function'?c.v(r):r[c.v])).join(';')).join('\n');
+  return '﻿'+head+'\n'+body; // BOM pour Excel + accents
+}
+function downloadCSV(name,csv){
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const u=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u),3000);
+}
 
 async function loadDash(){
   $('a_dash').innerHTML='<div class="card"><h2>Espace <span class="g">administrateur</span></h2>'+
@@ -262,7 +279,8 @@ async function loadDash(){
     ['stPending|Relevés à valider','stContracts|Contrats actifs','stDrivers|Chauffeurs','stVehicles|Véhicules']
       .map(s=>{const[i,l]=s.split('|');return '<div class="stat"><div class="n" id="'+i+'">–</div><div class="l">'+l+'</div></div>';}).join('')+
     '</div></div>'+
-    '<div class="card"><h2>Chauffeurs <span class="g">en attente</span></h2><div id="pendingList"><p class="empty">…</p></div></div>';
+    '<div class="card"><h2>Chauffeurs <span class="g">en attente</span></h2><div id="pendingList"><p class="empty">…</p></div></div>'+
+    '<div class="card"><h2>Journal <span class="g">d\'activité</span></h2><div id="auditList"><p class="empty">…</p></div></div>';
   const [p,c,d,v]=await Promise.all([
     sb.from('pvtcd_readings').select('*',{count:'exact',head:true}).eq('status','submitted'),
     sb.from('pvtcd_contracts').select('*',{count:'exact',head:true}).eq('status','active'),
@@ -277,11 +295,26 @@ async function loadDash(){
     '<div class="sub">'+esc(m.email)+'</div><div class="actions">'+
     '<button class="btn sm gold" onclick="approveDriver(\''+m.id+'\')">Valider le compte</button></div></div>'
   ).join('') : '<p class="empty">Aucun chauffeur en attente.</p>';
+  loadAudit();
+}
+const AUDIT_FR={approve_driver:'Compte chauffeur validé',validate_reading:'Relevé validé',
+  review_reading:'Relevé commenté',issue_invoice:'Facture émise',invoice_status:'Statut facture modifié',
+  contract_status:'Statut contrat modifié'};
+async function loadAudit(){
+  const {data}=await sb.from('pvtcd_audit_log').select('*').order('created_at',{ascending:false}).limit(20);
+  if(!data||!data.length){ $('auditList').innerHTML='<p class="empty">Aucune activité enregistrée.</p>'; return; }
+  $('auditList').innerHTML=data.map(a=>{
+    const d=a.details||{}; let extra='';
+    if(d.number) extra=' · '+esc(d.number); else if(d.status) extra=' · '+esc(d.status);
+    else if(d.excess_amount!=null) extra=' · dépassement '+eur(d.excess_amount);
+    return '<div class="item" style="padding:10px 14px"><div class="kv"><b>'+esc(AUDIT_FR[a.action]||a.action)+'</b>'+extra+'</div>'+
+      '<div class="sub">'+new Date(a.created_at).toLocaleString('fr-FR')+'</div></div>';
+  }).join('');
 }
 async function approveDriver(id){
   const {error}=await sb.from('pvtcd_members').update({active:true}).eq('id',id);
   if(error) return alert('Erreur : '+error.message);
-  loadDash();
+  audit('approve_driver','member',id); loadDash();
 }
 
 async function loadDrivers(){
@@ -347,7 +380,7 @@ async function loadContracts(){
 }
 async function setContract(id,status){
   const {error}=await sb.from('pvtcd_contracts').update({status}).eq('id',id);
-  if(error) return alert('Erreur : '+error.message); loadContracts();
+  if(error) return alert('Erreur : '+error.message); audit('contract_status','contract',id,{status}); loadContracts();
 }
 async function contractForm(){
   const [{data:veh},{data:drv}]=await Promise.all([
@@ -378,11 +411,14 @@ async function saveContract(){
   closeModal(); loadContracts();
 }
 
+let _readingsCache=[];
 async function loadReadings(){
-  $('a_readings').innerHTML='<div class="card"><h2>Relevés de kilométrage</h2><p class="muted">Validez, corrigez ou refusez les relevés envoyés par les chauffeurs.</p><div id="rdList"><p class="empty">…</p></div></div>';
+  $('a_readings').innerHTML='<div class="card"><h2>Relevés de kilométrage</h2><p class="muted">Validez, corrigez ou refusez les relevés envoyés par les chauffeurs.</p>'+
+    '<button class="btn sm ghost" onclick="exportReadingsCSV()">Exporter CSV</button><div id="rdList" style="margin-top:8px"><p class="empty">…</p></div></div>';
   const {data}=await sb.from('pvtcd_readings')
     .select('*,pvtcd_contracts(included_km,excess_km_rate,start_odometer,pvtcd_members!pvtcd_contracts_driver_id_fkey(full_name,email),pvtcd_vehicles(registration))')
     .order('period_month',{ascending:false});
+  _readingsCache=data||[];
   if(!data||!data.length){ $('rdList').innerHTML='<p class="empty">Aucun relevé pour le moment.</p>'; return; }
   $('rdList').innerHTML=data.map(r=>{
     const c=r.pvtcd_contracts||{}, d=(c.pvtcd_members||{}), v=(c.pvtcd_vehicles||{});
@@ -403,6 +439,22 @@ async function loadReadings(){
           '<button class="btn sm danger" onclick="commentReading(\''+r.id+'\',\'rejected\')">Refuser</button>':'')+
       '</div></div>';
   }).join('');
+}
+function exportReadingsCSV(){
+  const statusFR={submitted:'A valider',validated:'Valide',needs_correction:'A corriger',rejected:'Refuse'};
+  const csv=toCSV(_readingsCache,[
+    {h:'Periode',v:r=>r.period_month},
+    {h:'Chauffeur',v:r=>{const c=r.pvtcd_contracts||{},d=(c.pvtcd_members||{});return d.full_name||d.email||'';}},
+    {h:'Immatriculation',v:r=>((r.pvtcd_contracts||{}).pvtcd_vehicles||{}).registration||''},
+    {h:'Date releve',v:r=>r.reading_date},
+    {h:'Compteur (km)',v:r=>r.odometer_km},
+    {h:'Distance (km)',v:r=>r.distance_km==null?'':r.distance_km},
+    {h:'Km inclus',v:r=>r.included_km==null?'':r.included_km},
+    {h:'Km depassement',v:r=>r.excess_km==null?'':r.excess_km},
+    {h:'Montant depassement (EUR)',v:r=>r.excess_amount==null?'':String(r.excess_amount).replace('.',',')},
+    {h:'Statut',v:r=>statusFR[r.status]||r.status}
+  ]);
+  downloadCSV('releves-pvtcd-fleet.csv',csv);
 }
 async function viewPhoto(path){
   const {data,error}=await sb.storage.from('pvtcd-meter-photos').createSignedUrl(path,3600);
@@ -427,7 +479,8 @@ async function validateReading(id){
   }
   const {error}=await sb.from('pvtcd_readings').update({status:'validated',distance_km:distance,
     included_km:inc,excess_km:excess,excess_amount:amount,reviewed_by:me.id,reviewed_at:new Date().toISOString()}).eq('id',id);
-  if(error) return alert('Erreur : '+error.message); loadReadings();
+  if(error) return alert('Erreur : '+error.message);
+  audit('validate_reading','reading',id,{distance_km:distance,excess_km:excess,excess_amount:amount}); loadReadings();
 }
 function commentReading(id,status){
   openModal('<h2>'+(status==='rejected'?'Refuser':'Demander une correction')+'</h2>'+
@@ -552,9 +605,11 @@ async function loadInvoices(){
     '<p class="muted">Générez les factures en PDF et téléchargez-les. Deux flux : propriétaire → société (500 €/mois) et société → chauffeur (loyer + dépassements).</p>'+
     '<div class="actions"><button class="btn sm gold" onclick="invoiceDriverForm()">+ Facture chauffeur</button>'+
     '<button class="btn sm" onclick="invoiceOwnerForm()">+ Facture propriétaire</button>'+
-    '<button class="btn sm ghost" onclick="billingSettings()">Paramètres</button></div>'+
+    '<button class="btn sm ghost" onclick="billingSettings()">Paramètres</button>'+
+    '<button class="btn sm ghost" onclick="exportInvoicesCSV()">Exporter CSV</button></div>'+
     '<div id="invList" style="margin-top:6px"><p class="empty">…</p></div></div>';
   const {data}=await sb.from('pvtcd_invoices').select('*,pvtcd_contracts(pvtcd_members!pvtcd_contracts_driver_id_fkey(full_name,email))').order('created_at',{ascending:false});
+  _invoicesCache=data||[];
   if(!data||!data.length){ $('invList').innerHTML='<p class="empty">Aucune facture.</p>'; return; }
   $('invList').innerHTML=data.map(v=>{
     const who=v.flow==='company_to_driver'?((v.pvtcd_contracts&&v.pvtcd_contracts.pvtcd_members&&(v.pvtcd_contracts.pvtcd_members.full_name||v.pvtcd_contracts.pvtcd_members.email))||'chauffeur'):'Société (propriétaire)';
@@ -570,7 +625,25 @@ async function loadInvoices(){
       '</div></div>';
   }).join('');
 }
-async function setInvoice(id,status){ const {error}=await sb.from('pvtcd_invoices').update({status}).eq('id',id); if(error)return alert('Erreur : '+error.message); loadInvoices(); }
+let _invoicesCache=[];
+function exportInvoicesCSV(){
+  const flowFR={company_to_driver:'Societe vers chauffeur',owner_to_company:'Proprietaire vers societe'};
+  const stFR={draft:'Brouillon',issued:'Emise',paid:'Payee',cancelled:'Annulee'};
+  const csv=toCSV(_invoicesCache,[
+    {h:'Numero',v:'invoice_number'},
+    {h:'Flux',v:r=>flowFR[r.flow]||r.flow},
+    {h:'Destinataire',v:r=>r.flow==='company_to_driver'?((r.pvtcd_contracts&&r.pvtcd_contracts.pvtcd_members&&(r.pvtcd_contracts.pvtcd_members.full_name||r.pvtcd_contracts.pvtcd_members.email))||''):'Societe'},
+    {h:'Periode',v:'period_label'},
+    {h:'Date',v:'issue_date'},
+    {h:'Echeance',v:'due_date'},
+    {h:'HT (EUR)',v:r=>r.amount_ht==null?'':String(r.amount_ht).replace('.',',')},
+    {h:'TVA %',v:r=>r.vat_rate},
+    {h:'TTC (EUR)',v:r=>r.amount_ttc==null?'':String(r.amount_ttc).replace('.',',')},
+    {h:'Statut',v:r=>stFR[r.status]||r.status}
+  ]);
+  downloadCSV('factures-pvtcd-fleet.csv',csv);
+}
+async function setInvoice(id,status){ const {error}=await sb.from('pvtcd_invoices').update({status}).eq('id',id); if(error)return alert('Erreur : '+error.message); audit('invoice_status','invoice',id,{status}); loadInvoices(); }
 async function downloadInvoice(path){
   const {data,error}=await sb.storage.from('pvtcd-invoices').createSignedUrl(path,3600);
   if(error||!data) return alert('PDF indisponible : '+(error?error.message:'')); window.open(data.signedUrl,'_blank');
@@ -607,7 +680,7 @@ async function genDriverInvoice(){
     const manual=$('iv_num').value.trim();
     const number= manual || await rpcNumber('PVTCD');
     const issue=new Date().toISOString().slice(0,10);
-    const due=addDays(issue, co.payment_due_days||30);
+    const due=addDays(issue, co.payment_due_days||7);
     const inv={flow:'company_to_driver',contract_id:r.contract_id,invoice_number:number,
       issuer:co.legal_name,recipient:(d.full_name||d.email),issue_date:issue,due_date:due,period_label:period,
       amount_ht:ht,vat_rate:vat,vat_amount:vatAmt,amount_ttc:ttc,status:'issued',
@@ -642,7 +715,7 @@ async function genOwnerInvoice(){
     const number= manualO || await rpcNumber('PVTCD-PROP');
     const issueO=new Date().toISOString().slice(0,10);
     const inv={flow:'owner_to_company',contract_id:null,invoice_number:number,
-      issuer:(co.owner_name||co.representative),recipient:co.legal_name,issue_date:issueO,due_date:addDays(issueO,co.payment_due_days||30),
+      issuer:(co.owner_name||co.representative),recipient:co.legal_name,issue_date:issueO,due_date:addDays(issueO,co.payment_due_days||7),
       period_label:period,amount_ht:ht,vat_rate:vat,vat_amount:vatAmt,amount_ttc:ttc,status:'issued',
       _issuer:[co.owner_name||co.representative,co.owner_address||'',co.owner_siret?('SIRET '+co.owner_siret):''],
       _recipient:[co.legal_name,co.legal_form,co.address,'SIRET '+co.siret,co.vat_number&&('TVA '+co.vat_number)]};
@@ -666,6 +739,7 @@ async function finalizeInvoice(inv,lines){
     vat_rate:inv.vat_rate,vat_amount:inv.vat_amount,amount_ttc:inv.amount_ttc,status:'issued',pdf_path:path,created_by:me.id};
   const {error}=await sb.from('pvtcd_invoices').insert(rec);
   if(error) throw error;
+  audit('issue_invoice','invoice',null,{number:inv.invoice_number,flow:inv.flow,amount_ttc:inv.amount_ttc});
   // téléchargement immédiat
   const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=path.split('/').pop(); a.click();
   setTimeout(()=>URL.revokeObjectURL(url),4000);
@@ -680,7 +754,7 @@ async function billingSettings(){
     '<div><label>SIRET propriétaire (option)</label><input id="bs_os" value="'+esc(co.owner_siret||'')+'"></div></div>'+
     '<label>IBAN (option)</label><input id="bs_iban" value="'+esc(co.iban||'')+'">'+
     '<div class="row"><div><label>BIC (option)</label><input id="bs_bic" value="'+esc(co.bic||'')+'"></div>'+
-    '<div><label>Délai de paiement (jours)</label><input id="bs_due" type="number" value="'+(co.payment_due_days!=null?co.payment_due_days:30)+'"></div></div>'+
+    '<div><label>Délai de paiement (jours)</label><input id="bs_due" type="number" value="'+(co.payment_due_days!=null?co.payment_due_days:7)+'"></div></div>'+
     '<label>Conditions de paiement</label><input id="bs_pt" value="'+esc(co.payment_terms||'')+'">'+
     '<label>Mention TVA (si hors TVA)</label><input id="bs_vn" value="'+esc(co.vat_note||'')+'">'+
     '<label>Pénalités de retard (mention légale)</label><textarea id="bs_lp" rows="3" style="width:100%;padding:12px 13px;border-radius:12px;border:1px solid var(--line);background:#0a1122;color:var(--txt);font-size:14px;font-family:inherit">'+esc(co.late_penalty_text||'')+'</textarea>'+
@@ -694,7 +768,7 @@ async function saveBilling(){
   const patch={owner_name:$('bs_on').value.trim(),owner_address:$('bs_oa').value.trim(),
     owner_monthly_amount:+$('bs_oamt').value||0,owner_siret:$('bs_os').value.trim(),
     iban:$('bs_iban').value.trim(),bic:$('bs_bic').value.trim(),
-    payment_due_days:+$('bs_due').value||30,
+    payment_due_days:+$('bs_due').value||7,
     payment_terms:$('bs_pt').value.trim(),vat_note:$('bs_vn').value.trim(),
     late_penalty_text:$('bs_lp').value.trim(),early_discount_text:$('bs_ed').value.trim(),
     legal_mentions:$('bs_lm').value.trim()};
@@ -733,8 +807,8 @@ async function saveDoc(){
   try{
     const ct=$('dc_ct').value, title=$('dc_t').value.trim(), type=$('dc_ty').value, f=$('dc_f').files[0];
     if(!title||!f){ err.textContent='Titre et fichier requis.'; $('dc_send').disabled=false; return; }
-    const ext=(f.name.split('.').pop()||'pdf').toLowerCase();
-    const path=ct+'/'+type.replace(/\s/g,'_')+'-'+Date.now()+'.'+ext;
+    const ext=slug((f.name.split('.').pop()||'pdf'))||'pdf';
+    const path=ct+'/'+slug(type)+'-'+Date.now()+'.'+ext;
     const up=await sb.storage.from('pvtcd-documents').upload(path,f,{contentType:f.type});
     if(up.error) throw up.error;
     const {error}=await sb.from('pvtcd_documents').insert({contract_id:ct,title,doc_type:type,storage_path:path,visible_to_driver:$('dc_vis').checked,created_by:me.id});
@@ -818,7 +892,7 @@ async function submitReading(){
   $('dr_send').disabled=true; $('dr_send').textContent='Envoi…';
   try{
     const period=month+'-01';
-    const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+    const ext=slug((file.name.split('.').pop()||'jpg'))||'jpg';
     const path=myContract.id+'/'+period+'-'+Date.now()+'.'+ext;
     const up=await sb.storage.from('pvtcd-meter-photos').upload(path,file,{upsert:false,contentType:file.type});
     if(up.error) throw up.error;
@@ -845,7 +919,7 @@ async function saveEdit(id,period){
     const patch={odometer_km:+$('er_km').value, status:'submitted'};
     const f=$('er_photo').files[0];
     if(f){
-      const ext=(f.name.split('.').pop()||'jpg').toLowerCase();
+      const ext=slug((f.name.split('.').pop()||'jpg'))||'jpg';
       const path=myContract.id+'/'+(period)+'-'+Date.now()+'.'+ext;
       const up=await sb.storage.from('pvtcd-meter-photos').upload(path,f,{contentType:f.type});
       if(up.error) throw up.error; patch.photo_path=path;
