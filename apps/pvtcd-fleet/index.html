@@ -299,7 +299,7 @@ async function loadDash(){
 }
 const AUDIT_FR={approve_driver:'Compte chauffeur validé',validate_reading:'Relevé validé',
   review_reading:'Relevé commenté',issue_invoice:'Facture émise',invoice_status:'Statut facture modifié',
-  contract_status:'Statut contrat modifié'};
+  contract_status:'Statut contrat modifié',archive_invoice:'Facture archivée',delete_invoice:'Facture supprimée'};
 async function loadAudit(){
   const {data}=await sb.from('pvtcd_audit_log').select('*').order('created_at',{ascending:false}).limit(20);
   if(!data||!data.length){ $('auditList').innerHTML='<p class="empty">Aucune activité enregistrée.</p>'; return; }
@@ -600,30 +600,49 @@ async function buildInvoicePDF(inv, lines){
   return doc.output('blob');
 }
 
+let _showArchived=false;
 async function loadInvoices(){
+  const {data}=await sb.from('pvtcd_invoices').select('*,pvtcd_contracts(pvtcd_members!pvtcd_contracts_driver_id_fkey(full_name,email))').order('created_at',{ascending:false});
+  _invoicesCache=data||[];
+  const archivedCount=(data||[]).filter(v=>v.archived).length;
   $('a_invoices').innerHTML='<div class="card"><h2>Factures</h2>'+
     '<p class="muted">Générez les factures en PDF et téléchargez-les. Deux flux : propriétaire → société (500 €/mois) et société → chauffeur (loyer + dépassements).</p>'+
     '<div class="actions"><button class="btn sm gold" onclick="invoiceDriverForm()">+ Facture chauffeur</button>'+
     '<button class="btn sm" onclick="invoiceOwnerForm()">+ Facture propriétaire</button>'+
     '<button class="btn sm ghost" onclick="billingSettings()">Paramètres</button>'+
-    '<button class="btn sm ghost" onclick="exportInvoicesCSV()">Exporter CSV</button></div>'+
-    '<div id="invList" style="margin-top:6px"><p class="empty">…</p></div></div>';
-  const {data}=await sb.from('pvtcd_invoices').select('*,pvtcd_contracts(pvtcd_members!pvtcd_contracts_driver_id_fkey(full_name,email))').order('created_at',{ascending:false});
-  _invoicesCache=data||[];
-  if(!data||!data.length){ $('invList').innerHTML='<p class="empty">Aucune facture.</p>'; return; }
-  $('invList').innerHTML=data.map(v=>{
+    '<button class="btn sm ghost" onclick="exportInvoicesCSV()">Exporter CSV</button>'+
+    (archivedCount?('<button class="btn sm ghost" onclick="toggleShowArchived()">'+(_showArchived?'Masquer les archivées':'Voir les archivées ('+archivedCount+')')+'</button>'):'')+
+    '</div><div id="invList" style="margin-top:6px"><p class="empty">…</p></div></div>';
+  const list=(data||[]).filter(v=>_showArchived?v.archived:!v.archived);
+  if(!list.length){ $('invList').innerHTML='<p class="empty">'+(_showArchived?'Aucune facture archivée.':'Aucune facture.')+'</p>'; return; }
+  $('invList').innerHTML=list.map(v=>{
     const who=v.flow==='company_to_driver'?((v.pvtcd_contracts&&v.pvtcd_contracts.pvtcd_members&&(v.pvtcd_contracts.pvtcd_members.full_name||v.pvtcd_contracts.pvtcd_members.email))||'chauffeur'):'Société (propriétaire)';
     const stMap={draft:['warn','BROUILLON'],issued:['sub','ÉMISE'],paid:['ok','PAYÉE'],cancelled:['bad','ANNULÉE']};
     const st=stMap[v.status]||['sub',v.status];
-    return '<div class="item"><div class="top"><span class="ttl">'+esc(v.invoice_number||'(sans n°)')+'</span><span class="pill '+st[0]+'">'+st[1]+'</span></div>'+
+    return '<div class="item"><div class="top"><span class="ttl">'+esc(v.invoice_number||'(sans n°)')+'</span><span class="pill '+st[0]+'">'+st[1]+'</span>'+(v.archived?'<span class="pill sub">ARCHIVÉE</span>':'')+'</div>'+
       '<div class="sub">'+(v.flow==='company_to_driver'?'Société → ':'Propriétaire → ')+esc(who)+' · '+esc(v.period_label||'')+'</div>'+
       '<div class="kv">Total <b>'+eur(v.amount_ttc)+'</b></div>'+
       '<div class="actions">'+
         (v.pdf_path?'<button class="btn sm" onclick="downloadInvoice(\''+v.pdf_path+'\')">Télécharger le PDF</button>':'')+
         (v.status==='issued'?'<button class="btn sm gold" onclick="setInvoice(\''+v.id+'\',\'paid\')">Marquer payée</button>':'')+
-        (v.status!=='cancelled'&&v.status!=='paid'?'<button class="btn sm danger" onclick="setInvoice(\''+v.id+'\',\'cancelled\')">Annuler</button>':'')+
+        (v.status!=='cancelled'&&v.status!=='paid'?'<button class="btn sm" onclick="setInvoice(\''+v.id+'\',\'cancelled\')">Annuler</button>':'')+
+        '<button class="btn sm ghost" onclick="archiveInvoice(\''+v.id+'\','+(v.archived?'false':'true')+')">'+(v.archived?'Désarchiver':'Archiver')+'</button>'+
+        '<button class="btn sm danger" onclick="deleteInvoice(\''+v.id+'\',\''+(v.pdf_path||'')+'\',\''+esc(v.invoice_number||'')+'\')">Supprimer</button>'+
       '</div></div>';
   }).join('');
+}
+function toggleShowArchived(){ _showArchived=!_showArchived; loadInvoices(); }
+async function archiveInvoice(id,val){
+  const {error}=await sb.from('pvtcd_invoices').update({archived:val}).eq('id',id);
+  if(error) return alert('Erreur : '+error.message);
+  audit('archive_invoice','invoice',id,{archived:val}); loadInvoices();
+}
+async function deleteInvoice(id,path,num){
+  if(!confirm('Supprimer définitivement la facture '+num+' ?\nCette action est irréversible. (Astuce : « Archiver » masque sans supprimer.)')) return;
+  if(path){ try{ await sb.storage.from('pvtcd-invoices').remove([path]); }catch(e){} }
+  const {error}=await sb.from('pvtcd_invoices').delete().eq('id',id);
+  if(error) return alert('Erreur : '+error.message);
+  audit('delete_invoice','invoice',id,{number:num}); loadInvoices();
 }
 let _invoicesCache=[];
 function exportInvoicesCSV(){
