@@ -18,11 +18,12 @@
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:radial-gradient(1200px 700px at 50% -10%,#13203b 0%,var(--bg) 55%);
     color:var(--txt); min-height:100vh; -webkit-font-smoothing:antialiased}
-  .wrap{max-width:960px;margin:0 auto;padding:16px 16px 48px}
+  .wrap{max-width:960px;margin:0 auto;
+    padding:calc(14px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}
   header.appbar{display:flex;align-items:center;gap:12px;padding:12px 2px 10px}
-  .logo{width:40px;height:40px;border-radius:11px;border:1.5px solid var(--gold);
-    background:#000;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
-  .logo b{font-size:12px;letter-spacing:.5px} .logo .s{color:var(--silver)} .logo .g{color:var(--gold)}
+  .logo{width:46px;height:46px;border-radius:12px;overflow:hidden;flex:0 0 auto;
+    border:1px solid var(--line);background:#000}
+  .logo img{width:100%;height:100%;object-fit:cover;display:block}
   .brand h1{font-size:15px;margin:0;letter-spacing:.6px} .brand h1 .g{color:var(--gold2)}
   .brand p{margin:2px 0 0;font-size:10.5px;color:var(--muted);letter-spacing:.4px}
   .spacer{flex:1}
@@ -59,9 +60,11 @@
   a.link{color:var(--gold2);text-decoration:none;font-size:13px;cursor:pointer}
   .foot{color:var(--muted);font-size:11px;text-align:center;margin-top:22px;line-height:1.6}
   .divider{height:1px;background:var(--line);margin:14px 0}
-  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
-  .tab{cursor:pointer;padding:9px 13px;border-radius:11px;border:1px solid var(--line);background:var(--card);
-    font-size:13px;font-weight:600;color:var(--muted)}
+  .tabs{display:flex;gap:8px;margin:6px 0 2px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    padding-bottom:4px;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{cursor:pointer;padding:10px 14px;border-radius:11px;border:1px solid var(--line);background:var(--card);
+    font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;flex:0 0 auto}
   .tab.active{color:#211a06;background:linear-gradient(180deg,var(--gold2),var(--gold));border-color:var(--gold)}
   .item{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:10px}
   .item .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -72,14 +75,23 @@
   .kv b{color:var(--txt)}
   .empty{color:var(--muted);font-size:13px;padding:8px 2px}
   dialog{border:none;background:transparent;max-width:92vw}
-  .modal{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;max-width:440px;width:92vw}
+  dialog::backdrop{background:rgba(3,6,12,.72)}
+  .modal{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;max-width:440px;width:92vw;
+    max-height:88vh;overflow:auto}
+  @media(max-width:560px){
+    .card{padding:16px;border-radius:16px}
+    .btn{padding:13px 16px}
+    input,select{font-size:16px}  /* évite le zoom auto iOS */
+    .stat .n{font-size:24px}
+    .actions .btn{flex:1 1 auto}
+  }
   img.photo{max-width:100%;border-radius:12px;border:1px solid var(--line);margin-top:10px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="appbar">
-    <div class="logo"><b><span class="s">P</span><span class="g">F</span></b></div>
+    <div class="logo"><img src="icon-192.png" alt="PVTCD FLEET"></div>
     <div class="brand"><h1>PVTCD <span class="g">FLEET</span></h1><p>LOCATION PVTCD · PARISVTCDRIVER</p></div>
     <div class="spacer"></div>
     <button id="logoutBtn" class="btn sm ghost hide" onclick="doLogout()">Déconnexion</button>
