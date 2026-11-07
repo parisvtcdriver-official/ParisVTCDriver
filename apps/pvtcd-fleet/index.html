@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070a12">
+<title>PVTCD FLEET — Location PVTCD</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+  :root{
+    --bg:#070a12; --bg2:#0b1020; --card:#0e1526; --line:#1c2742;
+    --gold:#d9b25a; --gold2:#f0d48a; --silver:#c7ccd6;
+    --txt:#eef2fb; --muted:#9aa6bd; --ok:#2ec28a; --warn:#e5a93b; --bad:#e26464;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(1200px 700px at 50% -10%,#13203b 0%,var(--bg) 55%);
+    color:var(--txt); min-height:100vh; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:18px 16px 40px}
+  header.appbar{display:flex;align-items:center;gap:12px;padding:14px 4px 18px}
+  .logo{width:42px;height:42px;border-radius:11px;border:1.5px solid var(--gold);
+    background:#000;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .logo b{font-size:12px;letter-spacing:.5px}
+  .logo .s{color:var(--silver)} .logo .g{color:var(--gold)}
+  .brand h1{font-size:16px;margin:0;letter-spacing:.6px}
+  .brand h1 .g{color:var(--gold2)}
+  .brand p{margin:2px 0 0;font-size:11px;color:var(--muted);letter-spacing:.4px}
+  .spacer{flex:1}
+  .btn{cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--txt);
+    padding:11px 15px;border-radius:12px;font-size:14px;font-weight:600;transition:.15s}
+  .btn:hover{border-color:var(--gold)}
+  .btn.gold{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#211a06;border-color:var(--gold)}
+  .btn.ghost{background:transparent}
+  .btn.sm{padding:7px 11px;font-size:12.5px;border-radius:10px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin:14px 0;
+    box-shadow:0 18px 50px rgba(0,0,0,.35)}
+  .card h2{margin:0 0 4px;font-size:17px}
+  .card h2 .g{color:var(--gold2)}
+  label{display:block;font-size:12.5px;color:var(--muted);margin:12px 0 6px}
+  input,select{width:100%;padding:12px 13px;border-radius:12px;border:1px solid var(--line);
+    background:#0a1122;color:var(--txt);font-size:15px}
+  input:focus,select:focus{outline:none;border-color:var(--gold)}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>*{flex:1;min-width:0}
+  .muted{color:var(--muted);font-size:13px}
+  .err{color:var(--bad);font-size:13px;margin-top:10px;min-height:16px}
+  .ok{color:var(--ok)}
+  .hide{display:none!important}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:8px}
+  .stat{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .stat .n{font-size:28px;font-weight:800;color:var(--gold2)}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:4px}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;border:1px solid var(--line)}
+  .pill.admin{color:var(--gold2);border-color:var(--gold)}
+  .pill.driver{color:var(--silver)}
+  .center{min-height:60vh;display:flex;align-items:center;justify-content:center}
+  .boot{text-align:center;color:var(--muted)}
+  a.link{color:var(--gold2);text-decoration:none;font-size:13px;cursor:pointer}
+  .foot{color:var(--muted);font-size:11px;text-align:center;margin-top:26px;line-height:1.6}
+  .divider{height:1px;background:var(--line);margin:16px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="appbar">
+    <div class="logo"><b><span class="s">P</span><span class="g">F</span></b></div>
+    <div class="brand">
+      <h1>PVTCD <span class="g">FLEET</span></h1>
+      <p>LOCATION PVTCD · PARISVTCDRIVER</p>
+    </div>
+    <div class="spacer"></div>
+    <button id="logoutBtn" class="btn sm ghost hide" onclick="doLogout()">Déconnexion</button>
+  </header>
+
+  <!-- CHARGEMENT -->
+  <section id="booting" class="center">
+    <div class="boot">
+      <div style="font-size:30px">⏳</div>
+      <p>Initialisation…</p>
+    </div>
+  </section>
+
+  <!-- CONNEXION -->
+  <section id="loginView" class="hide">
+    <div class="card">
+      <h2>Connexion <span class="g">·</span> espace sécurisé</h2>
+      <p class="muted">Accédez à votre espace. Les comptes chauffeurs sont créés par l'administrateur.</p>
+      <label for="email">E-mail</label>
+      <input id="email" type="email" autocomplete="email" placeholder="vous@exemple.com">
+      <label for="pwd">Mot de passe</label>
+      <input id="pwd" type="password" autocomplete="current-password" placeholder="••••••••">
+      <div class="err" id="loginErr"></div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn gold" style="flex:2" onclick="doLogin()">Se connecter</button>
+      </div>
+      <div class="divider"></div>
+      <a class="link" onclick="doReset()">Mot de passe oublié ?</a>
+    </div>
+    <div class="foot">
+      Connexion chiffrée via Supabase. Vos données (kilométrages, photos, documents)
+      sont privées et protégées par des règles d'accès au niveau serveur.
+    </div>
+  </section>
+
+  <!-- COMPTE NON RATTACHÉ -->
+  <section id="noMemberView" class="hide">
+    <div class="card">
+      <h2>Compte non rattaché</h2>
+      <p class="muted">Votre connexion fonctionne, mais votre compte n'est pas encore
+        rattaché à la flotte. Demandez à l'administrateur de vous ajouter comme chauffeur.</p>
+      <p class="muted" id="noMemberEmail" style="margin-top:6px"></p>
+    </div>
+  </section>
+
+  <!-- TABLEAU DE BORD ADMIN -->
+  <section id="adminView" class="hide">
+    <div class="card">
+      <h2>Espace <span class="g">administrateur</span></h2>
+      <p class="muted">Bonjour <span id="adminName"></span> · <span class="pill admin">ADMIN</span></p>
+      <div class="grid">
+        <div class="stat"><div class="n" id="stPending">–</div><div class="l">Relevés à valider</div></div>
+        <div class="stat"><div class="n" id="stContracts">–</div><div class="l">Contrats actifs</div></div>
+        <div class="stat"><div class="n" id="stDrivers">–</div><div class="l">Chauffeurs</div></div>
+        <div class="stat"><div class="n" id="stVehicles">–</div><div class="l">Véhicules</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Prochaines étapes</h2>
+      <p class="muted">Les modules de gestion (chauffeurs, contrats, validation des relevés,
+        facturation PDF, documents) s'activent progressivement. La base de données et la
+        sécurité sont en place.</p>
+    </div>
+  </section>
+
+  <!-- TABLEAU DE BORD CHAUFFEUR -->
+  <section id="driverView" class="hide">
+    <div class="card">
+      <h2>Mon <span class="g">espace</span></h2>
+      <p class="muted">Bonjour <span id="driverName"></span> · <span class="pill driver">CHAUFFEUR</span></p>
+      <div id="driverContract"></div>
+    </div>
+    <div class="card">
+      <h2>Mon kilométrage du mois</h2>
+      <p class="muted">Chaque mois, saisissez le kilométrage de votre compteur et joignez une
+        photo. L'administrateur reçoit et valide votre relevé.</p>
+      <button class="btn gold" style="margin-top:12px" disabled>Envoyer mon kilométrage (bientôt)</button>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+let sb=null, me=null;
+
+function show(id){
+  ['booting','loginView','noMemberView','adminView','driverView']
+    .forEach(v=>document.getElementById(v).classList.toggle('hide', v!==id));
+  document.getElementById('logoutBtn').classList.toggle('hide', id==='booting'||id==='loginView');
+}
+
+function boot(){
+  if(!window.PVTCD_CFG||!window.supabase){
+    document.getElementById('booting').innerHTML='<div class="boot err">Configuration manquante.</div>';
+    return;
+  }
+  sb=window.supabase.createClient(PVTCD_CFG.SUPABASE_URL, PVTCD_CFG.SUPABASE_ANON_KEY);
+  sb.auth.getSession().then(({data})=>route(data.session));
+  sb.auth.onAuthStateChange((_e,session)=>route(session));
+}
+
+async function route(session){
+  if(!session){ show('loginView'); return; }
+  show('booting');
+  // Récupère la fiche membre pour connaître le rôle (vérifié côté serveur par RLS).
+  const {data:member, error} = await sb.from('pvtcd_members')
+    .select('id,email,full_name,role,active').eq('id', session.user.id).maybeSingle();
+  if(error){ console.warn(error); }
+  if(!member || member.active===false){
+    document.getElementById('noMemberEmail').textContent='Compte : '+session.user.email;
+    show('noMemberView'); return;
+  }
+  me=member;
+  if(member.role==='admin'){ await loadAdmin(); show('adminView'); }
+  else { await loadDriver(); show('driverView'); }
+}
+
+async function loadAdmin(){
+  document.getElementById('adminName').textContent = me.full_name||me.email;
+  const q=(t,f)=>sb.from(t).select('*',{count:'exact',head:true});
+  try{
+    const [pending,contracts,drivers,vehicles]=await Promise.all([
+      sb.from('pvtcd_readings').select('*',{count:'exact',head:true}).eq('status','submitted'),
+      sb.from('pvtcd_contracts').select('*',{count:'exact',head:true}).eq('status','active'),
+      sb.from('pvtcd_members').select('*',{count:'exact',head:true}).eq('role','driver'),
+      sb.from('pvtcd_vehicles').select('*',{count:'exact',head:true})
+    ]);
+    document.getElementById('stPending').textContent   = pending.count ?? 0;
+    document.getElementById('stContracts').textContent = contracts.count ?? 0;
+    document.getElementById('stDrivers').textContent   = drivers.count ?? 0;
+    document.getElementById('stVehicles').textContent  = vehicles.count ?? 0;
+  }catch(e){ console.warn(e); }
+}
+
+async function loadDriver(){
+  document.getElementById('driverName').textContent = me.full_name||me.email;
+  const box=document.getElementById('driverContract');
+  try{
+    const {data:c}=await sb.from('pvtcd_contracts')
+      .select('monthly_rent,included_km,excess_km_rate,status,vehicle_id,pvtcd_vehicles(registration,make,model)')
+      .eq('driver_id', me.id).limit(1).maybeSingle();
+    if(c){
+      const v=c.pvtcd_vehicles||{};
+      box.innerHTML='<div class="divider"></div><p class="muted">Véhicule : <b>'+
+        (v.make||'')+' '+(v.model||'')+'</b> · '+(v.registration||'')+'<br>Loyer : <b>'+
+        Number(c.monthly_rent).toLocaleString('fr-FR')+' € / mois</b> · '+
+        c.included_km+' km inclus · surplus '+Number(c.excess_km_rate).toLocaleString('fr-FR',{minimumFractionDigits:2})+' €/km</p>';
+    } else {
+      box.innerHTML='<div class="divider"></div><p class="muted">Aucun contrat actif pour le moment.</p>';
+    }
+  }catch(e){ console.warn(e); }
+}
+
+async function doLogin(){
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('pwd').value;
+  const err=document.getElementById('loginErr'); err.textContent='';
+  if(!email||!password){ err.textContent='E-mail et mot de passe requis.'; return; }
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  if(error){ err.textContent='Connexion impossible : '+(error.message||'identifiants invalides'); }
+}
+
+async function doReset(){
+  const email=document.getElementById('email').value.trim();
+  const err=document.getElementById('loginErr'); err.textContent='';
+  if(!email){ err.textContent='Saisissez d’abord votre e-mail ci-dessus.'; return; }
+  const {error}=await sb.auth.resetPasswordForEmail(email,
+    {redirectTo:location.origin+location.pathname});
+  err.innerHTML = error ? ('Erreur : '+error.message)
+    : '<span class="ok">E-mail de réinitialisation envoyé (vérifiez vos spams).</span>';
+}
+
+async function doLogout(){ await sb.auth.signOut(); me=null; show('loginView'); }
+
+boot();
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
