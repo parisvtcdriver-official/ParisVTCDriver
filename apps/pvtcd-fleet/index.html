@@ -614,7 +614,11 @@ async function buildInvoicePDF(inv, lines){
   const pay=[];
   if(inv.due_date) pay.push('Date limite de paiement : '+pdfDate(inv.due_date)+'.');
   if(co.payment_terms) pay.push(co.payment_terms);
-  if(co.iban) pay.push('IBAN : '+co.iban+(co.bic?('    BIC : '+co.bic):''));
+  // RIB : celui du propriétaire pour une facture propriétaire -> société, sinon celui de la société.
+  const isOwner = inv.flow==='owner_to_company';
+  const payIban = isOwner ? (co.owner_iban||co.iban) : co.iban;
+  const payBic  = isOwner ? (co.owner_bic||co.bic)  : co.bic;
+  if(payIban) pay.push('IBAN : '+payIban+(payBic?('    BIC : '+payBic):''));
   if(vat<=0 && co.vat_note) pay.push(co.vat_note);
   pay.forEach(f=>{ doc.splitTextToSize(asciiClean(f),RW).forEach(p=>{doc.text(p,M,y);y+=4.6;}); });
   // --- Mentions légales de retard / escompte ---
@@ -819,8 +823,10 @@ async function billingSettings(){
     '<label>Propriétaire (adresse)</label><input id="bs_oa" value="'+esc(co.owner_address||'')+'">'+
     '<div class="row"><div><label>Montant propriétaire €/mois</label><input id="bs_oamt" type="number" step="0.01" value="'+(co.owner_monthly_amount||500)+'"></div>'+
     '<div><label>SIRET propriétaire (option)</label><input id="bs_os" value="'+esc(co.owner_siret||'')+'"></div></div>'+
-    '<label>IBAN (option)</label><input id="bs_iban" value="'+esc(co.iban||'')+'">'+
-    '<div class="row"><div><label>BIC (option)</label><input id="bs_bic" value="'+esc(co.bic||'')+'"></div>'+
+    '<label>IBAN société (factures chauffeur)</label><input id="bs_iban" value="'+esc(co.iban||'')+'">'+
+    '<label>BIC société</label><input id="bs_bic" value="'+esc(co.bic||'')+'">'+
+    '<label>IBAN propriétaire (factures propriétaire → société)</label><input id="bs_oiban" value="'+esc(co.owner_iban||'')+'">'+
+    '<div class="row"><div><label>BIC propriétaire</label><input id="bs_obic" value="'+esc(co.owner_bic||'')+'"></div>'+
     '<div><label>Délai de paiement (jours)</label><input id="bs_due" type="number" value="'+(co.payment_due_days!=null?co.payment_due_days:7)+'"></div></div>'+
     '<label>Conditions de paiement</label><input id="bs_pt" value="'+esc(co.payment_terms||'')+'">'+
     '<label>Mention TVA (si hors TVA)</label><input id="bs_vn" value="'+esc(co.vat_note||'')+'">'+
@@ -835,6 +841,7 @@ async function saveBilling(){
   const patch={owner_name:$('bs_on').value.trim(),owner_address:$('bs_oa').value.trim(),
     owner_monthly_amount:+$('bs_oamt').value||0,owner_siret:$('bs_os').value.trim(),
     iban:$('bs_iban').value.trim(),bic:$('bs_bic').value.trim(),
+    owner_iban:$('bs_oiban').value.trim(),owner_bic:$('bs_obic').value.trim(),
     payment_due_days:+$('bs_due').value||7,
     payment_terms:$('bs_pt').value.trim(),vat_note:$('bs_vn').value.trim(),
     late_penalty_text:$('bs_lp').value.trim(),early_discount_text:$('bs_ed').value.trim(),
