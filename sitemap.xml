@@ -54,12 +54,6 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
-    <loc>https://www.parisvtcdriver.com/partenaires.html</loc>
-    <lastmod>2026-07-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
   <url><loc>https://www.parisvtcdriver.com/mentions-legales.html</loc>
     <lastmod>2026-07-05</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://www.parisvtcdriver.com/cgv.html</loc>
@@ -238,4 +232,58 @@
   <url><loc>https://www.parisvtcdriver.com/vtc-paris-cote-dopale.html</loc><lastmod>2026-08-08</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.parisvtcdriver.com/vtc-paris-boulogne-sur-mer.html</loc><lastmod>2026-08-08</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.parisvtcdriver.com/vtc-paris-calais.html</loc><lastmod>2026-08-08</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url>
+    <loc>https://www.parisvtcdriver.com/transfert-le-bourget.html</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.parisvtcdriver.com/le-bourget-airport-transfer.html</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.parisvtcdriver.com/transfert-croisiere-le-havre.html</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.parisvtcdriver.com/le-havre-cruise-port-transfer.html</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.parisvtcdriver.com/transfert-cdg-disneyland.html</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.parisvtcdriver.com/cdg-disneyland-transfer.html</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.parisvtcdriver.com/transfert-disneyland.html</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.parisvtcdriver.com/chauffeur-villepinte.html</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.parisvtcdriver.com/villepinte-exhibition-chauffeur.html</loc>
+    <lastmod>2026-11-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
