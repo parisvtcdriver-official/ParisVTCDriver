@@ -1944,9 +1944,14 @@ function computeTotals(){       // prices are TTC; VAT is included, split by rat
   const total=Math.round((ttc-disc)*100)/100;
   return {ttc,disc,tax,vat10:v10,vat20:v20,total};
 }
-function sortedLines(){         // quote lines (transfers cheapest first, then packs)
-  const tl=[...services].sort((a,b)=>svcPrice(a)-svcPrice(b)).map((s,i)=>lineForSvc(s,i));
-  const pl=packs.map((p,i)=>lineForPack(p,i));
+function cmpSvcDate(a,b){        // chronological order by date + time ; no date → last
+  const da=(a&&a.date)||"", db=(b&&b.date)||"";
+  if(da&&db) return da<db?-1:(da>db?1:0);
+  if(da) return -1; if(db) return 1; return 0;
+}
+function sortedLines(){         // quote lines: transfers in chronological order (date/time), then packs
+  const tl=[...services].sort(cmpSvcDate).map((s,i)=>lineForSvc(s,i));
+  const pl=[...packs].sort(cmpSvcDate).map((p,i)=>lineForPack(p,i));
   return tl.concat(pl);
 }
 function recalc(){
