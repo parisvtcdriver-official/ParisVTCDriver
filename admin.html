@@ -1249,17 +1249,16 @@ async function applyDiscount(id){
   const d=Object.assign({},b.details||{});
   const base=Math.round((Number(d.subtotal)||Number(b.amount_ttc)||0)*100)/100;   // prix AVANT remise
   if(base<=0){toast('Proposez d’abord un prix (bouton « Prix »).');return;}
-  const cur=Number(d.discount_pct)||0;
-  const _pin=prompt('Remise à appliquer — en % (ex. « 10% ») ou en euros (ex. « 10€ ») ; 0 pour retirer :\n\nPrix avant remise : '+eur(base), cur?(cur+'%'):'');
+  const _pin=prompt('Remise à appliquer :\n• un nombre seul = euros (ex. « 10 » = 10 €)\n• avec % = pourcentage (ex. « 10% »)\n• 0 pour retirer\n\nPrix avant remise : '+eur(base), '');
   if(_pin===null)return;
   const raw=String(_pin).trim().replace(',','.');
   let disc, pct;
-  if(/€|eur/i.test(raw)){                                   // remise en euros
-    let amt=parseFloat(raw.replace(/[^0-9.]/g,''));if(isNaN(amt)||amt<0)amt=0;amt=Math.min(amt,base);
-    disc=Math.round(amt*100)/100; pct=base>0?Math.round(disc/base*10000)/100:0;
-  } else {                                                   // remise en pourcentage
+  if(/%/.test(raw)){                                        // remise en pourcentage
     pct=parseFloat(raw.replace('%',''));if(isNaN(pct)||pct<0)pct=0;if(pct>100)pct=100;
     disc=Math.round(base*pct/100*100)/100;
+  } else {                                                   // remise en euros (par défaut)
+    let amt=parseFloat(raw.replace(/[^0-9.]/g,''));if(isNaN(amt)||amt<0)amt=0;amt=Math.min(amt,base);
+    disc=Math.round(amt*100)/100; pct=base>0?Math.round(disc/base*10000)/100:0;
   }
   const ttc=Math.round((base-disc)*100)/100;
   // HT / TVA : répartis par ligne si dispo, sinon 10%
