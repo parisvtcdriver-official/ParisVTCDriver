@@ -946,9 +946,9 @@ function renderDocs(){
       if(_dep>0 && b.pay_status==='partial')
         act=`<button class="btn-mini gold" onclick="validateBalanceCash('${b.id}')" title="Solde reçu en espèces à bord">💶 Solde espèces reçu</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Modifier l'acompte">Acompte</button> `+act;
       else if(_dep>0)
-        act=`<button class="btn-mini gold" onclick="validateDeposit('${b.id}')" title="Acompte reçu (carte ou virement)">Valider acompte</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Modifier l'acompte">Acompte</button> <button class="btn-mini" onclick="resendPayLink('${b.id}')" title="Créer/renvoyer le lien de paiement de l'acompte">Renvoyer lien</button> `+act;
+        act=`<button class="btn-mini gold" onclick="validateDeposit('${b.id}')" title="Acompte reçu (carte ou virement)">Valider acompte</button> <button class="btn-mini" onclick="applyDiscount('${b.id}')" title="Appliquer une remise sur cette facture, puis « Renvoyer lien » pour générer un nouveau lien de paiement au tarif remisé">Remise</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Modifier l'acompte">Acompte</button> <button class="btn-mini" onclick="resendPayLink('${b.id}')" title="Créer/renvoyer le lien de paiement de l'acompte">Renvoyer lien</button> `+act;
       else
-        act=`<button class="btn-mini gold" onclick="validatePayment('${b.id}')" title="Paiement reçu par virement">Valider paiement</button> <button class="btn-mini gold" onclick="validatePayment('${b.id}','especes')" title="Paiement reçu en espèces à bord">💶 Espèces</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Définir un acompte à régler en ligne (solde en espèces à bord)">Acompte</button> <button class="btn-mini" onclick="resendPayLink('${b.id}')" title="Créer/renvoyer le lien de paiement carte">Renvoyer lien</button> `+act;
+        act=`<button class="btn-mini gold" onclick="validatePayment('${b.id}')" title="Paiement reçu par virement">Valider paiement</button> <button class="btn-mini gold" onclick="validatePayment('${b.id}','especes')" title="Paiement reçu en espèces à bord">💶 Espèces</button> <button class="btn-mini" onclick="applyDiscount('${b.id}')" title="Appliquer une remise sur cette facture, puis « Renvoyer lien » pour générer un nouveau lien de paiement au tarif remisé">Remise</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Définir un acompte à régler en ligne (solde en espèces à bord)">Acompte</button> <button class="btn-mini" onclick="resendPayLink('${b.id}')" title="Créer/renvoyer le lien de paiement carte">Renvoyer lien</button> `+act;
     }
     return `<tr${arch?' style="opacity:.6"':''}><td class="mono">${escapeHtml(b.reference||'—')}</td><td class="cli">${escapeHtml(bookingClient(b))}</td><td>${b.created_at?new Date(b.created_at).toLocaleDateString('fr-FR'):'—'}</td><td>${eur(b.amount_ht)}</td><td>${eur(b.vat)}</td><td class="amt">${eur(b.amount_ttc)}</td><td>${typeCell}</td><td>${act}</td></tr>`;
   }).join('');
@@ -1250,7 +1250,7 @@ async function applyDiscount(id){
   const base=Math.round((Number(d.subtotal)||Number(b.amount_ttc)||0)*100)/100;   // prix AVANT remise
   if(base<=0){toast('Proposez d’abord un prix (bouton « Prix »).');return;}
   const cur=Number(d.discount_pct)||0;
-  const _pin=prompt('Remise en % à appliquer sur ce devis (0 = retirer la remise) :\n\nPrix avant remise : '+eur(base), cur);
+  const _pin=prompt('Remise en % à appliquer (0 = retirer la remise) :\n\nPrix avant remise : '+eur(base), cur);
   if(_pin===null)return;
   let pct=parseFloat(String(_pin).replace(',','.')); if(isNaN(pct)||pct<0)pct=0; if(pct>100)pct=100;
   const disc=Math.round(base*pct/100*100)/100;
