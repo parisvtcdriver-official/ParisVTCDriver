@@ -983,7 +983,7 @@ function renderDocs(){
       ?`<button class="btn-mini" onclick="unarchiveBooking('${b.id}')">Désarchiver</button>`
       :`<button class="btn-mini" onclick="archiveBooking('${b.id}')" title="Archiver (masqué des listes, points et compteur du client conservés)">Archiver</button>`;
     let act=`${!b.user_id?`<button class="btn-mini" style="border-color:rgba(96,165,250,.45);color:#60a5fa" onclick="linkBookingToClient('${b.id}')" title="Associer cette demande au compte client (apparaîtra dans son espace)">🔗 Lier au compte</button> `:''}<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> <button class="btn-mini" onclick="missionNote('${b.id}')" title="Télécharger la note de course">Note</button> ${archBtn} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer définitivement (réduit le compteur de courses)">✕</button>`;
-    if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini" onclick="applyDiscount('${b.id}')" title="Appliquer une remise en % sur ce devis">Remise</button> <button class="btn-mini" onclick="setToll('${b.id}')" title="Ajuster le péage inclus de chaque service">Péage</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Définir un acompte à régler en ligne (le solde sera payé en espèces à bord)">Acompte</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
+    if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini" onclick="editDevis('${b.id}')" title="Corriger les informations du devis (adresses, date, détails, notes) avant de le valider">Modifier</button> <button class="btn-mini" onclick="applyDiscount('${b.id}')" title="Appliquer une remise en % sur ce devis">Remise</button> <button class="btn-mini" onclick="setToll('${b.id}')" title="Ajuster le péage inclus de chaque service">Péage</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Définir un acompte à régler en ligne (le solde sera payé en espèces à bord)">Acompte</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
     else if(b.type==='facture'&&b.pay_status!=='paid'){
       const _dep=Number(b.details&&b.details.deposit)||0;
       if(_dep>0 && b.pay_status==='partial')
@@ -1315,6 +1315,74 @@ async function applyDiscount(id){
   const {error}=await sb.from('bookings').update({amount_ht:ht,vat,amount_ttc:ttc,details:d}).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
   toast(pct>0?('Remise −'+pct+'% appliquée ✓ Nouveau total '+eur(ttc)):'Remise retirée ✓'); refresh();
+}
+/* ---------- Édition d'un devis : corriger les infos du client avant validation ---------- */
+function _edEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function _dtToLocal(dt){var s=String(dt||''),y,mo,dd,hh='00',mi='00',m=s.match(/(\d{4})-(\d{2})-(\d{2})/);if(m){y=m[1];mo=m[2];dd=m[3];}else{m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m){dd=('0'+m[1]).slice(-2);mo=('0'+m[2]).slice(-2);y=m[3];}}var t=s.match(/(\d{1,2}):(\d{2})/);if(t){hh=('0'+t[1]).slice(-2);mi=t[2];}return (y&&mo&&dd)?(y+'-'+mo+'-'+dd+'T'+hh+':'+mi):'';}
+function _localToDt(v){var m=String(v||'').match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);return m?(m[3]+'/'+m[2]+'/'+m[1]+' · '+m[4]+':'+m[5]):'';}
+function closeEditModal(){var o=document.getElementById('edOverlay');if(o)o.remove();}
+function openEditModal(html){
+  closeEditModal();
+  var o=document.createElement('div');o.id='edOverlay';
+  o.style.cssText='position:fixed;inset:0;z-index:200;background:rgba(5,8,15,.72);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:28px 14px';
+  o.innerHTML='<div style="background:linear-gradient(165deg,var(--panel-2),var(--navy));border:1px solid var(--line);border-radius:16px;max-width:640px;width:100%;padding:22px 22px 18px;box-shadow:0 30px 80px -20px rgba(0,0,0,.8)">'+html+'</div>';
+  o.addEventListener('click',function(e){if(e.target===o)closeEditModal();});
+  document.body.appendChild(o);
+}
+function editDevis(id){
+  var b=BOOKINGS.find(function(x){return x.id===id;}); if(!b)return;
+  var d=b.details||{}, lines=Array.isArray(d.lines)?d.lines:[];
+  var IN='width:100%;background:rgba(7,11,20,.7);border:1px solid var(--line-soft);border-radius:9px;color:var(--txt);padding:9px 10px;font-family:inherit;font-size:14px;margin-top:4px';
+  var LB='font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);display:block;margin-top:11px';
+  var rows=lines.map(function(l,i){
+    var parts=String(l.route||'').split('→');
+    var dep=(parts[0]||'').trim(), dest=(parts.slice(1).join('→')||'').trim();
+    return '<div style="border:1px solid var(--line-soft);border-radius:12px;padding:14px;margin-bottom:12px">'
+      +'<div style="font-weight:700;color:var(--gold-2);margin-bottom:2px">Service '+(i+1)+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+      +'<div><label style="'+LB+'">Départ</label><input id="ed_dep_'+i+'" style="'+IN+'" value="'+_edEsc(dep)+'"></div>'
+      +'<div><label style="'+LB+'">Destination</label><input id="ed_dest_'+i+'" style="'+IN+'" value="'+_edEsc(dest)+'"></div></div>'
+      +'<label style="'+LB+'">Date et heure</label><input id="ed_dt_'+i+'" type="datetime-local" style="'+IN+'" value="'+_dtToLocal(l.dt)+'">'
+      +'<label style="'+LB+'">Détail — catégorie véhicule, passagers, valises, sièges enfants…</label>'
+      +'<textarea id="ed_det_'+i+'" rows="2" style="'+IN+';resize:vertical">'+_edEsc(l.detail||'')+'</textarea></div>';
+  }).join('');
+  if(!rows) rows='<div class="sub2" style="margin:10px 0">Ce devis n\'a pas de lignes de service détaillées.</div>';
+  var notes='<div style="border:1px solid var(--line-soft);border-radius:12px;padding:14px;margin-bottom:6px">'
+    +'<div style="font-weight:700;color:var(--gold-2);margin-bottom:2px">Notes</div>'
+    +'<label style="'+LB+'">N° de vol / train</label><input id="ed_nf" style="'+IN+'" value="'+_edEsc(d.note_flight||'')+'">'
+    +'<label style="'+LB+'">Nom sur la tablette (pancarte)</label><input id="ed_nl" style="'+IN+'" value="'+_edEsc(d.note_lug||'')+'">'
+    +'<label style="'+LB+'">Demande spéciale</label><textarea id="ed_ns" rows="2" style="'+IN+';resize:vertical">'+_edEsc(d.note_special||'')+'</textarea></div>';
+  openEditModal('<h2 style="font-size:17px;margin-bottom:4px">Modifier le devis '+_edEsc(b.reference||'')+'</h2>'
+    +'<div class="sub2" style="margin-bottom:14px">Corrigez les informations avant de valider. Les montants ne changent pas ici (utilisez « Prix » ou « Remise »).</div>'
+    +rows+notes
+    +'<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">'
+    +'<button class="btn-mini" onclick="closeEditModal()">Annuler</button>'
+    +'<button class="btn-mini gold" onclick="saveDevisEdit(\''+id+'\')">Enregistrer</button></div>');
+}
+async function saveDevisEdit(id){
+  var b=BOOKINGS.find(function(x){return x.id===id;}); if(!b)return;
+  var d=Object.assign({},b.details||{});
+  var lines=Array.isArray(d.lines)?d.lines.map(function(l){return Object.assign({},l);}):[];
+  lines.forEach(function(l,i){
+    var dep=((document.getElementById('ed_dep_'+i)||{}).value||'').trim();
+    var dest=((document.getElementById('ed_dest_'+i)||{}).value||'').trim();
+    l.route=dest?(dep+' → '+dest):dep;
+    var dtf=_localToDt((document.getElementById('ed_dt_'+i)||{}).value||''); if(dtf)l.dt=dtf;
+    var det=document.getElementById('ed_det_'+i); if(det)l.detail=det.value;
+  });
+  d.lines=lines;
+  d.note_flight=((document.getElementById('ed_nf')||{}).value||'').trim();
+  d.note_lug=((document.getElementById('ed_nl')||{}).value||'').trim();
+  d.note_special=((document.getElementById('ed_ns')||{}).value||'').trim();
+  var upd={details:d};
+  if(lines[0]){
+    var p=String(lines[0].route||'').split('→');
+    upd.pickup=(p[0]||'').trim(); upd.dropoff=(p.slice(1).join('→')||'').trim();
+    var dv=(document.getElementById('ed_dt_0')||{}).value||''; if(dv){try{upd.date_time=new Date(dv).toISOString();}catch(e){}}
+  }
+  var r=await sb.from('bookings').update(upd).eq('id',id);
+  if(r.error){toast('Erreur : '+r.error.message);return;}
+  closeEditModal(); toast('Devis modifié ✓'); refresh();
 }
 async function acceptDevis(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
