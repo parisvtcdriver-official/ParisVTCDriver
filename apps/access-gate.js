@@ -16,7 +16,7 @@
 
   var me = document.currentScript;
   var APP = (me && me.getAttribute("data-app")) || "app";
-  var NAMES = { "kifkif": "KifKif", "frais-reels": "Frais réels", "pvtcd-fleet": "PVTCD FLEET", "pvtcd-relais": "PVTCD RELAIS" };
+  var NAMES = { "kifkif": "KifKif", "frais-reels": "Frais réels", "pvtcd-fleet": "PVTCD FLEET", "pvtcd-relais": "PVTCD RELAIS", "pvtcd-sign": "PVTCD SIGN" };
   var APPNAME = NAMES[APP] || "l'application";
   var ICON = me ? (me.getAttribute("data-icon") || "icon-192.png") : "icon-192.png";
 
@@ -25,7 +25,7 @@
   root.classList.add("pvtcd-lock");
   var st = document.createElement("style");
   st.textContent =
-    "html.pvtcd-lock body>*:not(#pvtcd-gate){display:none!important}" +
+    "html.pvtcd-lock body{display:none!important}html.pvtcd-lock body>*:not(#pvtcd-gate){display:none!important}" +
     "html.pvtcd-lock,html.pvtcd-lock body{background:#070a12!important;overflow:hidden!important}" +
     "#pvtcd-gate{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:calc(20px + env(safe-area-inset-top)) 18px calc(20px + env(safe-area-inset-bottom));" +
     "background:radial-gradient(900px 500px at 80% -10%,rgba(201,162,74,.14),transparent 60%),radial-gradient(700px 420px at 0% 0%,rgba(20,40,90,.5),transparent 60%),#070a12;" +
@@ -69,6 +69,7 @@
   function unlock() {
     unlocked = true;
     root.classList.remove("pvtcd-lock");
+    document.documentElement.classList.remove("pvtcd-lock");
     var g = document.getElementById("pvtcd-gate"); if (g) g.remove();
   }
   function lock(msg) {
@@ -93,7 +94,6 @@
       if (!unlocked) lock("Connexion internet nécessaire pour vérifier votre accès.");
     });
   }
-  attempt();
 
   /* ---------- écran d'accès ---------- */
   var DIALS = [["FR",33],["BE",32],["CH",41],["LU",352],["MC",377],["GB",44],["US",1],["DE",49],["ES",34],["IT",39],["PT",351],["NL",31],["TR",90],["MA",212],["DZ",213],["TN",216],["SN",221],["CI",225],["CM",237],["AE",971],["RE",262],["GP",590],["MQ",596]];
@@ -124,10 +124,24 @@
       '<p class="g-help">Pas de code ? <a href="https://wa.me/' + WA + "?text=" + encodeURIComponent("Bonjour, je souhaite un code d'accès pour " + APPNAME + ".") + '">Demandez-le sur WhatsApp</a></p>' +
       '<div class="g-brand">ParisVTCDriver</div>' +
       "</form>";
-    document.body.appendChild(g);
+    attachGate(g);
     if (msg) setErr(msg);
     var form = g.querySelector("form");
     form.addEventListener("submit", function (e) { e.preventDefault(); submit(); });
+  }
+  /* L'écran est placé hors du <body> (que certaines applis réécrivent) et remis
+     en place s'il est retiré tant que l'appli est verrouillée. */
+  var guard = null;
+  function attachGate(g) {
+    var html = document.documentElement;
+    if (!html.classList.contains("pvtcd-lock")) html.classList.add("pvtcd-lock");
+    if (!g.isConnected) html.appendChild(g);
+    if (!guard) guard = setInterval(function () {
+      if (unlocked) { clearInterval(guard); guard = null; return; }
+      var h = document.documentElement;
+      if (!h.classList.contains("pvtcd-lock")) h.classList.add("pvtcd-lock");
+      if (!g.isConnected) h.appendChild(g);
+    }, 300);
   }
   function setErr(m) { var e = document.getElementById("g-err"); if (!e) return; e.textContent = m || ""; e.style.display = m ? "block" : "none"; }
 
@@ -156,4 +170,5 @@
       .catch(function () { setErr("Pas de connexion internet. Réessayez une fois connecté."); })
       .then(function () { btn.disabled = false; btn.textContent = "Accéder"; });
   }
+  attempt();                         // démarrage (en dernier : tout est défini)
 })();
