@@ -236,6 +236,7 @@ input[name=flight],input[name=dPlate],input[name=dVatNo],input[name=oVatNo],inpu
       <div class="full"><label class="l">Téléphone</label>
         <div class="phone"><select name="cDial" class="dial"></select><input name="cPhone" type="tel" inputmode="tel" placeholder="6 12 34 56 78"></div></div>
       <div class="full"><label class="l">Email (facultatif)</label><input name="cEmail" type="email" inputmode="email" autocapitalize="off"></div>
+      <div class="full"><label class="l">Référence de réservation du client</label><input name="bkRef" placeholder="Ex : RES-58421, n° de dossier agence…" autocapitalize="off"></div>
     </div></div>
   </details>
 
@@ -335,7 +336,7 @@ input[name=flight],input[name=dPlate],input[name=dVatNo],input[name=oVatNo],inpu
     <input type="file" id="fileImp" accept="application/json,.json" class="hide">
   </div>
   <p class="hint">Vos données restent uniquement sur ce téléphone. Faites une sauvegarde de temps en temps (fichier .json) pour ne rien perdre en changeant de téléphone.</p>
-  <div class="foot">PVTCD RELAIS · v2.1 · Paris VTC Driver</div>
+  <div class="foot">PVTCD RELAIS · v2.2 · Paris VTC Driver</div>
 </form>
 </section>
 </main>
@@ -921,7 +922,7 @@ function updSum(){
 function summaries(){
   const r=readForm();
   const s1=[r.date?dateShort(r.date)+(r.time?' '+heure(r.time):''):'',r.from&&r.to?r.from.split(',')[0]+' › '+r.to.split(',')[0]:''].filter(Boolean).join(' · ');
-  const s2=[(r.cFirst+' '+r.cLast).trim(),fullPhone(r.cDial,r.cPhone)].filter(Boolean).join(' · ');
+  const s2=[(r.cFirst+' '+r.cLast).trim(),fullPhone(r.cDial,r.cPhone),r.bkRef?'Réf. '+r.bkRef:''].filter(Boolean).join(' · ');
   const s3=+r.price?eurShort(r.price)+' TTC'+(r.invNo?' · Fact. '+r.invNo+(r.invLang==='en'?' (EN)':''):''):'';
   const s4=[(r.dFirst+' '+r.dLast).trim(),r.dPlate].filter(Boolean).join(' · ');
   const set=(n,v,def,done)=>{$(`[data-s="${n}"]`).textContent=v||def;$('#sec'+n).classList.toggle('done',!!done);};
@@ -934,7 +935,7 @@ let draftT;
 function changed(){updSum();summaries();clearTimeout(draftT);draftT=setTimeout(()=>store.set('draft',readForm()),400);}
 $('#f').addEventListener('input',e=>{if(e.target.classList.contains('err'))e.target.classList.remove('err');changed();});
 $('#f').addEventListener('change',changed);
-const FIELDS=['id','service','from','to','date','time','hours','arrival','flight','vehType','pax','bags','notes','cFirst','cLast','cDial','cPhone','cEmail','price','vat','status','invNo','invDate','invMode','invLang','dFirst','dLast','dCompany','dAddress','dSiret','dEvtc','dVat','dVatNo','dCar','dPlate','dDial','dPhone'];
+const FIELDS=['id','service','from','to','date','time','hours','arrival','flight','vehType','pax','bags','notes','cFirst','cLast','cDial','cPhone','cEmail','bkRef','price','vat','status','invNo','invDate','invMode','invLang','dFirst','dLast','dCompany','dAddress','dSiret','dEvtc','dVat','dVatNo','dCar','dPlate','dDial','dPhone'];
 function readForm(){const r={};FIELDS.forEach(k=>r[k]=String(F[k].value||'').trim());
   ['flight','dVatNo','dPlate'].forEach(k=>r[k]=r[k].toUpperCase());return r;}
 function writeForm(r){FIELDS.forEach(k=>{if(F[k])F[k].value=r[k]??'';});
@@ -1011,7 +1012,7 @@ function renderRides(){
   const L=$('#rides');const q=$('#q').value.trim().toLowerCase();
   let list=RIDES.slice().sort((a,b)=>{const fa=a.date>=t,fb=b.date>=t;if(fa!==fb)return fa?-1:1;return fa?(a.date+a.time).localeCompare(b.date+b.time):(b.date+b.time).localeCompare(a.date+a.time);});
   if(FILTER!=='all')list=list.filter(r=>r.status===FILTER);
-  if(q)list=list.filter(r=>[r.from,r.to,r.cFirst,r.cLast,r.dFirst,r.dLast,r.flight,r.invNo,r.ref].join(' ').toLowerCase().includes(q));
+  if(q)list=list.filter(r=>[r.from,r.to,r.cFirst,r.cLast,r.dFirst,r.dLast,r.flight,r.invNo,r.ref,r.bkRef].join(' ').toLowerCase().includes(q));
   if(!list.length){L.innerHTML=RIDES.length?`<div class="empty"><b>Aucun résultat</b>Changez le filtre ou la recherche.</div>`:
     `<div class="empty"><img src="${ICON192}" alt=""><b>Bienvenue sur PVTCD RELAIS</b>Créez votre première course à revendre.<br><br><button class="btn solid" id="emptyNew" style="max-width:280px;margin:0 auto">＋ Nouvelle course</button></div>`;
     const en=$('#emptyNew');if(en)en.onclick=()=>{newRide();show('v-form');};return;}
@@ -1020,7 +1021,7 @@ function renderRides(){
    <div class="top"><div class="when">${esc(dateShort(r.date))} · ${esc(heure(r.time))}</div><div class="price">${eurShort(r.price)}</div></div>
    <span class="badge ${s[1]}">${s[0]}</span>
    <div class="route"><span class="dot"></span><span>${esc(r.from)}</span><span class="dot b"></span><span>${esc(r.to)}</span></div>
-   <div class="meta">🚙 ${esc(VSHORT[VEHICLES.indexOf(r.vehType)]||r.vehType)} · 👥 ${esc(r.pax)} · 🧳 ${esc(r.bags)}${r.flight?' · '+(r.arrival==='train'?'🚆 ':'✈️ ')+esc(r.flight):''}${r.cLast||r.cFirst?'<br>👤 '+esc((r.cFirst+' '+r.cLast).trim()):''}${r.dLast||r.dFirst?'  ·  🧑‍✈️ '+esc((r.dFirst+' '+r.dLast).trim()):''}</div></div>
+   <div class="meta">🚙 ${esc(VSHORT[VEHICLES.indexOf(r.vehType)]||r.vehType)} · 👥 ${esc(r.pax)} · 🧳 ${esc(r.bags)}${r.flight?' · '+(r.arrival==='train'?'🚆 ':'✈️ ')+esc(r.flight):''}${r.cLast||r.cFirst?'<br>👤 '+esc((r.cFirst+' '+r.cLast).trim()):''}${r.bkRef?' · 🔖 '+esc(r.bkRef):''}${r.dLast||r.dFirst?'  ·  🧑‍✈️ '+esc((r.dFirst+' '+r.dLast).trim()):''}</div></div>
    <div class="acts"><button data-a="txt" data-id="${r.id}"><span>📣</span>Revente</button><button data-a="bc" data-id="${r.id}"><span>📄</span>Bon cde</button><button data-a="inv" data-id="${r.id}"><span>🧾</span>Facture</button><button data-a="dup" data-id="${r.id}"><span>⧉</span>Dupliquer</button></div></div>`;}).join('');
   L.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{buzz();rideAction(b.dataset.a,b.dataset.id);});
 }
@@ -1089,18 +1090,18 @@ function footer(doc,txt){
 const TR={
  fr:{mgr:'Gérant',addr:'Adresse',vat:'TVA intra',novat:'Non assujetti',isvat:'Assujetti',drv:'Chauffeur',car:'Véhicule',plate:'Immat.',tel:'Tél.',email:'Email',evtc:'N° EVTC',
    inv:'FACTURE',no:'N° ',date:'Date : ',from:'Émetteur',to:'Facturé à',desc:'DÉSIGNATION',qty:'QTÉ',tva:'TVA',amt:'MONTANT HT',
-   srvT:'Transport de personnes - VTC',srvM:'Mise à disposition de véhicule avec chauffeur',on:'Le ',at:' à ',fl:'Vol ',tr:'Train ',de:'De : ',a:'À : ',cli:'Client : ',ref:'Réf. bon de commande : ',
+   srvT:'Transport de personnes - VTC',srvM:'Mise à disposition de véhicule avec chauffeur',on:'Le ',at:' à ',fl:'Vol ',tr:'Train ',de:'De : ',a:'À : ',cli:'Client : ',ref:'Réf. bon de commande : ',bk:'Réf. réservation client : ',bkS:'Réf. réservation',
    ht:'Total HT',ttc:'TOTAL TTC',net:'NET À PAYER',exempt:'TVA non applicable, art. 293 B du CGI.',prest:'Date de la prestation : ',cond:'Conditions & mentions légales',invno:'Facture n° ',h:' h',file:'Facture-'},
  en:{mgr:'Manager',addr:'Address',vat:'VAT no.',novat:'Not VAT registered',isvat:'VAT registered',drv:'Driver',car:'Vehicle',plate:'Plate',tel:'Phone',email:'Email',evtc:'VTC reg. no.',
    inv:'INVOICE',no:'No. ',date:'Date: ',from:'From',to:'Bill to',desc:'DESCRIPTION',qty:'QTY',tva:'VAT',amt:'AMOUNT (EXCL. VAT)',
-   srvT:'Private hire passenger transport (VTC)',srvM:'Chauffeur service at disposal',on:'On ',at:' at ',fl:'Flight ',tr:'Train ',de:'From: ',a:'To: ',cli:'Passenger: ',ref:'Booking order ref.: ',
+   srvT:'Private hire passenger transport (VTC)',srvM:'Chauffeur service at disposal',on:'On ',at:' at ',fl:'Flight ',tr:'Train ',de:'From: ',a:'To: ',cli:'Passenger: ',ref:'Booking order ref.: ',bk:'Customer booking ref.: ',bkS:'Booking ref.',
    ht:'Total excl. VAT',ttc:'TOTAL INCL. VAT',net:'AMOUNT DUE',exempt:'VAT not applicable, art. 293 B of the French Tax Code (CGI).',prest:'Service date: ',cond:'Terms & legal notices',invno:'Invoice no. ',h:' h',file:'Invoice-'}
 };
 const orgLines=(t=TR.fr)=>[['',SET.oName,true],[t.mgr,SET.oManager],[t.addr,SET.oAddress],['SIRET',SET.oSiret],[t.evtc,SET.oEvtc],
   [t.vat,SET.oVat==='oui'?SET.oVatNo:''],[t.tel,fullPhone(SET.oDial,SET.oPhone)],[t.email,SET.oEmail]];
 const drvLines=(r,t=TR.fr)=>[['',r.dCompany||(r.dFirst+' '+r.dLast),true],[t.drv,(r.dFirst+' '+r.dLast).trim()],[t.addr,r.dAddress],['SIRET',r.dSiret],[t.evtc,r.dEvtc],
   [t.vat,r.dVat==='non'?t.novat:(r.dVatNo||t.isvat)],[t.car,r.dCar],[t.plate,r.dPlate],[t.tel,fullPhone(r.dDial,r.dPhone)]];
-const cliLines=(r,t=TR.fr)=>[['',(r.cFirst+' '+r.cLast).trim()||'-',true],[t.tel,fullPhone(r.cDial,r.cPhone)],[t.email,r.cEmail]];
+const cliLines=(r,t=TR.fr)=>[['',(r.cFirst+' '+r.cLast).trim()||'-',true],[t.tel,fullPhone(r.cDial,r.cPhone)],[t.email,r.cEmail],[t.bkS,r.bkRef,true]];
 const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const dateInv=(iso,lang)=>{if(!iso)return '';if(lang!=='en')return dateFr(iso);const[y,m,d]=iso.split('-').map(Number);return d+' '+MONTHS_EN[m-1]+' '+y;};
 let LAST=null;
@@ -1120,7 +1121,7 @@ $('#vClose').onclick=()=>closeModal('#viewer');
 function makeBC(r){
   if(!r)return;
   const created=new Date(r.created||Date.now());
-  const doc=pdfBase('BON DE COMMANDE VTC','N° '+(r.ref||'')+'   ·   Réservation préalable du '+created.toLocaleDateString('fr-FR')+' à '+created.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
+  const doc=pdfBase('BON DE COMMANDE VTC','N° '+(r.ref||'')+(r.bkRef?'   ·   Réf. client : '+r.bkRef:'')+'   ·   Réservation préalable du '+created.toLocaleDateString('fr-FR')+' à '+created.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}));
   let y=48;
   const y1=box(doc,15,y,85,"Donneur d'ordre",orgLines());
   const y2=box(doc,110,y,85,'Exploitant / chauffeur exécutant',drvLines(r));
@@ -1152,7 +1153,7 @@ function makeInvoice(r){
   const mode=r.invMode||'d2o', lang=r.invLang==='en'?'en':'fr', t=TR[lang];
   const emitter=mode==='o2c'?orgLines(t):drvLines(r,t);
   const billTo=mode==='d2o'?orgLines(t):cliLines(r,t);
-  const doc=pdfBase(t.inv,t.no+r.invNo+'   ·   '+t.date+dateInv(r.invDate||today(),lang));
+  const doc=pdfBase(t.inv,t.no+r.invNo+'   ·   '+t.date+dateInv(r.invDate||today(),lang)+(r.bkRef?'   ·   '+t.bkS+(lang==='en'?': ':' : ')+r.bkRef:''));
   let y=48;
   const y1=box(doc,15,y,85,t.from,emitter);
   const y2=box(doc,110,y,85,t.to,billTo);
@@ -1168,6 +1169,7 @@ function makeInvoice(r){
     +'\n'+t.on+dateInv(r.date,lang)+t.at+hh+(r.flight?' - '+(r.arrival==='train'?t.tr:t.fl)+r.flight:'')
     +'\n'+t.de+r.from+'\n'+t.a+r.to
     +((r.cFirst||r.cLast)&&mode==='d2o'?'\n'+t.cli+(r.cFirst+' '+r.cLast).trim():'')
+    +(r.bkRef?'\n'+t.bk+r.bkRef:'')
     +(r.ref?'\n'+t.ref+r.ref:'');
   doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(20,24,34);
   const tl=doc.splitTextToSize(clean(desig),100);doc.text(tl,19,y);
