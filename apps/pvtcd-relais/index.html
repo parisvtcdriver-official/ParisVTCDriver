@@ -336,7 +336,7 @@ input[name=flight],input[name=dPlate],input[name=dVatNo],input[name=oVatNo],inpu
     <input type="file" id="fileImp" accept="application/json,.json" class="hide">
   </div>
   <p class="hint">Vos données restent uniquement sur ce téléphone. Faites une sauvegarde de temps en temps (fichier .json) pour ne rien perdre en changeant de téléphone.</p>
-  <div class="foot">PVTCD RELAIS · v2.3 · Paris VTC Driver</div>
+  <div class="foot">PVTCD RELAIS · v2.5 · Paris VTC Driver</div>
 </form>
 </section>
 </main>
@@ -915,9 +915,9 @@ function toggles(){
 }
 function updSum(){
   const r=readForm(), c=calc(r);
-  $('#sumBox').innerHTML=`<div class="sum"><span>Total HT</span><b>${eur(c.ht)}</b></div>
+  $('#sumBox').innerHTML=(c.disc?`<div class="sum"><span>Prix TTC convenu</span><b>${eur(c.base)}</b></div><div class="sum"><span>Non assujetti : TVA ${c.drate} % retirée</span><b style="color:var(--warn)">−${eur(c.disc)}</b></div>`:'')+`<div class="sum"><span>Total HT</span><b>${eur(c.ht)}</b></div>
   <div class="sum"><span>${c.exempt?'TVA non applicable (293 B CGI)':'TVA '+c.rate+' %'}</span><b>${eur(c.tva)}</b></div>
-  <div class="sum tot"><span>Total TTC</span><b>${eur(c.ttc)}</b></div>`;
+  <div class="sum tot"><span>${c.exempt?'Net à payer':'Total TTC'}</span><b>${eur(c.ttc)}</b></div>`;
 }
 function summaries(){
   const r=readForm();
@@ -971,9 +971,14 @@ $('#bSave').onclick=()=>{if(saveRide())setTimeout(()=>show('v-list'),300);};
 $('#bNew').onclick=()=>{newRide();window.scrollTo({top:0,behavior:'smooth'});toast('Nouvelle course vierge');};
 $('#bDel').onclick=async()=>{const id=F.id.value;if(!id)return;if(await confirmBox('Supprimer cette course ?')){RIDES=RIDES.filter(x=>x.id!==id);saveRides();newRide();setTimeout(()=>show('v-list'),50);toast('Course supprimée');}};
 
+// Chauffeur non assujetti : on retire la TVA exacte du prix TTC (prix HT = TTC / (1 + taux))
+const rateOf=r=>+r.vat||10;
+const netOf=r=>Math.round((+r.price||0)/(1+rateOf(r)/100)*100)/100;
+const discOf=r=>Math.round(((+r.price||0)-netOf(r))*100)/100;
 function calc(r){
-  const ttc=+r.price||0;
-  if(!emitterIsVat(r)) return {ht:ttc,tva:0,ttc,rate:0,exempt:true};
+  let ttc=+r.price||0, disc=0;
+  if(r.invMode==='d2o'&&r.dVat==='non'){disc=discOf(r);ttc=netOf(r);}
+  if(!emitterIsVat(r)) return {ht:ttc,tva:0,ttc,rate:0,exempt:true,disc,base:+r.price||0,drate:rateOf(r)};
   const rate=+r.vat||10, ht=Math.round(ttc/(1+rate/100)*100)/100;
   return {ht,tva:Math.round((ttc-ht)*100)/100,ttc,rate,exempt:false};
 }
@@ -1046,7 +1051,7 @@ function buildText(r){
   L.push('🚙 Véhicule : '+r.vehType);
   L.push('👥 Passagers : '+(r.pax||1)+(+r.bags?'   🧳 Valises : '+r.bags:''));
   if(r.arrival)L.push((r.arrival==='train'?'🚆 Arrivée train':'✈️ Arrivée vol')+(r.flight?' : '+r.flight:''));
-  L.push('','💶 *PRIX : '+eurShort(r.price)+'*','💳 *Paiement en compte sur facture*','');
+  L.push('','💶 *PRIX : '+eurShort(r.price)+' TTC*','🧾 Non assujetti TVA : *'+eurShort(netOf(r))+'* (hors TVA '+rateOf(r)+' %)','💳 *Paiement en compte sur facture*','');
   const all=rules(r);
   if(all.length){L.push('⚠️ *Conditions :*');all.forEach(s=>L.push('• '+s));}
   if(SET.txtContact&&SET.oPhone){L.push('','📲 Intéressé ? Contactez-moi : '+fullPhone(SET.oDial,SET.oPhone));}
@@ -1091,11 +1096,11 @@ const TR={
  fr:{mgr:'Gérant',addr:'Adresse',vat:'TVA intra',novat:'Non assujetti',isvat:'Assujetti',drv:'Chauffeur',car:'Véhicule',plate:'Immat.',tel:'Tél.',email:'Email',evtc:'N° EVTC',
    inv:'FACTURE',no:'N° ',date:'Date : ',from:'Émetteur',to:'Facturé à',desc:'DÉSIGNATION',qty:'QTÉ',tva:'TVA',amt:'MONTANT HT',
    srvT:'Transport de personnes - VTC',srvM:'Mise à disposition de véhicule avec chauffeur',on:'Le ',at:' à ',fl:'Vol ',tr:'Train ',de:'De : ',a:'À : ',cli:'Client : ',ref:'Réf. bon de commande : ',bk:'Réf. réservation client : ',bkS:'Réf. réservation',
-   ht:'Total HT',ttc:'TOTAL TTC',net:'NET À PAYER',exempt:'TVA non applicable, art. 293 B du CGI.',prest:'Date de la prestation : ',cond:'Conditions & mentions légales',invno:'Facture n° ',h:' h',file:'Facture-'},
+   ht:'Total HT',agreed:'Prix TTC convenu',disc:'TVA {r} % retirée (non assujetti)',ttc:'TOTAL TTC',net:'NET À PAYER',exempt:'TVA non applicable, art. 293 B du CGI.',prest:'Date de la prestation : ',cond:'Conditions & mentions légales',invno:'Facture n° ',h:' h',file:'Facture-'},
  en:{mgr:'Manager',addr:'Address',vat:'VAT no.',novat:'Not VAT registered',isvat:'VAT registered',drv:'Driver',car:'Vehicle',plate:'Plate',tel:'Phone',email:'Email',evtc:'VTC reg. no.',
    inv:'INVOICE',no:'No. ',date:'Date: ',from:'From',to:'Bill to',desc:'DESCRIPTION',qty:'QTY',tva:'VAT',amt:'AMOUNT (EXCL. VAT)',
    srvT:'Private hire passenger transport (VTC)',srvM:'Chauffeur service at disposal',on:'On ',at:' at ',fl:'Flight ',tr:'Train ',de:'From: ',a:'To: ',cli:'Passenger: ',ref:'Booking order ref.: ',bk:'Customer booking ref.: ',bkS:'Booking ref.',
-   ht:'Total excl. VAT',ttc:'TOTAL INCL. VAT',net:'AMOUNT DUE',exempt:'VAT not applicable, art. 293 B of the French Tax Code (CGI).',prest:'Service date: ',cond:'Terms & legal notices',invno:'Invoice no. ',h:' h',file:'Invoice-'}
+   ht:'Total excl. VAT',agreed:'Agreed price (incl. VAT)',disc:'VAT {r}% deducted (not VAT-registered)',ttc:'TOTAL INCL. VAT',net:'AMOUNT DUE',exempt:'VAT not applicable, art. 293 B of the French Tax Code (CGI).',prest:'Service date: ',cond:'Terms & legal notices',invno:'Invoice no. ',h:' h',file:'Invoice-'}
 };
 const orgLines=(t=TR.fr)=>[['',SET.oName,true],[t.mgr,SET.oManager],[t.addr,SET.oAddress],['SIRET',SET.oSiret],[t.evtc,SET.oEvtc],
   [t.vat,SET.oVat==='oui'?SET.oVatNo:''],[t.tel,fullPhone(SET.oDial,SET.oPhone)],[t.email,SET.oEmail]];
@@ -1134,9 +1139,9 @@ function makeBC(r){
   y=Math.max(y3,y4)+6;
   y=box(doc,15,y,180,'Itinéraire',[['Prise en charge',r.from,true],['Dépose',r.to,true]])+4;
   if(r.notes)y=box(doc,15,y,180,'Notes',[['',r.notes]])+4;
-  const c=calc(r);
+  const c=calc(Object.assign({},r,{invMode:'d2o'}));
   doc.setFillColor(236,244,255);doc.setDrawColor(...ACC);doc.roundedRect(15,y,180,20,2,2,'FD');
-  doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(...GREY);doc.text('Prix convenu',20,y+8);doc.text('Paiement : en compte sur facture',20,y+14.5);
+  doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(...GREY);doc.text('Prix convenu'+(c.disc?' - chauffeur non assujetti à la TVA':''),20,y+8);doc.text(clean(c.disc?'Prix TTC '+eur(c.base)+' - TVA '+c.drate+' % retirée · paiement en compte sur facture':'Paiement : en compte sur facture'),20,y+14.5);
   doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(...NAVY);
   {const num=eur(c.ttc).replace(' €','').replace(/\s/g,' ');let x=190;
    if(!c.exempt){doc.text('TTC',x,y+12,{align:'right'});x-=doc.getTextWidth('TTC')+3.2;}
@@ -1179,7 +1184,7 @@ function makeInvoice(r){
   const tl=doc.splitTextToSize(clean(desig),100);doc.text(tl,19,y);
   doc.text('1',128,y,{align:'center'});doc.text(c.exempt?'-':c.rate+' %',148,y,{align:'center'});doc.text(clean(eur(c.ht)),191,y,{align:'right'});
   y+=tl.length*4.6+4;doc.setDrawColor(...LINE);doc.line(15,y,195,y);y+=8;
-  [[t.ht,eur(c.ht)],[c.exempt?t.tva:t.tva+' '+c.rate+' %',eur(c.tva)]].forEach(([k,v])=>{doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...GREY);doc.text(clean(k),140,y);doc.setTextColor(20,24,34);doc.text(clean(v),191,y,{align:'right'});y+=6.5;});
+  (c.disc?[[t.agreed,eur(c.base)],[t.disc.replace('{r}',c.drate),'-'+eur(c.disc)]]:[]).concat([[t.ht,eur(c.ht)],[c.exempt?t.tva:t.tva+' '+c.rate+' %',eur(c.tva)]]).forEach(([k,v])=>{doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...GREY);doc.text(clean(k),c.disc?112:140,y);doc.setTextColor(20,24,34);doc.text(clean(v),191,y,{align:'right'});y+=6.5;});
   doc.setFillColor(...NAVY);doc.rect(127,y-4,68,11,'F');doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);doc.setFontSize(10.5);
   doc.text(clean(c.exempt?t.net:t.ttc),131,y+3.3);doc.text(clean(eur(c.ttc)),191,y+3.3,{align:'right'});
   y+=18;
