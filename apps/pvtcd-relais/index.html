@@ -254,6 +254,8 @@ input[name=flight],input[name=dPlate],input[name=dVatNo],input[name=oVatNo],inpu
           <option value="o2c">Moi → le client</option>
           <option value="d2c">Le chauffeur → le client</option>
         </select></div>
+      <div class="full"><label class="l">Langue de la facture</label>
+        <div class="seg" id="segLang"><button type="button" data-v="fr">🇫🇷 Français</button><button type="button" data-v="en">🇬🇧 English</button></div><input type="hidden" name="invLang"></div>
       <div class="full" id="sumBox"></div>
     </div></div>
   </details>
@@ -313,6 +315,8 @@ input[name=flight],input[name=dPlate],input[name=dVatNo],input[name=oVatNo],inpu
     <div class="full"><label class="l">Conditions de paiement</label><input name="payTerms"></div>
     <div class="full"><label class="l">IBAN (sur mes factures, facultatif)</label><input name="iban" autocapitalize="characters"></div>
     <div class="full"><label class="l">Mentions de bas de facture</label><textarea name="legal"></textarea></div>
+    <div class="full"><label class="l">🇬🇧 Conditions de paiement (factures en anglais)</label><input name="payTermsEn"></div>
+    <div class="full"><label class="l">🇬🇧 Mentions de bas de facture (anglais)</label><textarea name="legalEn"></textarea></div>
   </div></div>
 
   <h2 class="t">Texte de revente</h2>
@@ -331,7 +335,7 @@ input[name=flight],input[name=dPlate],input[name=dVatNo],input[name=oVatNo],inpu
     <input type="file" id="fileImp" accept="application/json,.json" class="hide">
   </div>
   <p class="hint">Vos données restent uniquement sur ce téléphone. Faites une sauvegarde de temps en temps (fichier .json) pour ne rien perdre en changeant de téléphone.</p>
-  <div class="foot">PVTCD RELAIS · v2.0 · Paris VTC Driver</div>
+  <div class="foot">PVTCD RELAIS · v2.1 · Paris VTC Driver</div>
 </form>
 </section>
 </main>
@@ -829,6 +833,8 @@ const DEF_SET={
   oName:'ParisVTCDriver',oManager:'Philippe',oAddress:'',oSiret:'934505702',oEvtc:'',oVat:'oui',oVatNo:'',oDial:'FR',oPhone:'749198318',
   oEmail:'contact@parisvtcdriver.com',oWeb:'www.parisvtcdriver.com',
   payTerms:'Paiement en compte sur facture, à réception (30 jours maximum).',iban:'',
+  payTermsEn:'Payment on account upon receipt of invoice (30 days maximum).',
+  legalEn:'Late payment penalties: 3 times the French legal interest rate (art. L441-10 French Commercial Code) and a fixed recovery fee of EUR 40 (business customers). No discount for early payment.',
   legal:"En cas de retard de paiement, pénalités au taux de 3 fois le taux d'intérêt légal (art. L441-10 du Code de commerce) et indemnité forfaitaire pour frais de recouvrement de 40 € (professionnels). Pas d'escompte pour paiement anticipé.",
   txtRoute:true,txtContact:true,
   txtRules:'Tenue correcte exigée\nVéhicule propre',
@@ -846,7 +852,7 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10);};
-const eur=n=>(Math.round((+n||0)*100)/100).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' €';
+const eur=window.eurFr=n=>(Math.round((+n||0)*100)/100).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,' ')+' €';
 const eurShort=n=>{n=+n||0;return (Number.isInteger(n)?String(n):n.toFixed(2).replace('.',','))+' €';};
 const JOURS=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'],MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 function dateLong(iso){if(!iso)return '';const[y,m,d]=iso.split('-').map(Number);const dt=new Date(y,m-1,d);return `${JOURS[dt.getDay()]} ${d} ${MOIS[m-1]} ${y}`;}
@@ -895,6 +901,7 @@ seg('#segSrv',F.service,()=>{setSeg('#segTva',F.vat,F.service.value==='mad'?'20'
 seg('#segArr',F.arrival,toggles);
 seg('#segTva',F.vat);
 seg('#segSt',F.status);
+seg('#segLang',F.invLang);
 seg('#segVat',F.dVat,toggles);
 $$('.stepper').forEach(st=>{const [m,inp,p]=st.children;const step=+(st.dataset.step||1),min=+(st.dataset.min||0);
   m.onclick=()=>{buzz();inp.value=Math.max(min,(+inp.value||0)-step);changed();};p.onclick=()=>{buzz();inp.value=(+inp.value||0)+step;changed();};});
@@ -915,7 +922,7 @@ function summaries(){
   const r=readForm();
   const s1=[r.date?dateShort(r.date)+(r.time?' '+heure(r.time):''):'',r.from&&r.to?r.from.split(',')[0]+' › '+r.to.split(',')[0]:''].filter(Boolean).join(' · ');
   const s2=[(r.cFirst+' '+r.cLast).trim(),fullPhone(r.cDial,r.cPhone)].filter(Boolean).join(' · ');
-  const s3=+r.price?eurShort(r.price)+' TTC'+(r.invNo?' · Fact. '+r.invNo:''):'';
+  const s3=+r.price?eurShort(r.price)+' TTC'+(r.invNo?' · Fact. '+r.invNo+(r.invLang==='en'?' (EN)':''):''):'';
   const s4=[(r.dFirst+' '+r.dLast).trim(),r.dPlate].filter(Boolean).join(' · ');
   const set=(n,v,def,done)=>{$(`[data-s="${n}"]`).textContent=v||def;$('#sec'+n).classList.toggle('done',!!done);};
   set(1,s1,'Trajet, date, véhicule',r.from&&r.to&&r.date&&r.time);
@@ -927,18 +934,18 @@ let draftT;
 function changed(){updSum();summaries();clearTimeout(draftT);draftT=setTimeout(()=>store.set('draft',readForm()),400);}
 $('#f').addEventListener('input',e=>{if(e.target.classList.contains('err'))e.target.classList.remove('err');changed();});
 $('#f').addEventListener('change',changed);
-const FIELDS=['id','service','from','to','date','time','hours','arrival','flight','vehType','pax','bags','notes','cFirst','cLast','cDial','cPhone','cEmail','price','vat','status','invNo','invDate','invMode','dFirst','dLast','dCompany','dAddress','dSiret','dEvtc','dVat','dVatNo','dCar','dPlate','dDial','dPhone'];
+const FIELDS=['id','service','from','to','date','time','hours','arrival','flight','vehType','pax','bags','notes','cFirst','cLast','cDial','cPhone','cEmail','price','vat','status','invNo','invDate','invMode','invLang','dFirst','dLast','dCompany','dAddress','dSiret','dEvtc','dVat','dVatNo','dCar','dPlate','dDial','dPhone'];
 function readForm(){const r={};FIELDS.forEach(k=>r[k]=String(F[k].value||'').trim());
   ['flight','dVatNo','dPlate'].forEach(k=>r[k]=r[k].toUpperCase());return r;}
 function writeForm(r){FIELDS.forEach(k=>{if(F[k])F[k].value=r[k]??'';});
   if(!F.cDial.value)F.cDial.value='FR'; if(!F.dDial.value)F.dDial.value='FR'; if(!F.invMode.value)F.invMode.value='d2o';
   setSeg('#segSrv',F.service,r.service||'transfert');setSeg('#segArr',F.arrival,r.arrival||'');setSeg('#segTva',F.vat,r.vat||'10');
-  setSeg('#segSt',F.status,r.status||'sell');setSeg('#segVat',F.dVat,r.dVat||'oui');setChip(r.vehType||VEHICLES[0]);
+  setSeg('#segSt',F.status,r.status||'sell');setSeg('#segVat',F.dVat,r.dVat||'oui');setSeg('#segLang',F.invLang,r.invLang||'fr');setChip(r.vehType||VEHICLES[0]);
   if(!F.hours.value)F.hours.value=3;
   $('#pickDrv').value='';$('#bDel').classList.toggle('hide',!r.id);$$('.err').forEach(e=>e.classList.remove('err'));
   $$('details.sec').forEach(d=>d.open=true);toggles();updSum();summaries();}
 let draftLoaded=false;
-function newRide(){store.set('draft',null);draftLoaded=false;writeForm({service:'transfert',date:today(),time:'',pax:1,bags:0,vat:'10',status:'sell',invDate:today(),invMode:'d2o',cDial:'FR',dDial:'FR',dVat:'oui',vehType:VEHICLES[0]});F.id.value='';}
+function newRide(){store.set('draft',null);draftLoaded=false;writeForm({service:'transfert',date:today(),time:'',pax:1,bags:0,vat:'10',status:'sell',invDate:today(),invMode:'d2o',invLang:'fr',cDial:'FR',dDial:'FR',dVat:'oui',vehType:VEHICLES[0]});F.id.value='';}
 function nextRef(){const d=today().replace(/-/g,'');const n=RIDES.filter(r=>(r.ref||'').includes(d)).length+1;return `BC-${d}-${String(n).padStart(2,'0')}`;}
 function validate(r){
   const miss=['from','to','date','time'].filter(k=>!r[k]);
@@ -1079,11 +1086,23 @@ function footer(doc,txt){
   doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...GREY);
   doc.text(doc.splitTextToSize(clean(txt),180),15,h-17);
 }
-const orgLines=()=>[['',SET.oName,true],['Gérant',SET.oManager],['Adresse',SET.oAddress],['SIRET',SET.oSiret],['N° EVTC',SET.oEvtc],
-  ['TVA intra',SET.oVat==='oui'?SET.oVatNo:''],['Tél.',fullPhone(SET.oDial,SET.oPhone)],['Email',SET.oEmail]];
-const drvLines=r=>[['',r.dCompany||(r.dFirst+' '+r.dLast),true],['Chauffeur',(r.dFirst+' '+r.dLast).trim()],['Adresse',r.dAddress],['SIRET',r.dSiret],['N° EVTC',r.dEvtc],
-  ['TVA intra',r.dVat==='non'?'Non assujetti':(r.dVatNo||'Assujetti')],['Véhicule',r.dCar],['Immat.',r.dPlate],['Tél.',fullPhone(r.dDial,r.dPhone)]];
-const cliLines=r=>[['',(r.cFirst+' '+r.cLast).trim()||'-',true],['Tél.',fullPhone(r.cDial,r.cPhone)],['Email',r.cEmail]];
+const TR={
+ fr:{mgr:'Gérant',addr:'Adresse',vat:'TVA intra',novat:'Non assujetti',isvat:'Assujetti',drv:'Chauffeur',car:'Véhicule',plate:'Immat.',tel:'Tél.',email:'Email',evtc:'N° EVTC',
+   inv:'FACTURE',no:'N° ',date:'Date : ',from:'Émetteur',to:'Facturé à',desc:'DÉSIGNATION',qty:'QTÉ',tva:'TVA',amt:'MONTANT HT',
+   srvT:'Transport de personnes - VTC',srvM:'Mise à disposition de véhicule avec chauffeur',on:'Le ',at:' à ',fl:'Vol ',tr:'Train ',de:'De : ',a:'À : ',cli:'Client : ',ref:'Réf. bon de commande : ',
+   ht:'Total HT',ttc:'TOTAL TTC',net:'NET À PAYER',exempt:'TVA non applicable, art. 293 B du CGI.',prest:'Date de la prestation : ',cond:'Conditions & mentions légales',invno:'Facture n° ',h:' h',file:'Facture-'},
+ en:{mgr:'Manager',addr:'Address',vat:'VAT no.',novat:'Not VAT registered',isvat:'VAT registered',drv:'Driver',car:'Vehicle',plate:'Plate',tel:'Phone',email:'Email',evtc:'VTC reg. no.',
+   inv:'INVOICE',no:'No. ',date:'Date: ',from:'From',to:'Bill to',desc:'DESCRIPTION',qty:'QTY',tva:'VAT',amt:'AMOUNT (EXCL. VAT)',
+   srvT:'Private hire passenger transport (VTC)',srvM:'Chauffeur service at disposal',on:'On ',at:' at ',fl:'Flight ',tr:'Train ',de:'From: ',a:'To: ',cli:'Passenger: ',ref:'Booking order ref.: ',
+   ht:'Total excl. VAT',ttc:'TOTAL INCL. VAT',net:'AMOUNT DUE',exempt:'VAT not applicable, art. 293 B of the French Tax Code (CGI).',prest:'Service date: ',cond:'Terms & legal notices',invno:'Invoice no. ',h:' h',file:'Invoice-'}
+};
+const orgLines=(t=TR.fr)=>[['',SET.oName,true],[t.mgr,SET.oManager],[t.addr,SET.oAddress],['SIRET',SET.oSiret],[t.evtc,SET.oEvtc],
+  [t.vat,SET.oVat==='oui'?SET.oVatNo:''],[t.tel,fullPhone(SET.oDial,SET.oPhone)],[t.email,SET.oEmail]];
+const drvLines=(r,t=TR.fr)=>[['',r.dCompany||(r.dFirst+' '+r.dLast),true],[t.drv,(r.dFirst+' '+r.dLast).trim()],[t.addr,r.dAddress],['SIRET',r.dSiret],[t.evtc,r.dEvtc],
+  [t.vat,r.dVat==='non'?t.novat:(r.dVatNo||t.isvat)],[t.car,r.dCar],[t.plate,r.dPlate],[t.tel,fullPhone(r.dDial,r.dPhone)]];
+const cliLines=(r,t=TR.fr)=>[['',(r.cFirst+' '+r.cLast).trim()||'-',true],[t.tel,fullPhone(r.cDial,r.cPhone)],[t.email,r.cEmail]];
+const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const dateInv=(iso,lang)=>{if(!iso)return '';if(lang!=='en')return dateFr(iso);const[y,m,d]=iso.split('-').map(Number);return d+' '+MONTHS_EN[m-1]+' '+y;};
 let LAST=null;
 function showPdf(doc,name,title){LAST={doc,name};$('#pdfTitle').textContent=title;$('#pdfName').textContent=name;openModal('#mPdf');buzz(20);}
 async function sharePdf(){const blob=LAST.doc.output('blob');const file=new File([blob],LAST.name,{type:'application/pdf'});
@@ -1121,9 +1140,6 @@ function makeBC(r){
   y+=28;
   const req=rules(r);
   if(req.length)y=box(doc,15,y,180,'Exigences',req.map(s=>['','- '+s]))+6;
-  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...GREY);
-  doc.text("Signature donneur d'ordre",20,y+4);doc.text('Signature chauffeur',125,y+4);
-  doc.setDrawColor(...LINE);doc.rect(15,y+7,80,22);doc.rect(115,y+7,80,22);
   footer(doc,"Bon de commande établi préalablement à la prise en charge (réservation préalable obligatoire - Code des transports). À conserver à bord et à présenter en cas de contrôle. "+SET.oName+(SET.oWeb?' · '+SET.oWeb:''));
   showPdf(doc,(r.ref||'bon-de-commande')+'.pdf','📄 Bon de commande prêt');
 }
@@ -1133,41 +1149,43 @@ function makeInvoice(r){
   if(!r)return;
   if(!r.invNo){toast("Saisissez d'abord le n° de facture");if(CUR!=='v-form'){writeForm(r);show('v-form');}
     setTimeout(()=>{F.invNo.classList.add('err');F.invNo.closest('details').open=true;F.invNo.scrollIntoView({behavior:'smooth',block:'center'});},200);return;}
-  const mode=r.invMode||'d2o';
-  const emitter=mode==='o2c'?orgLines():drvLines(r);
-  const billTo=mode==='d2o'?orgLines():cliLines(r);
-  const doc=pdfBase('FACTURE','N° '+r.invNo+'   ·   Date : '+dateFr(r.invDate||today()));
+  const mode=r.invMode||'d2o', lang=r.invLang==='en'?'en':'fr', t=TR[lang];
+  const emitter=mode==='o2c'?orgLines(t):drvLines(r,t);
+  const billTo=mode==='d2o'?orgLines(t):cliLines(r,t);
+  const doc=pdfBase(t.inv,t.no+r.invNo+'   ·   '+t.date+dateInv(r.invDate||today(),lang));
   let y=48;
-  const y1=box(doc,15,y,85,'Émetteur',emitter);
-  const y2=box(doc,110,y,85,'Facturé à',billTo);
+  const y1=box(doc,15,y,85,t.from,emitter);
+  const y2=box(doc,110,y,85,t.to,billTo);
   y=Math.max(y1,y2)+8;
   const c=calc(r);
+  const eur=lang==='en'?(n=>'€'+(Math.round((+n||0)*100)/100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')):window.eurFr;
   doc.setFillColor(...NAVY);doc.rect(15,y,180,9,'F');
   doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(150,195,255);
-  doc.text('DÉSIGNATION',19,y+6);doc.text('QTÉ',128,y+6,{align:'center'});doc.text('TVA',148,y+6,{align:'center'});doc.text('MONTANT HT',191,y+6,{align:'right'});
+  doc.text(t.desc,19,y+6);doc.text(t.qty,128,y+6,{align:'center'});doc.text(t.tva,148,y+6,{align:'center'});doc.text(t.amt,191,y+6,{align:'right'});
   y+=15;
-  const desig=(r.service==='mad'?'Mise à disposition de véhicule avec chauffeur'+(r.hours?' - '+r.hours+' h':''):'Transport de personnes - VTC')
-    +'\nLe '+dateFr(r.date)+' à '+heure(r.time)+(r.flight?' - '+(r.arrival==='train'?'Train ':'Vol ')+r.flight:'')
-    +'\nDe : '+r.from+'\nÀ : '+r.to
-    +((r.cFirst||r.cLast)&&mode==='d2o'?'\nClient : '+(r.cFirst+' '+r.cLast).trim():'')
-    +(r.ref?'\nRéf. bon de commande : '+r.ref:'');
+  const hh=lang==='en'?r.time:heure(r.time);
+  const desig=(r.service==='mad'?t.srvM+(r.hours?' - '+r.hours+t.h:''):t.srvT)
+    +'\n'+t.on+dateInv(r.date,lang)+t.at+hh+(r.flight?' - '+(r.arrival==='train'?t.tr:t.fl)+r.flight:'')
+    +'\n'+t.de+r.from+'\n'+t.a+r.to
+    +((r.cFirst||r.cLast)&&mode==='d2o'?'\n'+t.cli+(r.cFirst+' '+r.cLast).trim():'')
+    +(r.ref?'\n'+t.ref+r.ref:'');
   doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(20,24,34);
-  const t=doc.splitTextToSize(clean(desig),100);doc.text(t,19,y);
+  const tl=doc.splitTextToSize(clean(desig),100);doc.text(tl,19,y);
   doc.text('1',128,y,{align:'center'});doc.text(c.exempt?'-':c.rate+' %',148,y,{align:'center'});doc.text(clean(eur(c.ht)),191,y,{align:'right'});
-  y+=t.length*4.6+4;doc.setDrawColor(...LINE);doc.line(15,y,195,y);y+=8;
-  [['Total HT',eur(c.ht)],[c.exempt?'TVA':'TVA '+c.rate+' %',eur(c.tva)]].forEach(([k,v])=>{doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...GREY);doc.text(clean(k),140,y);doc.setTextColor(20,24,34);doc.text(clean(v),191,y,{align:'right'});y+=6.5;});
-  doc.setFillColor(...NAVY);doc.rect(132,y-4,63,11,'F');doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);doc.setFontSize(11);
-  doc.text(c.exempt?'NET À PAYER':'TOTAL TTC',136,y+3.3);doc.text(clean(eur(c.ttc)),191,y+3.3,{align:'right'});
+  y+=tl.length*4.6+4;doc.setDrawColor(...LINE);doc.line(15,y,195,y);y+=8;
+  [[t.ht,eur(c.ht)],[c.exempt?t.tva:t.tva+' '+c.rate+' %',eur(c.tva)]].forEach(([k,v])=>{doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...GREY);doc.text(clean(k),140,y);doc.setTextColor(20,24,34);doc.text(clean(v),191,y,{align:'right'});y+=6.5;});
+  doc.setFillColor(...NAVY);doc.rect(127,y-4,68,11,'F');doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);doc.setFontSize(10.5);
+  doc.text(clean(c.exempt?t.net:t.ttc),131,y+3.3);doc.text(clean(eur(c.ttc)),191,y+3.3,{align:'right'});
   y+=18;
   const notes=[];
-  if(c.exempt)notes.push('TVA non applicable, art. 293 B du CGI.');
-  notes.push('Date de la prestation : '+dateFr(r.date)+'.');
-  notes.push(SET.payTerms||'Paiement en compte sur facture.');
+  if(c.exempt)notes.push(t.exempt);
+  notes.push(t.prest+dateInv(r.date,lang)+'.');
+  notes.push(lang==='en'?(SET.payTermsEn||'Payment on account upon receipt of invoice.'):(SET.payTerms||'Paiement en compte sur facture.'));
   if(mode==='o2c'&&SET.iban)notes.push('IBAN : '+SET.iban);
-  if(SET.legal)notes.push(SET.legal);
-  box(doc,15,y,180,'Conditions & mentions légales',notes.map(s=>['',s]));
-  footer(doc,(mode==='o2c'?SET.oName+' · SIRET '+SET.oSiret:(r.dCompany||r.dFirst+' '+r.dLast)+(r.dSiret?' · SIRET '+r.dSiret:''))+' · Facture n° '+r.invNo);
-  showPdf(doc,'Facture-'+r.invNo.replace(/[^\w-]/g,'_')+'.pdf','🧾 Facture prête');
+  const lg=lang==='en'?SET.legalEn:SET.legal;if(lg)notes.push(lg);
+  box(doc,15,y,180,t.cond,notes.map(x=>['',x]));
+  footer(doc,(mode==='o2c'?SET.oName+' · SIRET '+SET.oSiret:(r.dCompany||r.dFirst+' '+r.dLast)+(r.dSiret?' · SIRET '+r.dSiret:''))+' · '+t.invno+r.invNo);
+  showPdf(doc,t.file+r.invNo.replace(/[^\w-]/g,'_')+'.pdf',lang==='en'?'🧾 Invoice ready (EN)':'🧾 Facture prête');
   if(r.status==='sell'||r.status==='att'){r.status='fac';saveRides();if(F.id.value===r.id)setSeg('#segSt',F.status,'fac');}
 }
 $('#bInv').onclick=()=>{const r=saveRide(true);if(r)makeInvoice(r);};
