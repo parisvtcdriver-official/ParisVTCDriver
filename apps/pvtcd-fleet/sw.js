@@ -1,7 +1,7 @@
 // Service worker PRUDENT — ne met en cache QUE la coquille statique (même origine).
 // Jamais de requête Supabase (cross-origin), jamais de données privées en cache.
-const C = 'pvtcd-fleet-v12';
-const SHELL = ['./', 'index.html', 'config.js', 'manifest.webmanifest',
+const C = 'pvtcd-fleet-v13';
+const SHELL = ['./', 'index.html', '../access-gate.js', 'config.js', 'manifest.webmanifest',
                'icon-192.png', 'icon-512.png', 'icon-180.png'];
 
 self.addEventListener('install', e => {

@@ -107,6 +107,7 @@ select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:
     <div class="nav-i" data-v="resa"><svg viewBox="0 0 24 24" stroke-width="1.7"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg> Réservations <span class="badge" id="bResa"></span></div>
     <div class="nav-i" data-v="fact"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg> Devis &amp; Factures</div>
     <div class="nav-i" data-v="promo"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M20 12V7H4v5M2 7l2-4h16l2 4M12 22V7"/></svg> Codes promo</div>
+    <div class="nav-i" data-v="acces"><svg viewBox="0 0 24 24" stroke-width="1.7"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> Accès applis</div>
     <div class="nav-i" data-v="cli"><svg viewBox="0 0 24 24" stroke-width="1.7"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg> Clients</div>
     <div class="nav-i" data-v="fidel"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.8 5.9 21.4l1.4-6.8L2.2 9.9l6.9-.8z"/></svg> Fidélité</div>
     <div class="nav-i" data-v="part"><svg viewBox="0 0 24 24" stroke-width="1.7"><path d="M16 11a4 4 0 1 0-8 0M2 21v-1a5 5 0 0 1 5-5h2M22 21v-1a5 5 0 0 0-5-5h-2"/></svg> Partenaires <span class="badge" id="bPart"></span></div>
@@ -168,6 +169,48 @@ select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:
         <tbody id="allPromo"></tbody>
       </table></div></div>
       <div class="card infobox"><b style="color:var(--gold-2)">Astuce :</b> chaque code est unique et utilisable une seule fois. Donnez-en à un client : il l'appliquera lors de sa réservation (déduction sur le total).</div>
+    </section>
+
+    <!-- ACCÈS APPLIS -->
+    <section class="view" id="acces">
+      <div class="top"><div><h1>Accès applis</h1><div class="sub">Codes à usage unique et personnes autorisées sur les applications du site</div></div>
+        <button class="btn btn-ghost" style="margin-left:auto" onclick="loadAccess()">↻ Actualiser</button></div>
+      <style>#acces .fld{display:flex;flex-direction:column;gap:5px}#acces .fld span{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9aa3b2}#acces .fld input,#acces .fld select,#acces .srch{width:100%;background:var(--navy-2);border:1px solid var(--line-soft);border-radius:8px;color:var(--txt);padding:9px 10px;font-family:inherit;font-size:14px}#acces .newcode{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;border:1px dashed var(--line);border-radius:12px;margin-top:10px;background:rgba(201,162,74,.05)}#acces .newcode b{font-family:'Space Grotesk',monospace;font-size:20px;letter-spacing:2px;color:var(--gold-2)}#acces .code{font-family:'Space Grotesk',monospace;letter-spacing:1.5px;color:var(--gold-2);font-weight:700}#acces .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:20px}@media(max-width:980px){#acces .grid2{grid-template-columns:1fr}}</style>
+      <div class="grid2">
+        <div class="card" style="padding:22px 26px">
+          <h2 style="font-size:15px;margin-bottom:4px">Générer un code d'accès</h2>
+          <div class="sub2" style="margin-bottom:16px">Chaque code ne sert qu'une seule fois : la personne entre son téléphone + le code, et l'appli reste ensuite ouverte sur son téléphone (révocable ci-dessous).</div>
+          <div class="kpis" style="grid-template-columns:1fr 1fr 90px;gap:14px">
+            <label class="fld"><span>Application</span><select id="acApp"></select></label>
+            <label class="fld"><span>Pour qui ? (note)</span><input id="acLabel" placeholder="Ex : Karim B. – chauffeur"></label>
+            <label class="fld"><span>Nombre</span><input id="acQty" type="number" min="1" max="20" value="1"></label>
+          </div>
+          <div style="margin-top:16px"><button class="btn-mini gold" onclick="genAccessCodes()">+ Générer</button></div>
+          <div id="acNew"></div>
+        </div>
+        <div class="card" style="padding:22px 26px">
+          <h2 style="font-size:15px;margin-bottom:4px">Mon code admin</h2>
+          <div class="sub2" style="margin-bottom:16px">Toujours valable, sur toutes les applis et tous vos téléphones. Ne le communiquez à personne.</div>
+          <label class="fld"><span>Code admin</span><input id="acMaster" placeholder="Ex : PHIL-2026-ADMIN" style="text-transform:uppercase;letter-spacing:1.5px"></label>
+          <div style="margin-top:16px;display:flex;align-items:center;gap:14px"><button class="btn-mini gold" onclick="saveMasterCode()">Enregistrer</button><span id="acMasterMsg" class="sub2"></span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h2>Personnes ayant accès</h2><span class="sub2" id="acGrantCount"></span><input class="srch" id="acSearch" placeholder="Rechercher un téléphone, une note…" style="margin-left:auto;max-width:280px" oninput="renderAccess()"></div>
+        <div class="scroll"><table>
+          <thead><tr><th>Téléphone</th><th>Applis</th><th>Code / note</th><th>Accès depuis</th><th>Dernière ouverture</th><th>Statut</th><th></th></tr></thead>
+          <tbody id="acGrants"></tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h2>Codes générés</h2><span class="sub2" id="acCodeCount"></span>
+          <select class="srch" id="acFilter" style="margin-left:auto;max-width:180px" onchange="renderAccess()"><option value="">Tous</option><option value="available">Disponibles</option><option value="used">Utilisés</option><option value="disabled">Désactivés</option></select></div>
+        <div class="scroll"><table>
+          <thead><tr><th>Code</th><th>Application</th><th>Note</th><th>Statut</th><th>Utilisé par</th><th>Créé le</th><th></th></tr></thead>
+          <tbody id="acCodes"></tbody>
+        </table></div>
+      </div>
+      <div class="card infobox"><b style="color:var(--gold-2)">Comment ça marche :</b> générez un code, envoyez-le par WhatsApp (bouton 💬). La personne ouvre l'appli, saisit son numéro + le code : le code est alors « utilisé » et son numéro apparaît dans « Personnes ayant accès ». Pour couper un accès, cliquez sur « Retirer ».</div>
     </section>
 
     <!-- CLIENTS -->
@@ -1757,6 +1800,82 @@ async function linkBookingToClient(id){
   if(error){toast('Erreur : '+error.message);return;}
   toast("Demande associée à "+(prof.full_name||prof.email)+" ✓"); refresh();
 }
+/* ===================== ACCÈS APPLIS ===================== */
+const ACC_APPS={all:'Toutes les applis',kifkif:'KifKif','frais-reels':'Frais réels','pvtcd-fleet':'PVTCD FLEET','pvtcd-relais':'PVTCD RELAIS'};
+const ACC_PREFIX={all:'ALL',kifkif:'KIF','frais-reels':'FRS','pvtcd-fleet':'FLT','pvtcd-relais':'RLY'};
+const ACC_URL={all:'https://www.parisvtcdriver.com/applications.html',kifkif:'https://www.parisvtcdriver.com/apps/kifkif/','frais-reels':'https://www.parisvtcdriver.com/apps/frais-reels/','pvtcd-fleet':'https://www.parisvtcdriver.com/apps/pvtcd-fleet/','pvtcd-relais':'https://www.parisvtcdriver.com/apps/pvtcd-relais/'};
+let ACC_CODES=[],ACC_GRANTS=[];
+(function(){const sel=document.getElementById('acApp');if(sel)sel.innerHTML=Object.keys(ACC_APPS).map(k=>`<option value="${k}">${ACC_APPS[k]}</option>`).join('');
+  const nav=document.querySelector('.nav-i[data-v="acces"]');if(nav)nav.addEventListener('click',()=>loadAccess());})();
+function accRand(n){const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789';const b=new Uint32Array(n);crypto.getRandomValues(b);let s='';for(let i=0;i<n;i++)s+=A[b[i]%A.length];return s;}
+function accAppsLabel(a){a=a||[];return a.includes('all')?'Toutes':a.map(x=>ACC_APPS[x]||x).join(', ');}
+function accPhone(p){p=String(p||'');const m=p.match(/^\+33(\d)(\d{8})$/);return m?'+33 '+m[1]+' '+m[2].replace(/(\d{2})(?=\d)/g,'$1 '):p;}
+function accDate(d){if(!d)return '—';const t=new Date(d);return t.toLocaleDateString('fr-FR')+' '+t.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
+function accMsg(code,apps){const k=(apps&&apps[0])||'all';return `Bonjour,\nvoici votre code d'accès à ${ACC_APPS[k]} : *${code}*\n\n1. Ouvrez : ${ACC_URL[k]||ACC_URL.all}\n2. Entrez votre numéro de téléphone et ce code.\n\nCe code est personnel et ne fonctionne qu'une seule fois.\nParisVTCDriver`;}
+function accTableMissing(e){return e&&/does not exist|could not find|schema cache/i.test(e.message||'');}
+async function loadAccess(){
+  const [c,g]=await Promise.all([
+    sb.from('app_access_codes').select('*').order('created_at',{ascending:false}),
+    sb.from('app_access_grants').select('*').order('created_at',{ascending:false})
+  ]);
+  if(c.error||g.error){const e=c.error||g.error;
+    document.getElementById('acGrants').innerHTML=`<tr><td colspan="7" class="sub2" style="padding:18px">${accTableMissing(e)?"Tables manquantes : exécutez d'abord supabase-acces-applis.sql dans Supabase (SQL Editor).":'Erreur : '+escapeHtml(e.message)}</td></tr>`;return;}
+  ACC_CODES=c.data||[];ACC_GRANTS=g.data||[];
+  const m=ACC_CODES.find(x=>x.is_master);const mi=document.getElementById('acMaster');if(mi&&document.activeElement!==mi)mi.value=m?m.code:'';
+  document.getElementById('acMasterMsg').textContent=m?'Code admin actif ✓':'Aucun code admin défini';
+  renderAccess();
+}
+function renderAccess(){
+  const q=(document.getElementById('acSearch').value||'').toLowerCase().replace(/\s/g,'');
+  const byId={};ACC_CODES.forEach(c=>byId[c.id]=c);
+  let gs=ACC_GRANTS.filter(g=>{if(!q)return true;const c=byId[g.code_id]||{};return (g.phone+' '+(c.label||'')+' '+(c.code||'')).toLowerCase().replace(/\s/g,'').includes(q);});
+  const active=ACC_GRANTS.filter(g=>!g.revoked).length;
+  document.getElementById('acGrantCount').textContent=active+' accès actif'+(active>1?'s':'');
+  document.getElementById('acGrants').innerHTML=gs.length?gs.map(g=>{const c=byId[g.code_id]||{};const wa=g.phone.replace(/\D/g,'');
+    return `<tr><td><b style="color:var(--txt)">${escapeHtml(accPhone(g.phone))}</b><div class="sub2"><a href="https://wa.me/${wa}" target="_blank" rel="noopener" style="color:var(--gold-2)">WhatsApp</a></div></td>
+      <td>${escapeHtml(accAppsLabel(g.apps))}</td>
+      <td>${g.via_master?'<span class="st term">Code admin</span>':`<span class="code">${escapeHtml(c.code||'—')}</span>`}${c.label&&!g.via_master?`<div class="sub2">${escapeHtml(c.label)}</div>`:''}</td>
+      <td>${accDate(g.created_at)}</td>
+      <td>${accDate(g.last_seen)}${g.last_app?`<div class="sub2">${escapeHtml(ACC_APPS[g.last_app]||g.last_app)}</div>`:''}</td>
+      <td>${g.revoked?'<span class="st ann">Retiré</span>':'<span class="st conf">Actif</span>'}</td>
+      <td>${g.revoked?`<button class="btn-mini" onclick="setGrantRevoked('${g.id}',false)">Rétablir</button>`:`<button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="setGrantRevoked('${g.id}',true)">Retirer</button>`}</td></tr>`;}).join(''):
+    `<tr><td colspan="7" class="sub2" style="padding:18px">${q?'Aucun résultat.':"Personne n'a encore utilisé de code."}</td></tr>`;
+  const f=document.getElementById('acFilter').value;
+  const cs=ACC_CODES.filter(c=>!c.is_master&&(!f||c.status===f));
+  const avail=ACC_CODES.filter(c=>!c.is_master&&c.status==='available').length;
+  document.getElementById('acCodeCount').textContent=avail+' disponible'+(avail>1?'s':'');
+  const ST={available:'<span class="st att">Disponible</span>',used:'<span class="st conf">Utilisé</span>',disabled:'<span class="st ann">Désactivé</span>'};
+  document.getElementById('acCodes').innerHTML=cs.length?cs.map(c=>`<tr><td><span class="code">${escapeHtml(c.code)}</span></td>
+      <td>${escapeHtml(accAppsLabel(c.apps))}</td><td>${escapeHtml(c.label||'—')}</td><td>${ST[c.status]||escapeHtml(c.status)}</td>
+      <td>${c.used_phone?escapeHtml(accPhone(c.used_phone))+'<div class="sub2">'+accDate(c.used_at)+'</div>':'—'}</td><td>${accDate(c.created_at)}</td>
+      <td style="white-space:nowrap">${c.status==='available'?`<button class="btn-mini" onclick="copyAccessCode('${c.id}')" title="Copier le message">📋</button> <button class="btn-mini" onclick="waAccessCode('${c.id}')" title="Envoyer par WhatsApp">💬</button> <button class="btn-mini" onclick="disableAccessCode('${c.id}')" title="Désactiver">✕</button>`:''}</td></tr>`).join(''):
+    `<tr><td colspan="7" class="sub2" style="padding:18px">Aucun code.</td></tr>`;
+}
+async function genAccessCodes(){
+  const app=document.getElementById('acApp').value;const label=document.getElementById('acLabel').value.trim()||null;
+  const qty=Math.min(20,Math.max(1,parseInt(document.getElementById('acQty').value,10)||1));
+  const rows=[];for(let i=0;i<qty;i++)rows.push({code:ACC_PREFIX[app]+'-'+accRand(6),apps:[app],label});
+  const {data,error}=await sb.from('app_access_codes').insert(rows).select();
+  if(error){toast(accTableMissing(error)?"Exécutez d'abord supabase-acces-applis.sql":'Erreur : '+error.message);return;}
+  document.getElementById('acNew').innerHTML=(data||[]).map(c=>`<div class="newcode"><b>${escapeHtml(c.code)}</b><span class="sub2" style="margin:0">${escapeHtml(accAppsLabel(c.apps))}${c.label?' · '+escapeHtml(c.label):''}</span>
+     <span style="margin-left:auto;display:flex;gap:8px"><button class="btn-mini" onclick="copyAccessCode('${c.id}')">📋 Copier</button><button class="btn-mini gold" onclick="waAccessCode('${c.id}')">💬 WhatsApp</button></span></div>`).join('');
+  document.getElementById('acLabel').value='';toast(qty+' code(s) généré(s) ✓');await loadAccess();
+}
+function accFind(id){return ACC_CODES.find(c=>c.id===id);}
+async function copyAccessCode(id){const c=accFind(id);if(!c)return;const t=accMsg(c.code,c.apps);try{await navigator.clipboard.writeText(t);toast('Message copié ✓');}catch(e){prompt('Copiez le message :',t);}}
+function waAccessCode(id){const c=accFind(id);if(!c)return;window.open('https://wa.me/?text='+encodeURIComponent(accMsg(c.code,c.apps)),'_blank');}
+async function disableAccessCode(id){if(!confirm('Désactiver ce code ? Il ne pourra plus être utilisé.'))return;const {error}=await sb.from('app_access_codes').update({status:'disabled'}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast('Code désactivé ✓');loadAccess();}
+async function setGrantRevoked(id,v){if(v&&!confirm("Retirer l'accès ? L'appli se verrouillera sur son téléphone à la prochaine ouverture (avec internet)."))return;
+  const {error}=await sb.from('app_access_grants').update({revoked:v}).eq('id',id);if(error){toast('Erreur : '+error.message);return;}toast(v?'Accès retiré ✓':'Accès rétabli ✓');loadAccess();}
+async function saveMasterCode(){
+  const v=document.getElementById('acMaster').value.trim().toUpperCase();
+  if(v.replace(/[^A-Z0-9]/g,'').length<8){toast('Code admin trop court (8 caractères minimum)');return;}
+  const m=ACC_CODES.find(x=>x.is_master);
+  const r=m?await sb.from('app_access_codes').update({code:v}).eq('id',m.id):await sb.from('app_access_codes').insert({code:v,is_master:true,apps:['all'],label:'Code admin'});
+  if(r.error){toast(/duplicate|unique/i.test(r.error.message)?'Ce code existe déjà, choisissez-en un autre':'Erreur : '+r.error.message);return;}
+  toast('Code admin enregistré ✓');loadAccess();
+}
+
 async function generatePromo(){
   const a=prompt('Montant de la remise (en €) :','10'); if(a===null)return;
   const amount=parseFloat(String(a).replace(',','.')); if(isNaN(amount)||amount<=0){toast('Montant invalide');return;}
