@@ -337,7 +337,7 @@ input[name=flight],input[name=dPlate],input[name=dVatNo],input[name=oVatNo],inpu
     <input type="file" id="fileImp" accept="application/json,.json" class="hide">
   </div>
   <p class="hint">Vos données restent uniquement sur ce téléphone. Faites une sauvegarde de temps en temps (fichier .json) pour ne rien perdre en changeant de téléphone.</p>
-  <div class="foot">PVTCD RELAIS · v2.5 · Paris VTC Driver</div>
+  <div class="foot">PVTCD RELAIS · v2.6 · Paris VTC Driver</div>
 </form>
 </section>
 </main>
@@ -1043,11 +1043,21 @@ function rideAction(a,id){
 /* Texte de revente */
 const lines=t=>(t||'').split('\n').map(s=>s.trim()).filter(Boolean);
 const rules=r=>(r.arrival==='vol'?lines(SET.txtFlight):[]).concat(r.arrival?lines(SET.txtArr):[]).concat(lines(SET.txtRules));
+// Adresse courte pour la revente : « code postal + ville » (ex. 75008 Paris).
+// Sans code postal (ex. « Aéroport CDG Terminal 2E »), le lieu est gardé tel quel.
+function cpVille(a){
+  a=String(a||'').trim();
+  const m=a.match(/\b(\d{5})\s+([A-Za-zÀ-ÿ'’\- ]+?)(?:\s*(?:,|\(|\d|\bcedex\b)|$)/i);
+  if(m)return m[1]+' '+m[2].trim().replace(/\s+/g,' ');
+  return a;
+}
 function buildText(r){
-  const L=['🚘 *COURSE À PRENDRE*',''];
+  const L=['🚘 *COURSE À PRENDRE*'];
+  if(r.ref)L.push('🧾 Bon de commande : *'+r.ref+'*');
+  L.push('');
   L.push('📅 '+cap(dateLong(r.date)));
   L.push('⏰ Prise en charge : *'+heure(r.time)+'*');
-  if(SET.txtRoute){L.push('📍 Départ : '+r.from);L.push('🏁 Dépose : '+r.to);}
+  if(SET.txtRoute){L.push('📍 Départ : '+cpVille(r.from));L.push('🏁 Dépose : '+cpVille(r.to));}
   if(r.service==='mad')L.push('⏳ Mise à disposition'+(r.hours?' : '+r.hours+' h':''));
   L.push('🚙 Véhicule : '+r.vehType);
   L.push('👥 Passagers : '+(r.pax||1)+(+r.bags?'   🧳 Valises : '+r.bags:''));
@@ -1170,6 +1180,11 @@ function makeInvoice(r){
   y=Math.max(y1,y2)+8;
   const c=calc(r);
   const eur=lang==='en'?(n=>'€'+(Math.round((+n||0)*100)/100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')):window.eurFr;
+  // Montant aligné à droite ; en anglais le « € » est placé à part (évite qu'il chevauche les chiffres sur iPhone).
+  const amt=(v,x,yy)=>{v=clean(v);const m=v.match(/^(-?)€(.*)$/);
+    if(!m){doc.text(v,x,yy,{align:'right'});return;}
+    doc.text(m[2],x,yy,{align:'right'});const we=doc.getFontSize()*0.556*25.4/72;
+    const ex=x-doc.getTextWidth(m[2])-0.9-we;doc.text('€',ex,yy);if(m[1])doc.text('-',ex-0.5,yy,{align:'right'});};
   doc.setFillColor(...NAVY);doc.rect(15,y,180,9,'F');
   doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(150,195,255);
   doc.text(t.desc,19,y+6);doc.text(t.qty,128,y+6,{align:'center'});doc.text(t.tva,148,y+6,{align:'center'});doc.text(t.amt,191,y+6,{align:'right'});
@@ -1183,11 +1198,11 @@ function makeInvoice(r){
     +(r.ref?'\n'+t.ref+r.ref:'');
   doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(20,24,34);
   const tl=doc.splitTextToSize(clean(desig),100);doc.text(tl,19,y);
-  doc.text('1',128,y,{align:'center'});doc.text(c.exempt?'-':c.rate+' %',148,y,{align:'center'});doc.text(clean(eur(c.ht)),191,y,{align:'right'});
+  doc.text('1',128,y,{align:'center'});doc.text(c.exempt?'-':c.rate+' %',148,y,{align:'center'});amt(eur(c.ht),191,y);
   y+=tl.length*4.6+4;doc.setDrawColor(...LINE);doc.line(15,y,195,y);y+=8;
-  (c.disc?[[t.agreed,eur(c.base)],[t.disc.replace('{r}',c.drate),'-'+eur(c.disc)]]:[]).concat([[t.ht,eur(c.ht)],[c.exempt?t.tva:t.tva+' '+c.rate+' %',eur(c.tva)]]).forEach(([k,v])=>{doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...GREY);doc.text(clean(k),c.disc?112:140,y);doc.setTextColor(20,24,34);doc.text(clean(v),191,y,{align:'right'});y+=6.5;});
+  (c.disc?[[t.agreed,eur(c.base)],[t.disc.replace('{r}',c.drate),'-'+eur(c.disc)]]:[]).concat([[t.ht,eur(c.ht)],[c.exempt?t.tva:t.tva+' '+c.rate+' %',eur(c.tva)]]).forEach(([k,v])=>{doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...GREY);doc.text(clean(k),c.disc?112:140,y);doc.setTextColor(20,24,34);amt(v,191,y);y+=6.5;});
   doc.setFillColor(...NAVY);doc.rect(127,y-4,68,11,'F');doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);doc.setFontSize(10.5);
-  doc.text(clean(c.exempt?t.net:t.ttc),131,y+3.3);doc.text(clean(eur(c.ttc)),191,y+3.3,{align:'right'});
+  doc.text(clean(c.exempt?t.net:t.ttc),131,y+3.3);amt(eur(c.ttc),191,y+3.3);
   y+=18;
   const notes=[];
   if(c.exempt)notes.push(t.exempt);
