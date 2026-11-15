@@ -336,7 +336,7 @@ input[name=flight],input[name=dPlate],input[name=dVatNo],input[name=oVatNo],inpu
     <input type="file" id="fileImp" accept="application/json,.json" class="hide">
   </div>
   <p class="hint">Vos données restent uniquement sur ce téléphone. Faites une sauvegarde de temps en temps (fichier .json) pour ne rien perdre en changeant de téléphone.</p>
-  <div class="foot">PVTCD RELAIS · v2.2 · Paris VTC Driver</div>
+  <div class="foot">PVTCD RELAIS · v2.3 · Paris VTC Driver</div>
 </form>
 </section>
 </main>
@@ -1137,7 +1137,11 @@ function makeBC(r){
   const c=calc(r);
   doc.setFillColor(236,244,255);doc.setDrawColor(...ACC);doc.roundedRect(15,y,180,20,2,2,'FD');
   doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(...GREY);doc.text('Prix convenu',20,y+8);doc.text('Paiement : en compte sur facture',20,y+14.5);
-  doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(...NAVY);doc.text(clean(eur(c.ttc)+(c.exempt?'':' TTC')),190,y+12,{align:'right'});
+  doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(...NAVY);
+  {const num=eur(c.ttc).replace(' €','').replace(/\s/g,' ');let x=190;
+   if(!c.exempt){doc.text('TTC',x,y+12,{align:'right'});x-=doc.getTextWidth('TTC')+3.2;}
+   const we=16*0.556*25.4/72;doc.text('€',x-we,y+12);x-=we+1.4;
+   doc.text(num,x,y+12,{align:'right'});}
   y+=28;
   const req=rules(r);
   if(req.length)y=box(doc,15,y,180,'Exigences',req.map(s=>['','- '+s]))+6;
