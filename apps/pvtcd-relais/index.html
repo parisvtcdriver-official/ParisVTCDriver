@@ -131,7 +131,7 @@ body.formMode .abar{display:flex}
 .ride .route .dot{width:10px;height:10px;border-radius:50%;margin-top:5px;border:2px solid var(--acc)}
 .ride .route .dot.b{background:var(--red);border-color:var(--red)}
 .ride .meta{font-size:12.5px;color:var(--mut);line-height:1.5}
-.ride .acts{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+.ride .acts{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--line)}
 .ride .acts button{background:none;border:0;border-right:1px solid var(--line);color:var(--txt);padding:12px 4px;font-size:12.5px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:3px}
 .ride .acts button:last-child{border-right:0}
 .ride .acts button span{font-size:18px}
@@ -232,6 +232,7 @@ input[name=flight],input[name=dPlate],input[name=dVatNo],input[name=oVatNo],inpu
   <details class="sec" id="sec2" open>
     <summary><span class="num">2</span><span class="stitle"><b>Le client</b><span data-s="2">Nom et téléphone</span></span><span class="chev">▼</span></summary>
     <div class="secbody"><div class="grid">
+      <div class="full"><label class="l">Civilité</label><div class="seg" id="segCiv"><button type="button" data-v="Mme">Madame</button><button type="button" data-v="M.">Monsieur</button><button type="button" data-v="">—</button></div><input type="hidden" name="cCiv"></div>
       <div><label class="l">Prénom</label><input name="cFirst" autocapitalize="words"></div>
       <div><label class="l">Nom</label><input name="cLast" autocapitalize="words"></div>
       <div class="full"><label class="l">Téléphone</label>
@@ -337,7 +338,7 @@ input[name=flight],input[name=dPlate],input[name=dVatNo],input[name=oVatNo],inpu
     <input type="file" id="fileImp" accept="application/json,.json" class="hide">
   </div>
   <p class="hint">Vos données restent uniquement sur ce téléphone. Faites une sauvegarde de temps en temps (fichier .json) pour ne rien perdre en changeant de téléphone.</p>
-  <div class="foot">PVTCD RELAIS · v2.6 · Paris VTC Driver</div>
+  <div class="foot">PVTCD RELAIS · v2.7 · Paris VTC Driver</div>
 </form>
 </section>
 </main>
@@ -347,6 +348,7 @@ input[name=flight],input[name=dPlate],input[name=dVatNo],input[name=oVatNo],inpu
 <div class="abar" id="abar">
   <button type="button" class="main" id="bSave"><span>💾</span>Enregistrer</button>
   <button type="button" id="bText"><span>📣</span>Revente</button>
+  <button type="button" id="bCli"><span>💬</span>Client</button>
   <button type="button" id="bBC"><span>📄</span>Bon cde</button>
   <button type="button" id="bInv"><span>🧾</span>Facture</button>
 </div>
@@ -360,11 +362,12 @@ input[name=flight],input[name=dPlate],input[name=dVatNo],input[name=oVatNo],inpu
 
 <div class="modal" id="mText"><div class="sheet">
   <div class="grab"></div>
-  <h3>📣 Texte pour les groupes</h3>
+  <h3 id="txtTitle">📣 Texte pour les groupes</h3>
   <textarea id="txtOut"></textarea>
   <p class="hint">Modifiable avant envoi. Les *étoiles* = gras sur WhatsApp.</p>
   <div class="btns" style="margin-top:12px">
     <button class="btn solid full" id="tWa">Envoyer sur WhatsApp</button>
+    <p class="hint full hide" id="txtNoPhone" style="margin:-4px 2px 2px">Aucun numéro client saisi : WhatsApp vous laissera choisir le contact.</p>
     <button class="btn" id="tCopy">📋 Copier</button>
     <button class="btn" id="tShare">📤 Partager</button>
     <button class="btn ghost full" data-close>Fermer</button>
@@ -904,6 +907,7 @@ seg('#segArr',F.arrival,toggles);
 seg('#segTva',F.vat);
 seg('#segSt',F.status);
 seg('#segLang',F.invLang);
+seg('#segCiv',F.cCiv);
 seg('#segVat',F.dVat,toggles);
 $$('.stepper').forEach(st=>{const [m,inp,p]=st.children;const step=+(st.dataset.step||1),min=+(st.dataset.min||0);
   m.onclick=()=>{buzz();inp.value=Math.max(min,(+inp.value||0)-step);changed();};p.onclick=()=>{buzz();inp.value=(+inp.value||0)+step;changed();};});
@@ -936,13 +940,13 @@ let draftT;
 function changed(){updSum();summaries();clearTimeout(draftT);draftT=setTimeout(()=>store.set('draft',readForm()),400);}
 $('#f').addEventListener('input',e=>{if(e.target.classList.contains('err'))e.target.classList.remove('err');changed();});
 $('#f').addEventListener('change',changed);
-const FIELDS=['id','service','from','to','date','time','hours','arrival','flight','vehType','pax','bags','notes','cFirst','cLast','cDial','cPhone','cEmail','bkRef','price','vat','status','invNo','invDate','invMode','invLang','dFirst','dLast','dCompany','dAddress','dSiret','dEvtc','dVat','dVatNo','dCar','dPlate','dDial','dPhone'];
+const FIELDS=['id','service','from','to','date','time','hours','arrival','flight','vehType','pax','bags','notes','cCiv','cFirst','cLast','cDial','cPhone','cEmail','bkRef','price','vat','status','invNo','invDate','invMode','invLang','dFirst','dLast','dCompany','dAddress','dSiret','dEvtc','dVat','dVatNo','dCar','dPlate','dDial','dPhone'];
 function readForm(){const r={};FIELDS.forEach(k=>r[k]=String(F[k].value||'').trim());
   ['flight','dVatNo','dPlate'].forEach(k=>r[k]=r[k].toUpperCase());return r;}
 function writeForm(r){FIELDS.forEach(k=>{if(F[k])F[k].value=r[k]??'';});
   if(!F.cDial.value)F.cDial.value='FR'; if(!F.dDial.value)F.dDial.value='FR'; if(!F.invMode.value)F.invMode.value='d2o';
   setSeg('#segSrv',F.service,r.service||'transfert');setSeg('#segArr',F.arrival,r.arrival||'');setSeg('#segTva',F.vat,r.vat||'10');
-  setSeg('#segSt',F.status,r.status||'sell');setSeg('#segVat',F.dVat,r.dVat||'oui');setSeg('#segLang',F.invLang,r.invLang||'fr');setChip(r.vehType||VEHICLES[0]);
+  setSeg('#segSt',F.status,r.status||'sell');setSeg('#segVat',F.dVat,r.dVat||'oui');setSeg('#segLang',F.invLang,r.invLang||'fr');setSeg('#segCiv',F.cCiv,r.cCiv||'');setChip(r.vehType||VEHICLES[0]);
   if(!F.hours.value)F.hours.value=3;
   $('#pickDrv').value='';$('#bDel').classList.toggle('hide',!r.id);$$('.err').forEach(e=>e.classList.remove('err'));
   $$('details.sec').forEach(d=>d.open=true);toggles();updSum();summaries();}
@@ -1028,13 +1032,14 @@ function renderRides(){
    <span class="badge ${s[1]}">${s[0]}</span>
    <div class="route"><span class="dot"></span><span>${esc(r.from)}</span><span class="dot b"></span><span>${esc(r.to)}</span></div>
    <div class="meta">🚙 ${esc(VSHORT[VEHICLES.indexOf(r.vehType)]||r.vehType)} · 👥 ${esc(r.pax)} · 🧳 ${esc(r.bags)}${r.flight?' · '+(r.arrival==='train'?'🚆 ':'✈️ ')+esc(r.flight):''}${r.cLast||r.cFirst?'<br>👤 '+esc((r.cFirst+' '+r.cLast).trim()):''}${r.bkRef?' · 🔖 '+esc(r.bkRef):''}${r.dLast||r.dFirst?'  ·  🧑‍✈️ '+esc((r.dFirst+' '+r.dLast).trim()):''}</div></div>
-   <div class="acts"><button data-a="txt" data-id="${r.id}"><span>📣</span>Revente</button><button data-a="bc" data-id="${r.id}"><span>📄</span>Bon cde</button><button data-a="inv" data-id="${r.id}"><span>🧾</span>Facture</button><button data-a="dup" data-id="${r.id}"><span>⧉</span>Dupliquer</button></div></div>`;}).join('');
+   <div class="acts"><button data-a="txt" data-id="${r.id}"><span>📣</span>Revente</button><button data-a="bc" data-id="${r.id}"><span>📄</span>Bon cde</button><button data-a="inv" data-id="${r.id}"><span>🧾</span>Facture</button><button data-a="cli" data-id="${r.id}"><span>💬</span>Client</button><button data-a="dup" data-id="${r.id}"><span>⧉</span>Copier</button></div></div>`;}).join('');
   L.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{buzz();rideAction(b.dataset.a,b.dataset.id);});
 }
 function rideAction(a,id){
   const r=RIDES.find(x=>x.id===id);if(!r)return;
   if(a==='open'){writeForm(r);show('v-form');}
   if(a==='txt')openText(r);
+  if(a==='cli')openClientMsg(r);
   if(a==='bc')makeBC(r);
   if(a==='inv')makeInvoice(r);
   if(a==='dup'){const c=Object.assign({},r,{id:'',ref:'',invNo:'',status:'sell',invDate:today()});writeForm(c);F.id.value='';$('#bDel').classList.add('hide');show('v-form');toast('Copie créée : changez la date puis enregistrez');}
@@ -1068,10 +1073,72 @@ function buildText(r){
   if(SET.txtContact&&SET.oPhone){L.push('','📲 Intéressé ? Contactez-moi : '+fullPhone(SET.oDial,SET.oPhone));}
   return L.join('\n');
 }
-function openText(r){$('#txtOut').value=buildText(r);openModal('#mText');}
+let WA_TO='';
+function openText(r){WA_TO='';$('#txtTitle').textContent='📣 Texte pour les groupes';$('#tWa').textContent='Envoyer sur WhatsApp';$('#txtNoPhone').classList.add('hide');$('#txtOut').value=buildText(r);openModal('#mText');}
+
+/* ---------- Message de confirmation au client ---------- */
+// Anglais si le numéro du client n'est pas français, sinon français.
+const FR_DIALS=['FR','GP','MQ','GF','RE','YT','PM','NC','PF','WF','MC'];
+function clientLang(r){const ph=String(r.cPhone||'').trim();if(ph.startsWith('+'))return ph.replace(/\s/g,'').startsWith('+33')?'fr':'en';return FR_DIALS.includes(r.cDial||'FR')?'fr':'en';}
+const VEH_EN={'Berline':'Sedan','Berline Premium (type Classe E)':'Premium Mercedes E-Class','Électrique Premium (Tesla / équivalent)':'Premium electric (Tesla or similar)','Van (type Classe V)':'Mercedes V-Class van','Éco Green Hybride':'Eco hybrid sedan','Berline Luxe (type Classe S)':'Luxury Mercedes S-Class'};
+const VEH_FR={'Berline Premium (type Classe E)':'Mercedes Classe E Premium','Van (type Classe V)':'Van Mercedes Classe V','Berline Luxe (type Classe S)':'Mercedes Classe S Luxe','Électrique Premium (Tesla / équivalent)':'Électrique Premium (Tesla ou équivalent)'};
+function dateEN(iso){if(!iso)return '';const[y,m,d]=iso.split('-').map(Number);const dt=new Date(y,m-1,d);return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][dt.getDay()]+', '+['January','February','March','April','May','June','July','August','September','October','November','December'][m-1]+' '+d+', '+y;}
+function timeEN(t){if(!t)return '';let[h,m]=t.split(':').map(Number);const ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+String(m).padStart(2,'0')+' '+ap;}
+function buildClientMsg(r){
+  const en=clientLang(r)==='en';
+  const civ=r.cCiv==='Mme'?'Madame':r.cCiv==='M.'?'Monsieur':'';
+  const who=(civ?civ+' '+(r.cLast||r.cFirst):(r.cFirst+' '+r.cLast)).trim();
+  const drv=(r.dFirst||'').trim()||(r.dFirst+' '+r.dLast).trim();
+  const dph=fullPhone(r.dDial,r.dPhone);
+  const sign=[SET.oManager,SET.oName,SET.oWeb].filter(Boolean);
+  const L=[];
+  if(en){
+    const what=r.service==='mad'?'private chauffeur service'+(r.hours?' ('+r.hours+' hours)':''):'private transfer';
+    L.push('Hello'+(who?' '+who:'')+',');
+    L.push('We are pleased to confirm your '+what+' booking for '+dateEN(r.date)+', at '+timeEN(r.time)+'.');
+    L.push('📍 Pickup: '+r.from);
+    if(r.to)L.push('🏁 Drop-off: '+r.to);
+    L.push('🚘 Vehicle: '+(VEH_EN[r.vehType]||r.vehType));
+    if(r.arrival&&r.flight)L.push((r.arrival==='train'?'🚆 Train: ':'✈️ Flight: ')+r.flight);
+    if(r.bkRef)L.push('🔖 Booking reference: '+r.bkRef);
+    L.push(r.arrival==='vol'?'Your driver will be waiting for you just after the baggage claim exit, holding a sign displaying your name.':
+           r.arrival==='train'?'Your driver will be waiting for you at the end of your train platform, holding a sign displaying your name.':
+           'Your driver will be waiting for you at the pickup address at the scheduled time.');
+    if(drv||dph||r.dCar){L.push('Your driver’s details:','');if(drv)L.push('• Name: '+drv);if(dph)L.push('• Phone: '+dph);if(r.dCar)L.push('• Vehicle: '+r.dCar+(r.dPlate?' ('+r.dPlate+')':''));L.push('');}
+    if(r.arrival)L.push('Your driver will monitor your '+(r.arrival==='train'?'train':'flight')+' and be ready for your arrival.');
+    L.push('Thank you for choosing '+(SET.oName||'ParisVTCDriver')+'. We wish you a pleasant journey!');
+    L.push('Best regards,');
+  }else{
+    const what=r.service==='mad'?'mise à disposition avec chauffeur'+(r.hours?' ('+r.hours+' h)':''):'transfert privé';
+    L.push('Bonjour'+(who?' '+who:'')+',');
+    L.push('Nous avons le plaisir de vous confirmer votre réservation de '+what+' pour le '+dateLong(r.date)+' à '+heure(r.time)+'.');
+    L.push('📍 Prise en charge : '+r.from);
+    if(r.to)L.push('🏁 Dépose : '+r.to);
+    L.push('🚘 Véhicule : '+(VEH_FR[r.vehType]||r.vehType));
+    if(r.arrival&&r.flight)L.push((r.arrival==='train'?'🚆 Train : ':'✈️ Vol : ')+r.flight);
+    if(r.bkRef)L.push('🔖 Référence de réservation : '+r.bkRef);
+    L.push(r.arrival==='vol'?'Votre chauffeur vous attendra juste après la sortie des bagages, avec une pancarte à votre nom.':
+           r.arrival==='train'?'Votre chauffeur vous attendra en bout de quai, avec une pancarte à votre nom.':
+           'Votre chauffeur vous attendra à l’adresse de prise en charge à l’heure prévue.');
+    if(drv||dph||r.dCar){L.push('Les coordonnées de votre chauffeur :','');if(drv)L.push('• Nom : '+drv);if(dph)L.push('• Téléphone : '+dph);if(r.dCar)L.push('• Véhicule : '+r.dCar+(r.dPlate?' ('+r.dPlate+')':''));L.push('');}
+    if(r.arrival)L.push('Votre chauffeur suivra votre '+(r.arrival==='train'?'train':'vol')+' et sera prêt pour votre arrivée.');
+    L.push('Merci d’avoir choisi '+(SET.oName||'ParisVTCDriver')+'. Nous vous souhaitons un agréable trajet !');
+    L.push('Bien cordialement,');
+  }
+  return L.concat(sign).join('\n');
+}
+function openClientMsg(r){
+  const en=clientLang(r)==='en';
+  WA_TO=r.cPhone?waNumber(r.cDial,r.cPhone):'';
+  $('#txtTitle').textContent='💬 Message au client '+(en?'(🇬🇧 anglais)':'(🇫🇷 français)');
+  $('#tWa').textContent=WA_TO?'Envoyer au client sur WhatsApp':'Envoyer sur WhatsApp';
+  $('#txtNoPhone').classList.toggle('hide',!!WA_TO);
+  $('#txtOut').value=buildClientMsg(r);openModal('#mText');
+}
+$('#bCli').onclick=()=>{const r=saveRide(true);if(r)openClientMsg(r);};
 $('#bText').onclick=()=>{const r=saveRide(true);if(r)openText(r);};
 $('#tCopy').onclick=async()=>{const t=$('#txtOut').value;try{await navigator.clipboard.writeText(t);}catch(e){const a=$('#txtOut');a.select();document.execCommand('copy');a.blur();}toast('📋 Texte copié');buzz(20);};
-$('#tWa').onclick=()=>{location.href='https://wa.me/?text='+encodeURIComponent($('#txtOut').value);};
+$('#tWa').onclick=()=>{location.href='https://wa.me/'+(WA_TO||'')+'?text='+encodeURIComponent($('#txtOut').value);};
 $('#tShare').onclick=async()=>{const t=$('#txtOut').value;if(navigator.share){try{await navigator.share({text:t});}catch(e){}}else $('#tCopy').click();};
 
 /* PDF */
