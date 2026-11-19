@@ -1039,19 +1039,21 @@ async function monthlyStatementPDF(){
   var el=document.getElementById('stmtMonth'); var mv=(el&&el.value)||'';
   if(!mv){ var nn=new Date(); mv=nn.getFullYear()+'-'+('0'+(nn.getMonth()+1)).slice(-2); if(el)el.value=mv; }
   var ym=mv.split('-'), Y=+ym[0], Mo=+ym[1];
-  var list=(BOOKINGS||[]).filter(function(b){ if(b.type!=='facture')return false; var d=bkDateObj(b); return d && d.getFullYear()===Y && (d.getMonth()+1)===Mo; })
-    .map(function(b){return {b:b,d:bkDateObj(b)};}).sort(function(a,b){return a.d-b.d;});
-  if(!list.length){ toast('Aucune course pour ce mois.'); return; }
+  // Base ENCAISSEMENT (pour la compta) : on date chaque facture par sa date de paiement reçu
+  // (paid_at si soldée ; acompte → accepted_at) et on ne retient que les paiements encaissés dans le mois.
+  function payDate(b){ var s=(b.pay_status==='paid')?b.paid_at:((b.pay_status==='partial')?(b.paid_at||b.accepted_at):null); if(!s)return null; var d=new Date(s); return isNaN(d)?null:d; }
+  var list=(BOOKINGS||[]).filter(function(b){ if(b.type!=='facture')return false; if(b.status==='cancelled'||b.status==='refunded')return false; var d=payDate(b); return d && d.getFullYear()===Y && (d.getMonth()+1)===Mo; })
+    .map(function(b){return {b:b,d:payDate(b)};}).sort(function(a,b){return a.d-b.d;});
+  if(!list.length){ toast('Aucun paiement encaissé pour ce mois.'); return; }
   function modeBucket(v){v=String(v||'');if(/stripe|carte/i.test(v))return 'carte';if(/virement/i.test(v))return 'virement';if(/espece/i.test(v))return 'especes';return 'autre';}
   function modeShort(v){var m=modeBucket(v);return m==='carte'?'carte':m==='virement'?'vir.':m==='especes'?'esp.':'';}
-  var enc=0,byMode={carte:0,virement:0,especes:0,autre:0},nbPaid=0,nbPend=0,nbCanc=0,attente=0;
-  list.forEach(function(r){var b=r.b, canc=(b.status==='cancelled'||b.status==='refunded');
-    if(canc){nbCanc++;return;}
-    if(b.pay_status==='paid'){var a=Number(b.amount_ttc)||0;enc+=a;byMode[modeBucket((b.details||{}).paid_via)]+=a;nbPaid++;}
-    else if(b.pay_status==='partial'){var dep=Number((b.details||{}).deposit)||0;enc+=dep;byMode[modeBucket((b.details||{}).deposit_via||'stripe')]+=dep;nbPaid++;attente+=Math.max(0,(Number(b.amount_ttc)||0)-dep);}
-    else {nbPend++;attente+=Number(b.amount_ttc)||0;}
+  var enc=0,byMode={carte:0,virement:0,especes:0,autre:0};
+  list.forEach(function(r){var b=r.b, d=b.details||{}, a, mode;
+    if(b.pay_status==='partial'){ a=Number(d.deposit)||0; mode=modeBucket(d.deposit_via||'stripe'); }
+    else { a=Number(b.amount_ttc)||0; mode=modeBucket(d.paid_via); }
+    a=Math.round(a*100)/100; r.enc=a; r.mode=mode; enc+=a; byMode[mode]+=a;
   });
-  enc=Math.round(enc*100)/100; attente=Math.round(attente*100)/100;
+  enc=Math.round(enc*100)/100;
   var MN=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
   var title=MN[Mo-1]+' '+Y;
   toast('Génération du relevé…');
@@ -1072,28 +1074,26 @@ async function monthlyStatementPDF(){
   var y=132;
   doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(11);doc.text('Synthèse',L,y);y+=18;
   doc.setFont(F,'normal');doc.setFontSize(9.5);doc.setTextColor(60,70,90);
-  doc.text('Courses du mois : '+list.length+'  (payées '+nbPaid+' · en attente '+nbPend+' · annulées '+nbCanc+')',L,y);y+=16;
+  doc.text('Base : paiements encaissés dans le mois (date d’encaissement) — '+list.length+' paiement(s)',L,y);y+=16;
   doc.setFont(F,'bold');doc.setTextColor(...dark);doc.setFontSize(13);doc.text('CA encaissé TTC : '+eur(enc),L,y);y+=16;
   doc.setFont(F,'normal');doc.setFontSize(9);doc.setTextColor(90,100,120);
   doc.text('dont carte '+eur(byMode.carte)+' · virement '+eur(byMode.virement)+' · espèces '+eur(byMode.especes)+(byMode.autre>0.009?(' · autre '+eur(byMode.autre)):''),L,y);y+=14;
-  if(attente>0.009){doc.setTextColor(200,140,40);doc.text('En attente de paiement : '+eur(attente)+' (hors CA encaissé)',L,y);y+=14;}
   y+=10;
-  var cX={d:L,c:98,r:196,s:436,ttc:R};
+  var cX={d:L,rv:120,c:210,r:300,ttc:R};
   function thead(){doc.setFont(F,'bold');doc.setFontSize(8);doc.setTextColor(120,128,142);
-    doc.text('DATE',cX.d,y);doc.text('CLIENT',cX.c,y);doc.text('TRAJET',cX.r,y);doc.text('STATUT',cX.s,y);doc.text('TTC',cX.ttc,y,{align:'right'});
+    doc.text('ENCAISSÉ',cX.d,y);doc.text('RÉSERVATION',cX.rv,y);doc.text('CLIENT',cX.c,y);doc.text('TRAJET',cX.r,y);doc.text('TTC',cX.ttc,y,{align:'right'});
     y+=4;doc.setDrawColor(215);doc.line(L,y,R,y);y+=12;doc.setFont(F,'normal');doc.setFontSize(8.5);}
   thead();
   list.forEach(function(r){
     if(y>808){ doc.addPage(); doc.setFillColor(7,10,18);doc.rect(0,0,W,34,'F');doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(11);doc.text('ParisVTCDriver — Relevé '+title,L,22);y=58;thead(); }
-    var b=r.b, canc=(b.status==='cancelled'||b.status==='refunded');
-    var st = canc?'Annulée' : (b.pay_status==='paid'?('Payée'+(modeShort((b.details||{}).paid_via)?(' '+modeShort((b.details||{}).paid_via)):'')) : (b.pay_status==='partial'?'Acompte':'En attente'));
+    var b=r.b;
     var route=(b.pickup||b.dropoff)?((b.pickup||'—')+' → '+(b.dropoff||'—')):''; if(!route){var l0=firstLine(b);route=(l0&&l0.route)?l0.route:'—';}
-    doc.setTextColor(canc?170:60, canc?170:70, canc?180:90);
+    doc.setTextColor(60,70,90);
     doc.text(sdate(r.d),cX.d,y);
-    doc.text(trunc(bookingClient(b).replace(' (sans compte)',''),88,24),cX.c,y);
-    doc.text(trunc(route,232,64),cX.r,y);
-    doc.text(trunc(st,58,16),cX.s,y);
-    doc.text(eur(b.amount_ttc),cX.ttc,y,{align:'right'});
+    doc.text(sdate(bkDateObj(b)),cX.rv,y);
+    doc.text(trunc(bookingClient(b).replace(' (sans compte)',''),82,22),cX.c,y);
+    doc.text(trunc(route,245,66),cX.r,y);
+    doc.text(eur(r.enc),cX.ttc,y,{align:'right'});
     y+=13; doc.setDrawColor(238);doc.line(L,y-4,R,y-4);
   });
   // total bas de tableau
