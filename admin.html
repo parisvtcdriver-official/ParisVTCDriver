@@ -1079,9 +1079,9 @@ async function monthlyStatementPDF(){
   doc.setFont(F,'normal');doc.setFontSize(9);doc.setTextColor(90,100,120);
   doc.text('dont carte '+eur(byMode.carte)+' · virement '+eur(byMode.virement)+' · espèces '+eur(byMode.especes)+(byMode.autre>0.009?(' · autre '+eur(byMode.autre)):''),L,y);y+=14;
   y+=10;
-  var cX={d:L,rv:120,c:210,r:300,ttc:R};
+  var cX={d:L,rv:95,c:150,r:230,ttc:R};
   function thead(){doc.setFont(F,'bold');doc.setFontSize(8);doc.setTextColor(120,128,142);
-    doc.text('ENCAISSÉ',cX.d,y);doc.text('RÉSERVATION',cX.rv,y);doc.text('CLIENT',cX.c,y);doc.text('TRAJET',cX.r,y);doc.text('TTC',cX.ttc,y,{align:'right'});
+    doc.text('ENCAISSÉ',cX.d,y);doc.text('RÉSERV.',cX.rv,y);doc.text('CLIENT',cX.c,y);doc.text('TRAJET',cX.r,y);doc.text('TTC',cX.ttc,y,{align:'right'});
     y+=4;doc.setDrawColor(215);doc.line(L,y,R,y);y+=12;doc.setFont(F,'normal');doc.setFontSize(8.5);}
   thead();
   list.forEach(function(r){
@@ -1091,8 +1091,8 @@ async function monthlyStatementPDF(){
     doc.setTextColor(60,70,90);
     doc.text(sdate(r.d),cX.d,y);
     doc.text(sdate(bkDateObj(b)),cX.rv,y);
-    doc.text(trunc(bookingClient(b).replace(' (sans compte)',''),82,22),cX.c,y);
-    doc.text(trunc(route,245,66),cX.r,y);
+    doc.text(trunc(bookingClient(b).replace(' (sans compte)',''),72,20),cX.c,y);
+    doc.text(trunc(route,246,70),cX.r,y);
     doc.text(eur(r.enc),cX.ttc,y,{align:'right'});
     y+=13; doc.setDrawColor(238);doc.line(L,y-4,R,y-4);
   });
