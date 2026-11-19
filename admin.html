@@ -1061,8 +1061,12 @@ async function monthlyStatementPDF(){
   var F=await pdfFont(doc); var gold=[201,162,74],dark=[20,28,46]; var W=595,L=40,R=555;
   function trunc(s,w,mc){s=String(s==null?'':s);if(mc&&s.length>mc)s=s.slice(0,mc);if(doc.getTextWidth(s)<=w)return s;while(s.length>1&&doc.getTextWidth(s+'…')>w)s=s.slice(0,-1);return s+'…';}
   function sdate(d){return d?(('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear()):'—';}
+  // date courte JJ/MM (l'année est dans le titre du relevé) ; on n'ajoute l'année que si elle diffère du mois édité
+  function sdm(d){if(!d)return '—';var s=('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2);if(d.getFullYear()!==Y)s+='/'+String(d.getFullYear()).slice(-2);return s;}
   // Adresse compacte : lieu nommé (hôtel, gare, aéroport…) + code postal + ville ; sinon juste code postal + ville
-  function shortAddr(a){a=String(a==null?'':a).trim();if(!a)return '—';
+  function shortAddr(a){a=String(a==null?'':a).replace(/adresse de prise en charge/ig,'').replace(/^[\s:,\-–—]+/,'').trim();if(!a)return '—';
+    if(/\bcdg\b|charles[\s\-]?de[\s\-]?gaulle/i.test(a)||(/roissy/i.test(a)&&/a[ée]roport/i.test(a)))return 'CDG';
+    if(/\borly\b/i.test(a))return 'Orly';
     var pc=a.match(/(\d{5})\s+([A-Za-zÀ-ÿ'’\.\- ]+?)(?:,|$)/);
     var loc=pc?(pc[1]+' '+pc[2].trim().replace(/\s+/g,' ')):'';
     var seg0=a.split(',')[0].trim();
@@ -1089,7 +1093,7 @@ async function monthlyStatementPDF(){
   doc.setFont(F,'normal');doc.setFontSize(9);doc.setTextColor(90,100,120);
   doc.text('dont carte '+eur(byMode.carte)+' · virement '+eur(byMode.virement)+' · espèces '+eur(byMode.especes)+(byMode.autre>0.009?(' · autre '+eur(byMode.autre)):''),L,y);y+=14;
   y+=10;
-  var cX={d:L,rv:95,c:150,r:258,ttc:R};
+  var cX={d:L,rv:84,c:124,r:264,ttc:R};
   function thead(){doc.setFont(F,'bold');doc.setFontSize(8);doc.setTextColor(120,128,142);
     doc.text('ENCAISSÉ',cX.d,y);doc.text('RÉSERV.',cX.rv,y);doc.text('CLIENT',cX.c,y);doc.text('TRAJET',cX.r,y);doc.text('TTC',cX.ttc,y,{align:'right'});
     y+=4;doc.setDrawColor(215);doc.line(L,y,R,y);y+=12;doc.setFont(F,'normal');doc.setFontSize(8);}
@@ -1099,10 +1103,10 @@ async function monthlyStatementPDF(){
     var b=r.b;
     var route; if(b.pickup||b.dropoff){route=shortAddr(b.pickup)+' → '+shortAddr(b.dropoff);} else {var l0=firstLine(b);route=(l0&&l0.route)?l0.route:'—';}
     doc.setTextColor(60,70,90);
-    doc.text(sdate(r.d),cX.d,y);
-    doc.text(sdate(bkDateObj(b)),cX.rv,y);
-    doc.text(trunc(bookingClient(b).replace(' (sans compte)',''),104,34),cX.c,y);
-    doc.text(trunc(route,237,120),cX.r,y);
+    doc.text(sdm(r.d),cX.d,y);
+    doc.text(sdm(bkDateObj(b)),cX.rv,y);
+    doc.text(trunc(bookingClient(b).replace(' (sans compte)',''),138,46),cX.c,y);
+    doc.text(trunc(route,244,120),cX.r,y);
     doc.text(eur(r.enc),cX.ttc,y,{align:'right'});
     y+=13; doc.setDrawColor(238);doc.line(L,y-4,R,y-4);
   });
