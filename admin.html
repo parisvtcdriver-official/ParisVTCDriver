@@ -260,7 +260,7 @@ select.mini{background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:
 
     <!-- STATS -->
     <section class="view" id="stats">
-      <div class="top"><div><h1>Statistiques</h1><div class="sub" id="statYear">Vue d'ensemble de l'activité</div></div><div style="margin-left:auto;display:flex;align-items:center;gap:10px"><input type="month" id="stmtMonth" title="Mois du relevé" style="background:rgba(7,11,20,.7);border:1px solid var(--line-soft);color:var(--txt);font-family:inherit;font-size:13px;border-radius:8px;padding:7px 9px"><button class="btn btn-gold" onclick="monthlyStatementPDF()">⤓ Relevé mensuel (PDF)</button></div></div>
+      <div class="top"><div><h1>Statistiques</h1><div class="sub" id="statYear">Vue d'ensemble de l'activité</div></div><div style="margin-left:auto;display:flex;align-items:center;gap:10px"><input type="month" id="stmtMonth" title="Mois du relevé" style="color-scheme:dark;background:#0e1626;border:1px solid var(--gold-2);color:var(--txt);font-family:inherit;font-size:13px;border-radius:8px;padding:7px 10px"><button class="btn btn-gold" onclick="monthlyStatementPDF()">⤓ Relevé mensuel (PDF)</button></div></div>
       <div class="card" style="padding:22px 26px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(201,162,74,.16),rgba(201,162,74,.04));border-color:var(--line)">
         <div class="ic" style="width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:rgba(201,162,74,.16);border:1px solid var(--line);color:var(--gold-2);flex:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="width:24px;height:24px"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
         <div><div class="lbl" style="color:var(--muted-2);font-size:13px">Chiffre d'affaires confirmé (année en cours)</div><div class="val mono" id="sYearCA" style="font-size:34px;font-weight:700;color:var(--gold-bright);margin-top:2px">0 €</div></div>
@@ -1067,6 +1067,7 @@ async function monthlyStatementPDF(){
   doc.text(CO.addr,L,78);
   doc.setTextColor(...gold);doc.setFont(F,'bold');doc.setFontSize(15);doc.text('RELEVÉ MENSUEL',R,48,{align:'right'});
   doc.setTextColor(231,200,120);doc.setFont(F,'normal');doc.setFontSize(12);doc.text(title,R,68,{align:'right'});
+  doc.setTextColor(150,160,180);doc.setFontSize(8);doc.text('Édité le '+new Date().toLocaleDateString('fr-FR'),R,84,{align:'right'});
   // synthèse
   var y=132;
   doc.setTextColor(...dark);doc.setFont(F,'bold');doc.setFontSize(11);doc.text('Synthèse',L,y);y+=18;
@@ -1077,9 +1078,9 @@ async function monthlyStatementPDF(){
   doc.text('dont carte '+eur(byMode.carte)+' · virement '+eur(byMode.virement)+' · espèces '+eur(byMode.especes)+(byMode.autre>0.009?(' · autre '+eur(byMode.autre)):''),L,y);y+=14;
   if(attente>0.009){doc.setTextColor(200,140,40);doc.text('En attente de paiement : '+eur(attente)+' (hors CA encaissé)',L,y);y+=14;}
   y+=10;
-  var cX={d:L,c:98,r:182,v:312,s:372,ttc:R};
+  var cX={d:L,c:98,r:196,s:436,ttc:R};
   function thead(){doc.setFont(F,'bold');doc.setFontSize(8);doc.setTextColor(120,128,142);
-    doc.text('DATE',cX.d,y);doc.text('CLIENT',cX.c,y);doc.text('TRAJET',cX.r,y);doc.text('VÉHICULE',cX.v,y);doc.text('STATUT',cX.s,y);doc.text('TTC',cX.ttc,y,{align:'right'});
+    doc.text('DATE',cX.d,y);doc.text('CLIENT',cX.c,y);doc.text('TRAJET',cX.r,y);doc.text('STATUT',cX.s,y);doc.text('TTC',cX.ttc,y,{align:'right'});
     y+=4;doc.setDrawColor(215);doc.line(L,y,R,y);y+=12;doc.setFont(F,'normal');doc.setFontSize(8.5);}
   thead();
   list.forEach(function(r){
@@ -1089,10 +1090,9 @@ async function monthlyStatementPDF(){
     var route=(b.pickup||b.dropoff)?((b.pickup||'—')+' → '+(b.dropoff||'—')):''; if(!route){var l0=firstLine(b);route=(l0&&l0.route)?l0.route:'—';}
     doc.setTextColor(canc?170:60, canc?170:70, canc?180:90);
     doc.text(sdate(r.d),cX.d,y);
-    doc.text(trunc(bookingClient(b).replace(' (sans compte)',''),76,22),cX.c,y);
-    doc.text(trunc(route,120,34),cX.r,y);
-    doc.text(trunc(bkVehicle(b),46,13),cX.v,y);
-    doc.text(trunc(st,66,16),cX.s,y);
+    doc.text(trunc(bookingClient(b).replace(' (sans compte)',''),88,24),cX.c,y);
+    doc.text(trunc(route,232,64),cX.r,y);
+    doc.text(trunc(st,58,16),cX.s,y);
     doc.text(eur(b.amount_ttc),cX.ttc,y,{align:'right'});
     y+=13; doc.setDrawColor(238);doc.line(L,y-4,R,y-4);
   });
@@ -1103,7 +1103,6 @@ async function monthlyStatementPDF(){
   // pied légal
   doc.setFont(F,'normal');doc.setFontSize(7.5);doc.setTextColor(150,158,172);
   doc.text(CO.name+' · '+CO.form+' · SIRET '+CO.siret+' · TVA '+CO.tva+' · '+CO.addr,L,828);
-  doc.text('Relevé généré le '+new Date().toLocaleDateString('fr-FR'),R,828,{align:'right'});
   doc.save('releve-mensuel-'+mv+'-parisvtcdriver.pdf');
   toast('Relevé mensuel téléchargé ✓');
 }
