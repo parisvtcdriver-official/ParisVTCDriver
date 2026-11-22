@@ -1,6 +1,6 @@
 {
-  "name": "ParisVTCDriver – Frais réels",
-  "short_name": "PVTC Frais",
+  "name": "PVTCD PILOT – Suivi de rentabilité",
+  "short_name": "PVTCD PILOT",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f3f5f8",

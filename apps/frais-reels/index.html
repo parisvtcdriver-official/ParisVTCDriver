@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#101827">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="PVTC Frais">
+<meta name="apple-mobile-web-app-title" content="PVTCD PILOT">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>ParisVTCDriver — Gestion des frais</title>
+<title>PVTCD PILOT — Suivi de rentabilité</title>
 <style>
 :root{--navy:#101827;--navy2:#202e43;--gold:#d6ad63;--gold2:#f0d49c;--ink:#172033;--muted:#718096;--line:#e7ebf1;--bg:#f3f5f8;--white:#fff;--green:#168568;--red:#c64c4c}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);padding-bottom:calc(28px + env(safe-area-inset-bottom))}
@@ -65,6 +65,7 @@ input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;displ
 .goalbtn{border:1px dashed #d6ad6399;background:#d6ad631a;color:var(--gold2);border-radius:10px;padding:7px 10px;font:inherit;font-size:14px;font-weight:800}
 .goalform{margin-top:10px;background:#ffffff12;border:1px solid #d6ad6366;border-radius:12px;padding:12px}.goalform label{font-size:12px;color:#dbe2ec;font-weight:700}.goalrow{display:flex;gap:8px;margin-top:7px}.goalrow input{flex:1;min-width:0;border:2px solid var(--gold);background:#ffffff12;color:#fff;border-radius:10px;padding:10px;font:inherit;font-size:20px;font-weight:800;min-height:48px}.goalrow button{border:0;border-radius:10px;background:var(--gold);color:#101827;font-weight:900;padding:0 18px;min-height:48px}
 .goalhint{font-size:11px;color:#aeb9c9;margin-top:7px;line-height:1.4}.goalreset{border:0;background:none;color:var(--gold2);font:inherit;font-size:12px;font-weight:700;padding:8px 0 0}
+.wdrow{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #ffffff1a}.wdrow label{flex:1;font-size:13px;color:#dbe2ec;font-weight:700}.wdrow input{width:78px;min-width:0;border:1px solid #d6ad6399;background:#ffffff12;color:#fff;border-radius:10px;padding:9px;font:inherit;font-size:17px;font-weight:800;text-align:center;min-height:44px}.wdrow input::placeholder{color:#9aa6b8;font-weight:600;font-size:13px}.wdrow button{border:0;border-radius:10px;background:#ffffff26;color:#fff;font-weight:800;padding:0 14px;min-height:44px}
 .footer{text-align:center;color:#8993a2;font-size:10px;padding:12px}.hidden{display:none!important}
 @media(min-width:600px){main{padding:22px}.total{font-size:40px}.section{padding:19px}}
 </style>
@@ -72,8 +73,8 @@ input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;displ
 <body>
 
 <header>
- <div class="brand"><img class="mark" src="icon-192.png" alt="Logo ParisVTCDriver Frais réels"><div><div class="brandname">PARIS VTC DRIVER</div><div class="subbrand">OUTIL DE GESTION INTERNE</div></div></div>
- <div class="headerrow"><div><div class="eyebrow">Pilotage de votre activité</div><h1>Suivi des frais réels</h1></div><input id="month" class="month" type="month" aria-label="Mois affiché"></div>
+ <div class="brand"><img class="mark" src="icon-192.png" alt="Logo PVTCD PILOT"><div><div class="brandname">PARIS VTC DRIVER</div><div class="subbrand">OUTIL DE GESTION INTERNE</div></div></div>
+ <div class="headerrow"><div><div class="eyebrow">Pilotage de votre activité</div><h1>Suivi de rentabilité</h1></div><input id="month" class="month" type="month" aria-label="Mois affiché"></div>
 </header>
 <main>
  <section class="hero">
@@ -93,6 +94,7 @@ input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;displ
    <div class="monthdone"><span id="mDone">0,00 €</span> <small id="mPct"></small></div>
    <div class="progress" id="mBarWrap"><div id="mBar" style="width:0%"></div></div>
    <div class="leftline"><span id="mLeftLbl">Reste à faire</span><strong id="mLeft">—</strong></div>
+   <form class="wdrow" id="wdForm"><label for="wdInput">📅 Jours travaillés ce mois</label><input id="wdInput" type="number" min="0" max="31" step="1" inputmode="numeric" placeholder="Ex. 22"><button type="submit">OK</button></form>
    <div class="monthkm"><span>Km du mois <b id="mKm">0 km</b></span><span>Carburant estimé <b id="mFuel">—</b></span></div>
    <div class="goalhint" id="mGoalMode" style="text-align:center;margin-top:8px"></div>
    <div class="hint" id="mMsg" style="color:#c2cbd8;margin-top:6px;text-align:center"></div>
@@ -158,7 +160,7 @@ input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;displ
   <div class="formgrid">
    <div class="field"><label for="revenue">Chiffre d'affaires TTC (€)</label><input id="revenue" type="number" min="0" step="0.01" placeholder="0,00"><div class="hint" id="revenueHint"></div></div>
    <div class="field"><label for="km">Kilomètres du mois</label><input id="km" type="number" min="0" step="1" placeholder="Ex. 1800"><div class="hint" id="kmHint"></div></div>
-   <div class="field"><label for="days">Jours travaillés</label><input id="days" type="number" min="0" step="1" placeholder="Ex. 18"></div>
+   <div class="field"><label for="days">Jours travaillés (prévus)</label><input id="days" type="number" min="0" step="1" placeholder="Ex. 18"></div>
   </div>
   <div class="actions"><button class="btn" id="savePerformance" type="button">Enregistrer les chiffres</button></div>
   <div class="kpis">
@@ -232,6 +234,7 @@ function monthExpenses(m=mth()){return data.expenses.filter(e=>e.date&&e.date.sl
 function monthRevenues(m=mth()){return data.revenues.filter(r=>r.date&&r.date.slice(0,7)===m)}
 const DEFAULT_PLATFORMS=['Bolt','Uber','Allocab','PVTCD','Groupe WhatsApp','Autre'];if(!Array.isArray(data.platforms)||!data.platforms.length)data.platforms=DEFAULT_PLATFORMS.slice();
 let curPlat=(()=>{try{return localStorage.getItem('fr_last_plat')||data.platforms[0]}catch(e){return data.platforms[0]}})();
+function caItems0(m){return data.revenues.filter(r=>r.date&&r.date.slice(0,7)===m)}
 function goalFor(m){const ks=Object.keys(data.goals||{}).filter(k=>k<=m&&Number(data.goals[k])>0).sort();return ks.length?Number(data.goals[ks[ks.length-1]]):null}
 function monthKm(m){return Object.entries(data.dayKm).filter(([d])=>d.slice(0,7)===m).reduce((s,[,k])=>s+(Number(k)||0),0)}
 function perf(m=mth()){const p=data.performance[m]||{revenue:0,km:0,days:0},daily=monthRevenues(m),dkm=monthKm(m),base={...p,km:dkm>0?dkm:p.km,kmDaily:dkm>0};if(!daily.length)return {...base,fromDaily:false};const wd=new Set(daily.map(r=>r.date)).size;return {...base,revenue:daily.reduce((s,r)=>s+Number(r.amount||0),0),workedDays:wd,fromDaily:true}}
@@ -275,14 +278,16 @@ function render(){
  $('mGoal').textContent=goal>0?money(goal):'—';$('mDone').textContent=money(done);$('mPct').textContent=goal>0?Math.round(done/goal*100)+' %':'';
  $('mBar').style.width=pct+'%';$('mBarWrap').classList.toggle('done',reached);
  $('mLeftLbl').textContent=reached?(customGoal?'Au-dessus de l\'objectif':'Au-dessus du seuil'):'Reste à faire';$('mLeft').textContent=goal>0?money(reached?done-goal:left):'—';$('mLeft').className=reached?'ok':'';
- const todayStr=localDate(new Date()),[ty,tm]=todayStr.slice(0,7).split('-').map(Number),dim=new Date(+yy,+mm,0).getDate(),isCur=(+yy===ty&&+mm===tm),dLeft=isCur?dim-new Date().getDate()+1:0;
+ const todayStr=localDate(new Date()),[ty,tm]=todayStr.slice(0,7).split('-').map(Number),dim=new Date(+yy,+mm,0).getDate(),isCur=(+yy===ty&&+mm===tm),calLeft=isCur?dim-new Date().getDate()+1:0;
+ const planned=Number(raw.days)||0,workedBefore=new Set(caItems0(m).filter(r=>r.date<todayStr).map(r=>r.date)).size,dLeft=!isCur?0:planned>0?Math.max(1,Math.min(calLeft,planned-workedBefore)):calLeft;
+ if(document.activeElement!==$('wdInput'))$('wdInput').value=planned||'';
  const tDone=data.revenues.filter(r=>r.date===todayStr).reduce((s2,r)=>s2+Number(r.amount||0),0);
  const leftAtMorning=Math.max(0,goal-(isCur?done-tDone:done)),tGoal=isCur&&dLeft>0&&goal>0?leftAtMorning/dLeft:null;
  $('todayBlock').classList.toggle('hidden',!isCur);
  $('tDone').textContent=money(tDone);const tOk=tGoal!=null&&tDone>=tGoal&&(tGoal>0||tDone>0);$('tDone').classList.toggle('ok',tOk);
  $('tGoal').className='todaygoal'+(tOk?' ok':'');
  $('tGoal').textContent=goal<=0?'Fixez un objectif ou renseignez vos charges':tGoal==null?'—':tGoal<=0?'✅ Mois déjà rentable !':tOk?'✅ Objectif du jour atteint ('+money(tGoal)+')':'🎯 Objectif du jour : '+money(tGoal)+' · encore '+money(tGoal-tDone);
- $('mMsg').textContent=goal<=0?'Renseignez vos charges fixes pour calculer l\'objectif.':reached?(customGoal?'✓ Objectif du mois atteint !':'✓ Vos frais du mois sont couverts.'):isCur&&dLeft>0?'Objectif du jour = reste à faire ÷ '+dLeft+' jour'+(dLeft>1?'s':'')+' restant'+(dLeft>1?'s':'')+' (aujourd\'hui inclus).':'';
+ $('mMsg').textContent=goal<=0?'Renseignez vos charges fixes ou fixez un objectif.':reached?(customGoal?'✓ Objectif du mois atteint !':'✓ Vos frais du mois sont couverts.'):isCur&&dLeft>0?(planned>0?'Objectif du jour = reste à faire ÷ '+dLeft+' jour'+(dLeft>1?'s':'')+' travaillé'+(dLeft>1?'s':'')+' restant'+(dLeft>1?'s':'')+' ('+planned+' prévus, '+workedBefore+' déjà faits).':'Objectif du jour calculé sur les '+dLeft+' jours restants du mois. Indiquez vos jours travaillés pour plus de précision.'):'';
  const caItems=monthRevenues(m).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
  const epk0=energyPerKm(),fuel=k=>epk0>0?k*epk0:null,mKm=monthKm(m),mCa=caItems.reduce((s2,r)=>s2+Number(r.amount||0),0);
  $('caMonthTotal').textContent=money(mCa);$('caMonthKm').textContent=mKm.toLocaleString('fr-FR')+' km';$('caMonthFuel').textContent=fuel(mKm)!=null?money(fuel(mKm)):'—';$('caMonthNet').textContent=fuel(mKm)!=null?money(mCa-fuel(mKm)):'—';
@@ -347,6 +352,7 @@ $('addPlatForm').addEventListener('submit',e=>{e.preventDefault();const nv=$('ne
 $('goalEditBtn').addEventListener('click',()=>{$('goalForm').classList.toggle('hidden');if(!$('goalForm').classList.contains('hidden'))$('goalInput').focus()});
 $('goalForm').addEventListener('submit',e=>{e.preventDefault();const v=Number($('goalInput').value);if(!(v>0)){$('goalInput').focus();return}data.goals[mth()]=v;$('goalInput').blur();$('goalForm').classList.add('hidden');save();toast('Objectif fixé à '+money(v)+' ✓')});
 $('goalReset').addEventListener('click',()=>{delete data.goals[mth()];$('goalForm').classList.add('hidden');save();toast('Objectif auto rétabli')});
+$('wdForm').addEventListener('submit',e=>{e.preventDefault();const v=Math.max(0,Math.min(31,Math.round(Number($('wdInput').value)||0)));const m=mth(),cur=data.performance[m]||{revenue:0,km:0,days:0};data.performance[m]={...cur,days:v};$('wdInput').blur();save();toast(v?v+' jours travaillés ✓':'Jours travaillés effacés')});
 $('kmQuick').addEventListener('submit',e=>{e.preventDefault();if($('qKm').value===''){$('qKm').focus();return}document.activeElement.blur();setDayKm(localDate(new Date()),$('qKm').value)});
 $('kmForm').addEventListener('submit',e=>{e.preventDefault();const d=$('kmDate').value||localDate(new Date());if($('kmVal').value===''){$('kmVal').focus();return}setDayKm(d,$('kmVal').value);$('kmVal').value='';$('kmDate').value=localDate(new Date())});
 $('quickCa').addEventListener('submit',e=>{e.preventDefault();const amount=Number($('qAmount').value);if(!(amount>0))return;$('qAmount').value='';document.activeElement.blur();addRevenue(localDate(new Date()),amount,'',curPlat)});
