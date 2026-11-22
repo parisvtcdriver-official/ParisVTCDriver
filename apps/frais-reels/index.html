@@ -14,7 +14,7 @@
 <style>
 :root{--navy:#101827;--navy2:#202e43;--gold:#d6ad63;--gold2:#f0d49c;--ink:#172033;--muted:#718096;--line:#e7ebf1;--bg:#f3f5f8;--white:#fff;--green:#168568;--red:#c64c4c}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);padding-bottom:calc(28px + env(safe-area-inset-bottom))}
-header{background:linear-gradient(145deg,var(--navy),#202e43);color:white;padding:25px 18px 21px;border-bottom:3px solid var(--gold)}
+header{background:linear-gradient(145deg,var(--navy),#202e43);color:white;padding:calc(18px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) 21px calc(18px + env(safe-area-inset-left));border-bottom:3px solid var(--gold)}
 .brand{display:flex;align-items:center;gap:11px}.mark{width:48px;height:48px;border:1px solid var(--gold);border-radius:12px;display:block;object-fit:cover;box-shadow:0 2px 12px #0008}.brandname{font-size:15px;font-weight:800;letter-spacing:1.2px}.subbrand{font-size:10px;letter-spacing:2px;color:#c2cbd8;margin-top:3px}
 .headerrow{display:flex;justify-content:space-between;align-items:end;margin-top:22px;gap:10px}.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:1.8px;color:var(--gold2);font-weight:700}.headerrow h1{font-size:24px;line-height:1.15;margin:6px 0 0}.month{background:#ffffff14;color:white;border:1px solid #ffffff40;border-radius:11px;padding:10px 8px;font:inherit;font-size:13px;max-width:145px}
 main{max-width:760px;margin:auto;padding:15px}.summary{background:white;border-radius:18px;padding:18px;box-shadow:0 7px 24px #1522380b;border:1px solid var(--line)}
@@ -23,7 +23,7 @@ main{max-width:760px;margin:auto;padding:15px}.summary{background:white;border-r
 .section{background:white;border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}.section h2{font-size:15px;margin:0}.hint{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4}
 .btn{border:0;border-radius:10px;padding:10px 12px;background:var(--navy);color:white;font-weight:700;font-size:12px}.btn.gold{background:var(--gold);color:#1b2431}.btn.light{background:#f1f3f6;color:#273449}.btn.danger{background:#fff0f0;color:var(--red)}
 .charge{display:grid;grid-template-columns:minmax(0,1fr) 108px 22px;align-items:center;gap:7px;padding:10px 0;border-top:1px solid #eef1f5}.charge label{font-size:13px;font-weight:650}.charge small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.money{width:100%;border:1px solid var(--line);background:#fafbfd;border-radius:9px;padding:10px 6px;text-align:right;font:inherit;font-size:13px}.period{font-size:10px;color:var(--muted);margin-top:4px;text-align:right}.fixedPeriod{width:100%;margin-top:5px;border:1px solid var(--line);background:#fafbfd;border-radius:9px;padding:6px 4px;font:inherit;font-size:11px;color:#596579}.remove{border:0;background:none;color:#a1aab7;font-size:18px;padding:0}
-.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:11px;font-weight:700;color:#596579}.field input,.field select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fbfcfd;font:inherit;font-size:14px;color:var(--ink)}
+.formgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.field{display:flex;flex-direction:column;gap:5px;min-width:0}.field.full{grid-column:1/-1}.field label{font-size:11px;font-weight:700;color:#596579}.field input,.field select{width:100%;min-width:0;max-width:100%;min-height:46px;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fbfcfd;font:inherit;font-size:14px;color:var(--ink)}
 .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.actions .btn{flex:1}.entry{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #eef1f5}.entrytitle{font-size:13px;font-weight:700}.entrymeta{font-size:10px;color:var(--muted);margin-top:3px}.entryright{text-align:right;white-space:nowrap;font-weight:750;font-size:13px}.empty{text-align:center;color:var(--muted);font-size:12px;padding:18px 8px}
 .breakrow{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eef1f5;font-size:13px}.breakrow span{color:var(--muted)}.breakrow strong{font-variant-numeric:tabular-nums;text-align:right}
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.kpi{background:#f5f7fa;border-radius:12px;padding:12px}.kpi span{display:block;font-size:10px;color:var(--muted)}.kpi strong{display:block;font-size:17px;margin-top:5px}.positive{color:var(--green)}.negative{color:var(--red)}
@@ -31,6 +31,29 @@ main{max-width:760px;margin:auto;padding:15px}.summary{background:white;border-r
 .notice{background:#fff8e9;border:1px solid #f0dfbd;color:#755c2f;padding:11px;border-radius:11px;font-size:11px;line-height:1.45;margin-top:12px}
 .progress{height:12px;background:#eef1f5;border-radius:99px;overflow:hidden;margin:9px 0 10px}.progress div{height:100%;background:linear-gradient(90deg,var(--gold),#a97d37);border-radius:99px;transition:width .3s}.progress.done div{background:linear-gradient(90deg,#2bb38a,var(--green))}.goalhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}.goalhead strong{font-size:16px;color:var(--navy);letter-spacing:0}.goalmsg{font-size:12px;font-weight:700;margin-top:9px;text-align:center}
 .daytotal{display:flex;justify-content:space-between;align-items:center;background:#f5f7fa;border-radius:12px;padding:12px;margin-top:12px;font-size:13px}.daytotal strong{font-size:18px}
+input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;display:block;text-align:left}input[type=date]::-webkit-date-and-time-value{text-align:left}
+.hero{background:linear-gradient(150deg,#101827 0%,#1c2a40 70%,#2a3a55 100%);color:#fff;border-radius:22px;padding:20px 18px 18px;box-shadow:0 12px 30px #10182733;border:1px solid #d6ad6355;position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;right:-60px;top:-60px;width:180px;height:180px;border-radius:50%;background:radial-gradient(#d6ad6340,transparent 70%)}
+.herotop{display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold2);font-weight:800}.herotop span+span{color:#aeb9c9;font-weight:600;letter-spacing:.5px;text-transform:none}
+.today{margin-top:14px;text-align:center}.today .lbl{font-size:12px;color:#c2cbd8;font-weight:600}.today .big{font-size:52px;font-weight:900;letter-spacing:-2px;line-height:1.05;margin-top:4px;font-variant-numeric:tabular-nums}.today .big.ok{color:#5fe0b4}
+.todaygoal{display:inline-flex;align-items:center;gap:6px;margin-top:8px;background:#d6ad6326;border:1px solid #d6ad6370;color:var(--gold2);border-radius:99px;padding:7px 13px;font-size:13px;font-weight:800}.todaygoal.ok{background:#16856833;border-color:#5fe0b480;color:#8ff0cc}
+.quick{display:flex;gap:8px;margin-top:16px}.quick input{flex:1;min-width:0;border:2px solid #d6ad63;background:#ffffff12;color:#fff;border-radius:14px;padding:14px;font:inherit;font-size:20px;font-weight:800;min-height:56px}.quick input::placeholder{color:#9aa6b8;font-weight:600;font-size:15px}.quick button{border:0;border-radius:14px;background:var(--gold);color:#101827;font-weight:900;font-size:15px;padding:0 18px;min-height:56px;white-space:nowrap}
+.monthbox{margin-top:18px;background:#ffffff0d;border:1px solid #ffffff1f;border-radius:16px;padding:14px}.monthrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.monthrow .lbl{font-size:11px;color:#aeb9c9;text-transform:uppercase;letter-spacing:1.2px;font-weight:700}.monthrow strong{font-size:15px;color:var(--gold2)}
+.monthdone{font-size:30px;font-weight:900;letter-spacing:-1px;margin-top:6px;font-variant-numeric:tabular-nums}.monthdone small{font-size:15px;color:#aeb9c9;font-weight:700;letter-spacing:0}
+.progress{height:14px;background:#ffffff1f;border-radius:99px;overflow:hidden;margin:10px 0 0}.progress div{height:100%;background:linear-gradient(90deg,#f0d49c,#d6ad63);border-radius:99px;transition:width .4s}.progress.done div{background:linear-gradient(90deg,#5fe0b4,#168568)}
+.leftline{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px;color:#c2cbd8}.leftline strong{font-size:20px;font-weight:900;color:#ff9b9b}.leftline strong.ok{color:#5fe0b4}
+.costs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}.cost{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}.cost span{display:block;font-size:10px;color:var(--muted)}.cost strong{display:block;font-size:14px;margin-top:3px;font-variant-numeric:tabular-nums}
+.caamount input{font-size:26px!important;font-weight:850;text-align:center;min-height:62px!important;border:2px solid var(--gold)!important}
+.daytotal{display:flex;justify-content:space-between;align-items:center;background:#f5f7fa;border-radius:12px;padding:12px;margin-top:12px;font-size:13px}.daytotal strong{font-size:18px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#168568;color:#fff;padding:12px 18px;border-radius:99px;font-weight:800;font-size:14px;opacity:0;transition:.3s;z-index:999;pointer-events:none;white-space:nowrap}.toast.show{opacity:1;transform:translateX(-50%)}
+.chips{display:flex;gap:6px;overflow-x:auto;margin-top:16px;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}.chip{flex:none;border:1px solid #ffffff38;background:#ffffff10;color:#dbe2ec;border-radius:99px;padding:9px 13px;font:inherit;font-size:13px;font-weight:800;min-height:40px}.chip.on{background:var(--gold);border-color:var(--gold);color:#101827}
+.quick input.km{flex:0 0 92px;font-size:18px}
+.todaysub{margin-top:8px;font-size:12px;color:#c2cbd8;font-weight:600}.todaysub b{color:#fff}
+.monthkm{display:flex;justify-content:space-between;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #ffffff1a;font-size:12px;color:#c2cbd8}.monthkm b{color:#fff;font-size:14px}
+.casum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.casum div{background:#f5f7fa;border-radius:12px;padding:11px}.casum span{display:block;font-size:10px;color:var(--muted)}.casum strong{display:block;font-size:17px;margin-top:3px;font-variant-numeric:tabular-nums}
+.platrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid #eef1f5;font-size:13px}.platrow .pbar{flex:1;height:8px;background:#eef1f5;border-radius:99px;overflow:hidden;margin:0 8px}.platrow .pbar i{display:block;height:100%;background:linear-gradient(90deg,#f0d49c,#d6ad63)}
+.badge{display:inline-block;background:#101827;color:var(--gold2);border-radius:6px;padding:2px 7px;font-size:10px;font-weight:800;margin-right:5px;vertical-align:1px}
+.entryright .remove{font-size:11px;margin-top:4px}
 .footer{text-align:center;color:#8993a2;font-size:10px;padding:12px}.hidden{display:none!important}
 @media(min-width:600px){main{padding:22px}.total{font-size:40px}.section{padding:19px}}
 </style>
@@ -53,11 +76,26 @@ main{max-width:760px;margin:auto;padding:15px}.summary{background:white;border-r
  <div class="headerrow"><div><div class="eyebrow">Pilotage de votre activité</div><h1>Suivi des frais réels</h1></div><input id="month" class="month" type="month" aria-label="Mois affiché"></div>
 </header>
 <main>
- <section class="summary">
-  <div class="sumtop"><span>TOTAL DES FRAIS DU MOIS</span><span id="monthLabel"></span></div>
-  <div class="total" id="grandTotal">0,00 €</div>
-  <div class="stats"><div class="stat"><span>Charges fixes / mois</span><strong id="fixedTotal">0,00 €</strong></div><div class="stat"><span>Charges variables</span><strong id="variableTotal">0,00 €</strong></div></div>
+ <section class="hero">
+  <div class="herotop"><span>Objectif rentabilité</span><span id="monthLabel"></span></div>
+  <div class="today" id="todayBlock">
+   <div class="lbl">CA d'aujourd'hui</div>
+   <div class="big" id="tDone">0,00 €</div>
+   <div class="todaysub" id="tSub"></div>
+   <div class="todaygoal" id="tGoal">🎯 Objectif du jour : —</div>
+  </div>
+  <div class="chips" id="qPlat" role="group" aria-label="Plateforme"></div>
+  <form class="quick" id="quickCa"><input id="qAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="CA (€)" aria-label="CA en euros"><input id="qKm" class="km" type="number" min="0" step="1" inputmode="numeric" placeholder="Km" aria-label="Kilomètres"><button type="submit">+ Ajouter</button></form>
+  <div class="monthbox">
+   <div class="monthrow"><span class="lbl">CA du mois</span><strong>Objectif <span id="mGoal">—</span></strong></div>
+   <div class="monthdone"><span id="mDone">0,00 €</span> <small id="mPct"></small></div>
+   <div class="progress" id="mBarWrap"><div id="mBar" style="width:0%"></div></div>
+   <div class="leftline"><span id="mLeftLbl">Reste à faire</span><strong id="mLeft">—</strong></div>
+   <div class="monthkm"><span>Km du mois <b id="mKm">0 km</b></span><span>Carburant estimé <b id="mFuel">—</b></span></div>
+   <div class="hint" id="mMsg" style="color:#c2cbd8;margin-top:6px;text-align:center"></div>
+  </div>
  </section>
+ <div class="costs"><div class="cost"><span>Frais du mois</span><strong id="grandTotal">0,00 €</strong></div><div class="cost"><span>Fixes / mois</span><strong id="fixedTotal">0,00 €</strong></div><div class="cost"><span>Variables</span><strong id="variableTotal">0,00 €</strong></div></div>
  <nav class="tabs">
   <button class="tab active" data-tab="home">Accueil</button><button class="tab" data-tab="ca">CA du jour</button><button class="tab" data-tab="fixed">Charges fixes</button><button class="tab" data-tab="variable">Dépenses</button><button class="tab" data-tab="performance">Rentabilité</button><button class="tab" data-tab="annual">Année</button><button class="tab" data-tab="backup">Sauvegarde</button>
  </nav>
@@ -68,12 +106,6 @@ main{max-width:760px;margin:auto;padding:15px}.summary{background:white;border-r
    <div id="hGoal" style="font-size:40px;font-weight:850;color:var(--navy);letter-spacing:-1px;margin-top:4px">—</div>
    <div id="hGoalSub" class="hint" style="margin-top:4px">Renseignez vos jours travaillés et vos charges.</div>
   </div>
-  <div style="border-top:1px solid var(--line);padding-top:14px;margin-top:6px">
-   <div class="goalhead"><span>Objectif du mois (CA à atteindre)</span><strong id="mGoal">—</strong></div>
-   <div class="progress" id="mBarWrap"><div id="mBar" style="width:0%"></div></div>
-   <div class="kpis" style="margin-top:0"><div class="kpi"><span>CA réalisé ce mois</span><strong id="mDone">0,00 €</strong></div><div class="kpi"><span>Reste à faire</span><strong id="mLeft">—</strong></div></div>
-   <div class="goalmsg" id="mMsg"></div>
-  </div>
   <div class="kpis">
    <div class="kpi"><span>Frais par jour travaillé</span><strong id="hPerDay">—</strong></div>
    <div class="kpi"><span>CA moyen par jour</span><strong id="hCaDay">—</strong></div>
@@ -83,13 +115,17 @@ main{max-width:760px;margin:auto;padding:15px}.summary{background:white;border-r
   <div id="hHint" class="notice" style="margin-top:12px">Pour activer le tableau de bord : renseignez vos charges fixes, puis vos jours travaillés et votre chiffre d'affaires dans l'onglet Rentabilité.</div>
  </section>
  <section id="caPanel" class="section hidden">
-  <div class="sectionhead"><div><h2>Chiffre d'affaires du jour</h2><div class="hint">Entrez chaque jour votre CA : le total du mois et le reste à faire se mettent à jour automatiquement.</div></div></div>
+  <div class="sectionhead"><div><h2>Chiffre d'affaires du jour</h2><div class="hint">Pour un autre jour que aujourd'hui ou pour ajouter une précision. Pour aujourd'hui, utilisez aussi le champ en haut de l'écran.</div></div></div>
   <form id="caForm"><div class="formgrid">
-   <div class="field"><label for="caDate">Date</label><input id="caDate" type="date" required></div>
-   <div class="field"><label for="caAmount">CA TTC du jour (€)</label><input id="caAmount" type="number" min="0.01" step="0.01" placeholder="0,00" inputmode="decimal" required></div>
+   <div class="field full caamount"><label for="caAmount">CA TTC du jour (€)</label><input id="caAmount" type="number" min="0.01" step="0.01" placeholder="0,00 €" inputmode="decimal" required></div>
+   <div class="field"><label for="caPlat">Plateforme</label><select id="caPlat"></select></div>
+   <div class="field"><label for="caKm">Km de la journée</label><input id="caKm" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex. 180"></div>
+   <div class="field full"><label for="caDate">Date</label><input id="caDate" type="date" required></div>
    <div class="field full"><label for="caNote">Précision (facultatif)</label><input id="caNote" type="text" placeholder="Ex. 2 transferts CDG + mise à dispo"></div>
   </div><div class="actions"><button class="btn gold" type="submit">Enregistrer le CA du jour</button></div></form>
-  <div class="daytotal"><span>Total CA du mois</span><strong id="caMonthTotal">0,00 €</strong></div>
+  <div class="casum"><div><span>CA du mois</span><strong id="caMonthTotal">0,00 €</strong></div><div><span>Km du mois</span><strong id="caMonthKm">0 km</strong></div><div><span>Carburant estimé</span><strong id="caMonthFuel">—</strong></div><div><span>CA net de carburant</span><strong id="caMonthNet">—</strong></div></div>
+  <div class="notice hidden" id="caFuelHint">Pour calculer le carburant, renseignez la motorisation, la consommation et le prix de l'énergie dans l'onglet Rentabilité (bloc « Énergie &amp; coût de revient »).</div>
+  <div class="sectionhead" style="margin:20px 0 4px"><h2>CA par plateforme</h2></div><div id="caPlatList"></div>
   <div class="sectionhead" style="margin:20px 0 4px"><h2>CA du mois, jour par jour</h2></div><div id="caList"></div>
  </section>
  <section id="fixedPanel" class="section hidden">
@@ -110,7 +146,7 @@ main{max-width:760px;margin:auto;padding:15px}.summary{background:white;border-r
   <div class="sectionhead"><div><h2>Rentabilité du mois</h2><div class="hint">Renseignez votre chiffre d'affaires, vos kilomètres et vos jours travaillés.</div></div></div>
   <div class="formgrid">
    <div class="field"><label for="revenue">Chiffre d'affaires TTC (€)</label><input id="revenue" type="number" min="0" step="0.01" placeholder="0,00"><div class="hint" id="revenueHint"></div></div>
-   <div class="field"><label for="km">Kilomètres du mois</label><input id="km" type="number" min="0" step="1" placeholder="Ex. 1800"></div>
+   <div class="field"><label for="km">Kilomètres du mois</label><input id="km" type="number" min="0" step="1" placeholder="Ex. 1800"><div class="hint" id="kmHint"></div></div>
    <div class="field"><label for="days">Jours travaillés</label><input id="days" type="number" min="0" step="1" placeholder="Ex. 18"></div>
   </div>
   <div class="actions"><button class="btn" id="savePerformance" type="button">Enregistrer les chiffres</button></div>
@@ -183,7 +219,9 @@ function periodLabel(p){return p==='year'?'€/an':p==='2y'?'€/2 ans':p==='3y'
 function fixedMonthly(c){return (Number(c.amount)||0)/periodMonths(c.period)}
 function monthExpenses(m=mth()){return data.expenses.filter(e=>e.date&&e.date.slice(0,7)===m)}
 function monthRevenues(m=mth()){return data.revenues.filter(r=>r.date&&r.date.slice(0,7)===m)}
-function perf(m=mth()){const p=data.performance[m]||{revenue:0,km:0,days:0},daily=monthRevenues(m);if(!daily.length)return {...p,fromDaily:false};const wd=new Set(daily.map(r=>r.date)).size;return {...p,revenue:daily.reduce((s,r)=>s+Number(r.amount||0),0),workedDays:wd,fromDaily:true}}
+const PLATFORMS=['Bolt','Uber','Allocab','PVTCD','Groupe WhatsApp','Autre'];
+let curPlat=(()=>{try{return localStorage.getItem('fr_last_plat')||'Uber'}catch(e){return 'Uber'}})();
+function perf(m=mth()){const p=data.performance[m]||{revenue:0,km:0,days:0},daily=monthRevenues(m);if(!daily.length)return {...p,fromDaily:false,kmDaily:false};const wd=new Set(daily.map(r=>r.date)).size,dkm=daily.reduce((s,r)=>s+(Number(r.km)||0),0);return {...p,revenue:daily.reduce((s,r)=>s+Number(r.amount||0),0),km:dkm>0?dkm:p.km,kmDaily:dkm>0,workedDays:wd,fromDaily:true}}
 function totals(m=mth()){const f=data.fixed.reduce((s,c)=>s+fixedMonthly(c),0);const allVar=monthExpenses(m).reduce((s,e)=>s+Number(e.amount||0),0);const em=energyMonth(m);const v=(em==null)?allVar:(otherVarMonth(m)+em);return {f,v,total:f+v,em:em}}
 function energyPerKm(){var ve=data.vehicle||{};return (Number(ve.conso)||0)*(Number(ve.price)||0)/100;}
 function otherVarMonth(m){return monthExpenses(m).filter(function(e){return e.category!=='Carburant / Électricité';}).reduce(function(s,e){return s+Number(e.amount||0);},0);}
@@ -215,15 +253,33 @@ function render(){
  document.querySelectorAll('[data-expense]').forEach(el=>el.addEventListener('click',()=>{data.expenses=data.expenses.filter(e=>e.id!==el.dataset.expense);save()}));
  const raw=data.performance[m]||{};
  $('revenue').value=p.revenue||'';$('revenue').disabled=p.fromDaily;$('revenueHint').textContent=p.fromDaily?'Calculé automatiquement à partir de vos CA journaliers.':'';
- $('km').value=p.km||'';$('days').value=raw.days||'';$('days').placeholder='Ex. 18';
- const done=Number(p.revenue||0),left=Math.max(0,total-done),pct=total>0?Math.min(100,done/total*100):(done>0?100:0);
- $('mGoal').textContent=total>0?money(total):'—';$('mDone').textContent=money(done);$('mLeft').textContent=total>0?money(left):'—';$('mLeft').className=total>0?(left>0?'negative':'positive'):'';
- $('mBar').style.width=pct+'%';$('mBarWrap').classList.toggle('done',total>0&&done>=total);
- const [ty,tm]=localDate(now).slice(0,7).split('-').map(Number),dim=new Date(+yy,+mm,0).getDate(),isCur=(+yy===ty&&+mm===tm),dLeft=isCur?dim-now.getDate()+1:0;
- $('mMsg').innerHTML=total<=0?'<span style="color:var(--muted)">Renseignez vos charges pour fixer l\'objectif.</span>':done>=total?`<span class="positive">✓ Frais couverts — ${money(done-total)} au-dessus du seuil (${Math.round(done/total*100)} %)</span>`:`<span>${Math.round(pct)} % de l'objectif${isCur&&dLeft>0?` · soit ${money(left/dLeft)} par jour sur les ${dLeft} jour${dLeft>1?'s':''} restant${dLeft>1?'s':''}`:''}</span>`;
+ $('km').value=p.km||'';$('km').disabled=!!p.kmDaily;$('kmHint').textContent=p.kmDaily?'Total des km saisis dans « CA du jour ».':'';$('days').value=raw.days||'';$('days').placeholder='Ex. 18';
+ const done=Number(p.revenue||0),left=Math.max(0,total-done),pct=total>0?Math.min(100,done/total*100):(done>0?100:0),reached=total>0&&done>=total;
+ $('mGoal').textContent=total>0?money(total):'—';$('mDone').textContent=money(done);$('mPct').textContent=total>0?Math.round(done/total*100)+' %':'';
+ $('mBar').style.width=pct+'%';$('mBarWrap').classList.toggle('done',reached);
+ $('mLeftLbl').textContent=reached?'Au-dessus du seuil':'Reste à faire';$('mLeft').textContent=total>0?money(reached?done-total:left):'—';$('mLeft').className=reached?'ok':'';
+ const todayStr=localDate(new Date()),[ty,tm]=todayStr.slice(0,7).split('-').map(Number),dim=new Date(+yy,+mm,0).getDate(),isCur=(+yy===ty&&+mm===tm),dLeft=isCur?dim-new Date().getDate()+1:0;
+ const tDone=data.revenues.filter(r=>r.date===todayStr).reduce((s2,r)=>s2+Number(r.amount||0),0);
+ const leftAtMorning=Math.max(0,total-(isCur?done-tDone:done)),tGoal=isCur&&dLeft>0&&total>0?leftAtMorning/dLeft:null;
+ $('todayBlock').classList.toggle('hidden',!isCur);
+ $('tDone').textContent=money(tDone);const tOk=tGoal!=null&&tDone>=tGoal&&(tGoal>0||tDone>0);$('tDone').classList.toggle('ok',tOk);
+ $('tGoal').className='todaygoal'+(tOk?' ok':'');
+ $('tGoal').textContent=total<=0?'Renseignez vos charges pour fixer l\'objectif':tGoal==null?'—':tGoal<=0?'✅ Mois déjà rentable !':tOk?'✅ Objectif du jour atteint ('+money(tGoal)+')':'🎯 Objectif du jour : '+money(tGoal)+' · encore '+money(tGoal-tDone);
+ $('mMsg').textContent=total<=0?'Renseignez vos charges fixes pour calculer l\'objectif.':reached?'✓ Vos frais du mois sont couverts.':isCur&&dLeft>0?'Objectif du jour = reste à faire ÷ '+dLeft+' jour'+(dLeft>1?'s':'')+' restant'+(dLeft>1?'s':'')+' (aujourd\'hui inclus).':'';
  const caItems=monthRevenues(m).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
- $('caMonthTotal').textContent=money(done&&p.fromDaily?done:0);
- $('caList').innerHTML=caItems.length?caItems.map(r=>`<div class="entry"><div><div class="entrytitle">${esc(new Date(r.date+'T12:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}))}</div><div class="entrymeta">${r.note?esc(r.note):'CA du jour'}</div></div><div class="entryright">${money(r.amount)}<br><button class="remove" data-revenue="${esc(r.id)}">Supprimer ×</button></div></div>`).join(''):'<div class="empty">Aucun CA enregistré pour ce mois.</div>';
+ const epk0=energyPerKm(),fuel=k=>epk0>0?k*epk0:null,mKm=caItems.reduce((s2,r)=>s2+(Number(r.km)||0),0),mCa=caItems.reduce((s2,r)=>s2+Number(r.amount||0),0);
+ $('caMonthTotal').textContent=money(mCa);$('caMonthKm').textContent=mKm.toLocaleString('fr-FR')+' km';$('caMonthFuel').textContent=fuel(mKm)!=null?money(fuel(mKm)):'—';$('caMonthNet').textContent=fuel(mKm)!=null?money(mCa-fuel(mKm)):'—';
+ $('caFuelHint').classList.toggle('hidden',!(epk0<=0&&mKm>0));
+ $('mKm').textContent=(Number(p.km)||0).toLocaleString('fr-FR')+' km';$('mFuel').textContent=fuel(Number(p.km)||0)!=null&&p.km>0?money(fuel(Number(p.km))):'—';
+ const tItems=data.revenues.filter(r=>r.date===todayStr),tKm=tItems.reduce((s2,r)=>s2+(Number(r.km)||0),0);
+ $('tSub').innerHTML=tItems.length?`<b>${tKm.toLocaleString('fr-FR')} km</b>${fuel(tKm)!=null?` · carburant ${money(fuel(tKm))} · net <b>${money(tDone-fuel(tKm))}</b>`:''}`:'';
+ const byPlat={};caItems.forEach(r=>{const k=r.platform||'Autre';byPlat[k]=byPlat[k]||{ca:0,n:0,km:0};byPlat[k].ca+=Number(r.amount||0);byPlat[k].n++;byPlat[k].km+=Number(r.km)||0});
+ const pl=Object.entries(byPlat).sort((a,b)=>b[1].ca-a[1].ca),pmax=Math.max(1,...pl.map(x=>x[1].ca));
+ $('caPlatList').innerHTML=pl.length?pl.map(([k,v])=>`<div class="platrow"><span style="min-width:96px;font-weight:700">${esc(k)}</span><span class="pbar"><i style="width:${v.ca/pmax*100}%"></i></span><span style="text-align:right;white-space:nowrap"><b>${money(v.ca)}</b><br><small style="color:var(--muted)">${mCa>0?Math.round(v.ca/mCa*100):0} % · ${v.km.toLocaleString('fr-FR')} km</small></span></div>`).join(''):'<div class="empty">Aucun CA ce mois-ci.</div>';
+ $('qPlat').innerHTML=PLATFORMS.map(x=>`<button type="button" class="chip${x===curPlat?' on':''}" data-plat="${x}">${x}</button>`).join('');
+ document.querySelectorAll('[data-plat]').forEach(el=>el.addEventListener('click',()=>{curPlat=el.dataset.plat;try{localStorage.setItem('fr_last_plat',curPlat)}catch(e){}document.querySelectorAll('[data-plat]').forEach(x=>x.classList.toggle('on',x===el))}));
+ if(!$('caPlat').options.length){$('caPlat').innerHTML=PLATFORMS.map(x=>`<option>${x}</option>`).join('')}if(document.activeElement!==$('caPlat'))$('caPlat').value=curPlat;
+ $('caList').innerHTML=caItems.length?caItems.map(r=>`<div class="entry"><div><div class="entrytitle">${esc(new Date(r.date+'T12:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}))}</div><div class="entrymeta"><span class="badge">${esc(r.platform||'—')}</span>${Number(r.km)>0?Number(r.km).toLocaleString('fr-FR')+' km'+(fuel(Number(r.km))!=null?' · carb. '+money(fuel(Number(r.km))):''):''}${r.note?' · '+esc(r.note):''}</div></div><div class="entryright">${money(r.amount)}<br><button class="remove" data-revenue="${esc(r.id)}">Supprimer ×</button></div></div>`).join(''):'<div class="empty">Aucun CA enregistré pour ce mois.</div>';
  document.querySelectorAll('[data-revenue]').forEach(el=>el.addEventListener('click',()=>{if(!confirm('Supprimer ce CA ?'))return;data.revenues=data.revenues.filter(r=>r.id!==el.dataset.revenue);save()}));
  const profit=Number(p.revenue||0)-total;
  $('profit').textContent=money(profit);$('profit').className=profit>=0?'positive':'negative';
@@ -257,9 +313,12 @@ document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{doc
 $('month').addEventListener('change',render);
 $('addFixed').addEventListener('click',()=>{const name=prompt('Nom de cette charge fixe :');if(!name||!name.trim())return;const amount=Number(prompt('Montant de la charge :','0'));if(!Number.isFinite(amount)||amount<0)return;const _pm=prompt('Durée de cette charge :\n1 = Mensuel\n2 = Annuel\n3 = 2 ans\n4 = 3 ans\n5 = 5 ans','1');if(_pm===null)return;const _period={'1':'month','2':'year','3':'2y','4':'3y','5':'5y'}[String(_pm).trim()]||'month';data.fixed.push({id:'custom_'+Date.now(),name:name.trim(),amount,period:_period,base:false});save()});
 $('variableForm').addEventListener('submit',e=>{e.preventDefault();const amount=Number($('vAmount').value);if(!(amount>0))return;data.expenses.push({id:'e_'+Date.now(),category:$('vCategory').value,amount,date:$('vDate').value,note:$('vNote').value.trim()});$('vAmount').value='';$('vNote').value='';save()});
-$('caForm').addEventListener('submit',e=>{e.preventDefault();const amount=Number($('caAmount').value),date=$('caDate').value;if(!(amount>0)||!date)return;const same=data.revenues.filter(r=>r.date===date);if(same.length){const replace=confirm('Un CA existe déjà pour ce jour ('+money(same.reduce((s,r)=>s+Number(r.amount),0))+').\nOK = remplacer · Annuler = ajouter en plus');if(replace)data.revenues=data.revenues.filter(r=>r.date!==date)}data.revenues.push({id:'r_'+Date.now(),date,amount,note:$('caNote').value.trim()});$('caAmount').value='';$('caNote').value='';$('caDate').value=localDate(new Date());if(date.slice(0,7)!==mth())$('month').value=date.slice(0,7);save()});
-$('savePerformance').addEventListener('click',()=>{const prev=data.performance[mth()]||{};data.performance[mth()]={revenue:perf().fromDaily?(Number(prev.revenue)||0):Math.max(0,Number($('revenue').value)||0),km:Math.max(0,Number($('km').value)||0),days:Math.max(0,Number($('days').value)||0)};save();alert('Chiffres du mois enregistrés.')});
-function csvAll(){const rows=[['Type','Catégorie','Date','Montant (€)','Précision']];data.fixed.forEach(c=>rows.push(['Charge fixe',c.name,'',fixedMonthly(c).toFixed(2),'Montant mensuel estimé']));data.expenses.forEach(e=>rows.push(['Variable',e.category,e.date,Number(e.amount).toFixed(2),e.note||'']));data.revenues.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(r=>rows.push(['CA journalier','Chiffre d\'affaires',r.date,Number(r.amount).toFixed(2),r.note||'']));const content='\\ufeff'+rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(';')).join('\\r\\n');download(content,'text/csv;charset=utf-8;','ParisVTCDriver-depenses.csv')}
+function toast(t){let el=$('toast');if(!el){el=document.createElement('div');el.id='toast';el.className='toast';document.body.appendChild(el)}el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),1800)}
+function addRevenue(date,amount,note,km,platform){data.revenues.push({id:'r_'+Date.now(),date,amount,km:Math.max(0,Number(km)||0),platform:platform||'Autre',note:note||''});if(date.slice(0,7)!==mth())$('month').value=date.slice(0,7);save();toast('+ '+money(amount)+' enregistré ✓')}
+$('quickCa').addEventListener('submit',e=>{e.preventDefault();const amount=Number($('qAmount').value),km=$('qKm').value;if(!(amount>0))return;$('qAmount').value='';$('qKm').value='';document.activeElement.blur();addRevenue(localDate(new Date()),amount,'',km,curPlat)});
+$('caForm').addEventListener('submit',e=>{e.preventDefault();const amount=Number($('caAmount').value),date=$('caDate').value;if(!(amount>0)||!date)return;const note=$('caNote').value.trim(),km=$('caKm').value,plat=$('caPlat').value;curPlat=plat;try{localStorage.setItem('fr_last_plat',plat)}catch(e){}$('caAmount').value='';$('caNote').value='';$('caKm').value='';$('caDate').value=localDate(new Date());addRevenue(date,amount,note,km,plat)});
+$('savePerformance').addEventListener('click',()=>{const prev=data.performance[mth()]||{};data.performance[mth()]={revenue:perf().fromDaily?(Number(prev.revenue)||0):Math.max(0,Number($('revenue').value)||0),km:perf().kmDaily?(Number(prev.km)||0):Math.max(0,Number($('km').value)||0),days:Math.max(0,Number($('days').value)||0)};save();alert('Chiffres du mois enregistrés.')});
+function csvAll(){const rows=[['Type','Catégorie','Date','Montant (€)','Précision']];data.fixed.forEach(c=>rows.push(['Charge fixe',c.name,'',fixedMonthly(c).toFixed(2),'Montant mensuel estimé']));data.expenses.forEach(e=>rows.push(['Variable',e.category,e.date,Number(e.amount).toFixed(2),e.note||'']));data.revenues.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(r=>rows.push(['CA journalier',r.platform||'',r.date,Number(r.amount).toFixed(2),[Number(r.km)>0?r.km+' km':'',r.note||''].filter(Boolean).join(' · ')]));const content='\\ufeff'+rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(';')).join('\\r\\n');download(content,'text/csv;charset=utf-8;','ParisVTCDriver-depenses.csv')}
 function download(content,type,name){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 $('exportCsv').addEventListener('click',csvAll);$('exportAllCsv').addEventListener('click',csvAll);
 $('backupBtn').addEventListener('click',()=>download(JSON.stringify(data,null,2),'application/json','ParisVTCDriver-sauvegarde-'+localDate(now)+'.json'));
