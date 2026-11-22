@@ -16,7 +16,7 @@
 
   var me = document.currentScript;
   var APP = (me && me.getAttribute("data-app")) || "app";
-  var NAMES = { "kifkif": "KifKif", "frais-reels": "Frais réels", "pvtcd-fleet": "PVTCD FLEET", "pvtcd-relais": "PVTCD RELAIS", "pvtcd-sign": "PVTCD SIGN" };
+  var NAMES = { "kifkif": "KifKif", "frais-reels": "PVTCD PILOT", "pvtcd-fleet": "PVTCD FLEET", "pvtcd-relais": "PVTCD RELAIS", "pvtcd-sign": "PVTCD SIGN" };
   var APPNAME = NAMES[APP] || "l'application";
   var ICON = me ? (me.getAttribute("data-icon") || "icon-192.png") : "icon-192.png";
 
