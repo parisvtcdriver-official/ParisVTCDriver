@@ -56,22 +56,14 @@ input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;displ
 .entryright .remove{font-size:11px;margin-top:4px}
 .kmform{display:flex;align-items:center;gap:8px;margin-top:10px;background:#ffffff0d;border:1px solid #ffffff1f;border-radius:14px;padding:8px 8px 8px 12px}.kmform label{flex:1;font-size:13px;color:#c2cbd8;font-weight:700}.kmform input{width:100px;min-width:0;border:1px solid #ffffff40;background:#ffffff12;color:#fff;border-radius:10px;padding:10px;font:inherit;font-size:17px;font-weight:800;text-align:right;min-height:44px}.kmform input::placeholder{color:#9aa6b8;font-weight:600}.kmform button{border:0;border-radius:10px;background:#ffffff26;color:#fff;font-weight:800;padding:0 14px;min-height:44px}
 .dayhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:14px;padding:9px 11px;background:#f5f7fa;border-radius:10px;font-size:13px}.dayhead b{font-size:13px}.dayhead span{font-size:11px;color:var(--muted);text-align:right}
+.chip.edit{background:transparent;border-style:dashed;color:var(--gold2)}
+.platedit{display:flex;align-items:center;gap:6px;padding:7px 0;border-top:1px solid #eef1f5}.platedit input{flex:1;min-width:0;border:1px solid var(--line);background:#fafbfd;border-radius:9px;padding:10px;font:inherit;font-size:14px;min-height:42px}.platedit button{border:0;background:#f1f3f6;color:#273449;border-radius:9px;min-width:40px;min-height:42px;font-size:15px;font-weight:800}.platedit button.del{background:#fff0f0;color:var(--red)}
+.addplat{display:flex;gap:8px;margin-top:10px}.addplat input{flex:1;min-width:0;border:1px solid var(--line);background:#fafbfd;border-radius:10px;padding:11px;font:inherit;font-size:14px;min-height:46px}
 .footer{text-align:center;color:#8993a2;font-size:10px;padding:12px}.hidden{display:none!important}
 @media(min-width:600px){main{padding:22px}.total{font-size:40px}.section{padding:19px}}
 </style>
 </head>
 <body>
-<div id="authgate" style="position:fixed;inset:0;z-index:99999;background:linear-gradient(145deg,#101827,#202e43);display:flex;align-items:center;justify-content:center;padding:20px">
-  <form id="authform" style="background:#fff;border-radius:18px;padding:26px 22px;max-width:340px;width:100%;box-shadow:0 10px 40px #0006;border-top:3px solid #d6ad63">
-    <div style="text-align:center;margin-bottom:16px"><img src="icon-192.png" alt="" style="width:54px;height:54px;border-radius:12px;border:1px solid #d6ad63"><div style="font-weight:800;letter-spacing:1px;margin-top:8px;color:#101827">ACCÈS PRIVÉ</div><div style="font-size:11px;color:#718096;margin-top:3px">Suivi des frais réels — réservé</div></div>
-    <label style="font-size:11px;font-weight:700;color:#596579">Identifiant</label>
-    <input id="authuser" autocomplete="username" style="width:100%;padding:11px;border:1px solid #e7ebf1;border-radius:10px;margin:5px 0 12px;font-size:14px">
-    <label style="font-size:11px;font-weight:700;color:#596579">Mot de passe</label>
-    <input id="authpass" type="password" autocomplete="current-password" style="width:100%;padding:11px;border:1px solid #e7ebf1;border-radius:10px;margin:5px 0 14px;font-size:14px">
-    <button type="submit" style="width:100%;border:0;border-radius:10px;padding:12px;background:#101827;color:#fff;font-weight:700;font-size:14px">Entrer</button>
-    <div id="autherr" style="color:#c64c4c;font-size:12px;text-align:center;margin-top:10px;display:none">Identifiant ou mot de passe incorrect.</div>
-  </form>
-</div>
 
 <header>
  <div class="brand"><img class="mark" src="icon-192.png" alt="Logo ParisVTCDriver Frais réels"><div><div class="brandname">PARIS VTC DRIVER</div><div class="subbrand">OUTIL DE GESTION INTERNE</div></div></div>
@@ -88,7 +80,7 @@ input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;displ
   </div>
   <div class="chips" id="qPlat" role="group" aria-label="Plateforme"></div>
   <form class="quick" id="quickCa"><input id="qAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="Mon CA (€)" aria-label="CA en euros"><button type="submit">+ Ajouter</button></form>
-  <form class="kmform" id="kmQuick"><label for="qKm">🚗 Km total de la journée</label><input id="qKm" type="number" min="0" step="1" inputmode="numeric" placeholder="0"><button type="submit">OK</button></form>
+  <form class="kmform" id="kmQuick"><label for="qKm">🚗 Km total de la journée</label><input id="qKm" type="number" min="0" step="1" inputmode="numeric" placeholder="0" enterkeyhint="done"><button type="submit">Enregistrer</button></form>
   <div class="monthbox">
    <div class="monthrow"><span class="lbl">CA du mois</span><strong>Objectif <span id="mGoal">—</span></strong></div>
    <div class="monthdone"><span id="mDone">0,00 €</span> <small id="mPct"></small></div>
@@ -128,12 +120,15 @@ input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;displ
   <div class="sectionhead" style="margin:22px 0 4px"><div><h2>Kilomètres de la journée</h2><div class="hint">Le total de km roulés dans la journée, toutes plateformes confondues.</div></div></div>
   <form id="kmForm"><div class="formgrid">
    <div class="field"><label for="kmDate">Date</label><input id="kmDate" type="date" required></div>
-   <div class="field"><label for="kmVal">Km total du jour</label><input id="kmVal" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex. 180" required></div>
+   <div class="field"><label for="kmVal">Km total du jour</label><input id="kmVal" type="number" min="0" step="1" inputmode="numeric" placeholder="Ex. 180"></div>
   </div><div class="actions"><button class="btn" type="submit">Enregistrer les km du jour</button></div></form>
   <div class="casum"><div><span>CA du mois</span><strong id="caMonthTotal">0,00 €</strong></div><div><span>Km du mois</span><strong id="caMonthKm">0 km</strong></div><div><span>Carburant estimé</span><strong id="caMonthFuel">—</strong></div><div><span>CA net de carburant</span><strong id="caMonthNet">—</strong></div></div>
   <div class="notice hidden" id="caFuelHint">Pour calculer le carburant, renseignez la motorisation, la consommation et le prix de l'énergie dans l'onglet Rentabilité (bloc « Énergie &amp; coût de revient »).</div>
   <div class="sectionhead" style="margin:20px 0 4px"><h2>CA par plateforme</h2></div><div id="caPlatList"></div>
   <div class="sectionhead" style="margin:20px 0 4px"><h2>CA du mois, jour par jour</h2></div><div id="caList"></div>
+  <div class="sectionhead" id="platManage" style="margin:24px 0 4px"><div><h2>Mes plateformes</h2><div class="hint">Renommez, réordonnez (↑), supprimez ou ajoutez vos partenaires. Les CA déjà saisis sont conservés.</div></div></div>
+  <div id="platEditList"></div>
+  <form class="addplat" id="addPlatForm"><input id="newPlat" type="text" maxlength="30" placeholder="Nouvelle plateforme (ex. Viator)"><button class="btn gold" type="submit">+ Ajouter</button></form>
  </section>
  <section id="fixedPanel" class="section hidden">
   <div class="sectionhead"><div><h2>Charges fixes</h2><div class="hint">Mensuel, annuel ou pluriannuel (2, 3, 5 ans) : tout est ramené au mois.</div></div><button class="btn gold" id="addFixed">+ Ajouter</button></div>
@@ -226,8 +221,8 @@ function periodLabel(p){return p==='year'?'€/an':p==='2y'?'€/2 ans':p==='3y'
 function fixedMonthly(c){return (Number(c.amount)||0)/periodMonths(c.period)}
 function monthExpenses(m=mth()){return data.expenses.filter(e=>e.date&&e.date.slice(0,7)===m)}
 function monthRevenues(m=mth()){return data.revenues.filter(r=>r.date&&r.date.slice(0,7)===m)}
-const PLATFORMS=['Bolt','Uber','Allocab','PVTCD','Groupe WhatsApp','Autre'];
-let curPlat=(()=>{try{return localStorage.getItem('fr_last_plat')||'Uber'}catch(e){return 'Uber'}})();
+const DEFAULT_PLATFORMS=['Bolt','Uber','Allocab','PVTCD','Groupe WhatsApp','Autre'];if(!Array.isArray(data.platforms)||!data.platforms.length)data.platforms=DEFAULT_PLATFORMS.slice();
+let curPlat=(()=>{try{return localStorage.getItem('fr_last_plat')||data.platforms[0]}catch(e){return data.platforms[0]}})();
 function monthKm(m){return Object.entries(data.dayKm).filter(([d])=>d.slice(0,7)===m).reduce((s,[,k])=>s+(Number(k)||0),0)}
 function perf(m=mth()){const p=data.performance[m]||{revenue:0,km:0,days:0},daily=monthRevenues(m),dkm=monthKm(m),base={...p,km:dkm>0?dkm:p.km,kmDaily:dkm>0};if(!daily.length)return {...base,fromDaily:false};const wd=new Set(daily.map(r=>r.date)).size;return {...base,revenue:daily.reduce((s,r)=>s+Number(r.amount||0),0),workedDays:wd,fromDaily:true}}
 function totals(m=mth()){const f=data.fixed.reduce((s,c)=>s+fixedMonthly(c),0);const allVar=monthExpenses(m).reduce((s,e)=>s+Number(e.amount||0),0);const em=energyMonth(m);const v=(em==null)?allVar:(otherVarMonth(m)+em);return {f,v,total:f+v,em:em}}
@@ -284,9 +279,15 @@ function render(){
  const byPlat={};caItems.forEach(r=>{const k=r.platform||'Autre';byPlat[k]=byPlat[k]||{ca:0,n:0};byPlat[k].ca+=Number(r.amount||0);byPlat[k].n++});
  const pl=Object.entries(byPlat).sort((a,b)=>b[1].ca-a[1].ca),pmax=Math.max(1,...pl.map(x=>x[1].ca));
  $('caPlatList').innerHTML=pl.length?pl.map(([k,v])=>`<div class="platrow"><span style="min-width:96px;font-weight:700">${esc(k)}</span><span class="pbar"><i style="width:${v.ca/pmax*100}%"></i></span><span style="text-align:right;white-space:nowrap"><b>${money(v.ca)}</b><br><small style="color:var(--muted)">${mCa>0?Math.round(v.ca/mCa*100):0} % · ${v.n} saisie${v.n>1?'s':''}</small></span></div>`).join(''):'<div class="empty">Aucun CA ce mois-ci.</div>';
- $('qPlat').innerHTML=PLATFORMS.map(x=>`<button type="button" class="chip${x===curPlat?' on':''}" data-plat="${x}">${x}</button>`).join('');
- document.querySelectorAll('[data-plat]').forEach(el=>el.addEventListener('click',()=>{curPlat=el.dataset.plat;try{localStorage.setItem('fr_last_plat',curPlat)}catch(e){}document.querySelectorAll('[data-plat]').forEach(x=>x.classList.toggle('on',x===el))}));
- if(!$('caPlat').options.length){$('caPlat').innerHTML=PLATFORMS.map(x=>`<option>${x}</option>`).join('')}if(document.activeElement!==$('caPlat'))$('caPlat').value=curPlat;
+ if(!data.platforms.includes(curPlat))curPlat=data.platforms[0]||'Autre';
+ $('qPlat').innerHTML=data.platforms.map((x,i)=>`<button type="button" class="chip${x===curPlat?' on':''}" data-plat="${i}">${esc(x)}</button>`).join('')+'<button type="button" class="chip edit" id="editPlats">✏️ Modifier</button>';
+ $('editPlats').addEventListener('click',()=>{document.querySelector('.tab[data-tab=ca]').click();setTimeout(()=>$('platManage').scrollIntoView({behavior:'smooth',block:'start'}),50)});
+ document.querySelectorAll('[data-plat]').forEach(el=>el.addEventListener('click',()=>{curPlat=data.platforms[+el.dataset.plat];try{localStorage.setItem('fr_last_plat',curPlat)}catch(e){}document.querySelectorAll('[data-plat]').forEach(x=>x.classList.toggle('on',x===el))}));
+ const keepSel=$('caPlat').value;$('caPlat').innerHTML=data.platforms.map(x=>`<option>${esc(x)}</option>`).join('');$('caPlat').value=(document.activeElement===$('caPlat')&&data.platforms.includes(keepSel))?keepSel:curPlat;
+ if(!$('platEditList').contains(document.activeElement)){$('platEditList').innerHTML=data.platforms.map((x,i)=>`<div class="platedit"><input value="${esc(x)}" data-pi="${i}" maxlength="30" aria-label="Nom de la plateforme"><button type="button" data-pup="${i}" aria-label="Monter"${i===0?' disabled style="opacity:.35"':''}>↑</button><button type="button" class="del" data-pdel="${i}" aria-label="Supprimer">×</button></div>`).join('');
+ document.querySelectorAll('[data-pi]').forEach(el=>el.addEventListener('change',()=>{const i=+el.dataset.pi,old=data.platforms[i],nv=el.value.trim();if(!nv||nv===old){el.value=old;return}if(data.platforms.includes(nv)){alert('Cette plateforme existe déjà.');el.value=old;return}data.platforms[i]=nv;data.revenues.forEach(r=>{if(r.platform===old)r.platform=nv});if(curPlat===old)curPlat=nv;try{localStorage.setItem('fr_last_plat',curPlat)}catch(e){}el.blur();save();toast('Renommée en '+nv+' ✓')}));
+ document.querySelectorAll('[data-pup]').forEach(el=>el.addEventListener('click',()=>{const i=+el.dataset.pup;if(i<1)return;[data.platforms[i-1],data.platforms[i]]=[data.platforms[i],data.platforms[i-1]];save()}));
+ document.querySelectorAll('[data-pdel]').forEach(el=>el.addEventListener('click',()=>{const i=+el.dataset.pdel;if(data.platforms.length<=1){alert('Gardez au moins une plateforme.');return}if(!confirm('Retirer « '+data.platforms[i]+' » de la liste ?\nLes CA déjà saisis avec cette plateforme sont conservés.'))return;data.platforms.splice(i,1);save()}));}
  const days=[...new Set([...caItems.map(r=>r.date),...Object.keys(data.dayKm).filter(d=>d.slice(0,7)===m&&Number(data.dayKm[d])>0)])].sort().reverse();
  $('caList').innerHTML=days.length?days.map(d=>{const its=caItems.filter(r=>r.date===d),dk=Number(data.dayKm[d])||0,dca=its.reduce((s2,r)=>s2+Number(r.amount||0),0);return `<div class="dayhead"><b>${esc(new Date(d+'T12:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}))}</b><span><b style="color:var(--ink)">${money(dca)}</b><br>${dk?dk.toLocaleString('fr-FR')+' km'+(fuel(dk)!=null?' · carb. '+money(fuel(dk)):''):'km non saisis'}${dk?` <button class="remove" style="font-size:11px" data-daykm="${d}">×</button>`:''}</span></div>`+its.map(r=>`<div class="entry"><div><div class="entrymeta" style="margin-top:0"><span class="badge">${esc(r.platform||'—')}</span>${r.note?esc(r.note):''}</div></div><div class="entryright">${money(r.amount)}<br><button class="remove" data-revenue="${esc(r.id)}">Supprimer ×</button></div></div>`).join('')}).join(''):'<div class="empty">Aucun CA enregistré pour ce mois.</div>';
  document.querySelectorAll('[data-daykm]').forEach(el=>el.addEventListener('click',()=>{if(!confirm('Effacer les km de ce jour ?'))return;delete data.dayKm[el.dataset.daykm];save()}));
@@ -326,8 +327,9 @@ $('variableForm').addEventListener('submit',e=>{e.preventDefault();const amount=
 function toast(t){let el=$('toast');if(!el){el=document.createElement('div');el.id='toast';el.className='toast';document.body.appendChild(el)}el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),1800)}
 function setDayKm(date,km){km=Math.max(0,Math.round(Number(km)||0));if(km>0)data.dayKm[date]=km;else delete data.dayKm[date];if(date.slice(0,7)!==mth())$('month').value=date.slice(0,7);save();toast(km>0?km.toLocaleString('fr-FR')+' km enregistrés ✓':'Km effacés')}
 function addRevenue(date,amount,note,platform){data.revenues.push({id:'r_'+Date.now(),date,amount,platform:platform||'Autre',note:note||''});if(date.slice(0,7)!==mth())$('month').value=date.slice(0,7);save();toast('+ '+money(amount)+' enregistré ✓')}
-$('kmQuick').addEventListener('submit',e=>{e.preventDefault();document.activeElement.blur();setDayKm(localDate(new Date()),$('qKm').value)});
-$('kmForm').addEventListener('submit',e=>{e.preventDefault();const d=$('kmDate').value;if(!d)return;setDayKm(d,$('kmVal').value);$('kmVal').value='';$('kmDate').value=localDate(new Date())});
+$('addPlatForm').addEventListener('submit',e=>{e.preventDefault();const nv=$('newPlat').value.trim();if(!nv)return;if(data.platforms.includes(nv)){alert('Cette plateforme existe déjà.');return}const iAutre=data.platforms.indexOf('Autre');if(iAutre>=0)data.platforms.splice(iAutre,0,nv);else data.platforms.push(nv);curPlat=nv;try{localStorage.setItem('fr_last_plat',nv)}catch(e){}$('newPlat').value='';$('newPlat').blur();save();toast(nv+' ajoutée ✓')});
+$('kmQuick').addEventListener('submit',e=>{e.preventDefault();if($('qKm').value===''){$('qKm').focus();return}document.activeElement.blur();setDayKm(localDate(new Date()),$('qKm').value)});
+$('kmForm').addEventListener('submit',e=>{e.preventDefault();const d=$('kmDate').value||localDate(new Date());if($('kmVal').value===''){$('kmVal').focus();return}setDayKm(d,$('kmVal').value);$('kmVal').value='';$('kmDate').value=localDate(new Date())});
 $('quickCa').addEventListener('submit',e=>{e.preventDefault();const amount=Number($('qAmount').value);if(!(amount>0))return;$('qAmount').value='';document.activeElement.blur();addRevenue(localDate(new Date()),amount,'',curPlat)});
 $('caForm').addEventListener('submit',e=>{e.preventDefault();const amount=Number($('caAmount').value),date=$('caDate').value;if(!(amount>0)||!date)return;const note=$('caNote').value.trim(),plat=$('caPlat').value;curPlat=plat;try{localStorage.setItem('fr_last_plat',plat)}catch(e){}$('caAmount').value='';$('caNote').value='';$('caDate').value=localDate(new Date());addRevenue(date,amount,note,plat)});
 $('savePerformance').addEventListener('click',()=>{const prev=data.performance[mth()]||{};data.performance[mth()]={revenue:perf().fromDaily?(Number(prev.revenue)||0):Math.max(0,Number($('revenue').value)||0),km:perf().kmDaily?(Number(prev.km)||0):Math.max(0,Number($('km').value)||0),days:Math.max(0,Number($('days').value)||0)};save();alert('Chiffres du mois enregistrés.')});
@@ -335,31 +337,11 @@ function csvAll(){const rows=[['Type','Catégorie','Date','Montant (€)','Préc
 function download(content,type,name){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type}));a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 $('exportCsv').addEventListener('click',csvAll);$('exportAllCsv').addEventListener('click',csvAll);
 $('backupBtn').addEventListener('click',()=>download(JSON.stringify(data,null,2),'application/json','ParisVTCDriver-sauvegarde-'+localDate(now)+'.json'));
-$('restoreBtn').addEventListener('click',async()=>{const file=$('restoreFile').files[0];if(!file){alert('Choisissez d’abord un fichier JSON.');return}try{const incoming=JSON.parse(await file.text());if(!incoming||!Array.isArray(incoming.fixed)||!Array.isArray(incoming.expenses))throw Error('format');if(!confirm('Cette opération remplacera les données actuellement enregistrées sur cet appareil. Continuer ?'))return;data={version:2,fixed:incoming.fixed,expenses:incoming.expenses,performance:incoming.performance||{},revenues:Array.isArray(incoming.revenues)?incoming.revenues:[],dayKm:incoming.dayKm||{},vehicle:incoming.vehicle||{type:'electric',conso:0,price:0,margin:20}};save();alert('Sauvegarde restaurée.')}catch(e){alert('Fichier invalide ou illisible. Aucune donnée modifiée.')}});
+$('restoreBtn').addEventListener('click',async()=>{const file=$('restoreFile').files[0];if(!file){alert('Choisissez d’abord un fichier JSON.');return}try{const incoming=JSON.parse(await file.text());if(!incoming||!Array.isArray(incoming.fixed)||!Array.isArray(incoming.expenses))throw Error('format');if(!confirm('Cette opération remplacera les données actuellement enregistrées sur cet appareil. Continuer ?'))return;data={version:2,fixed:incoming.fixed,expenses:incoming.expenses,performance:incoming.performance||{},revenues:Array.isArray(incoming.revenues)?incoming.revenues:[],dayKm:incoming.dayKm||{},platforms:Array.isArray(incoming.platforms)&&incoming.platforms.length?incoming.platforms:DEFAULT_PLATFORMS.slice(),vehicle:incoming.vehicle||{type:'electric',conso:0,price:0,margin:20}};save();alert('Sauvegarde restaurée.')}catch(e){alert('Fichier invalide ou illisible. Aucune donnée modifiée.')}});
 const yearNow=now.getFullYear();for(let y=yearNow-3;y<=yearNow+1;y++){const o=document.createElement('option');o.value=y;o.textContent=y;if(y===yearNow)o.selected=true;$('year').appendChild(o)}$('year').addEventListener('change',renderAnnual);
 ['enType','enConso','enPrice','enMargin'].forEach(function(id){var el=$(id);if(el)el.addEventListener('change',function(){data.vehicle={type:$('enType').value,conso:Math.max(0,Number($('enConso').value)||0),price:Math.max(0,Number($('enPrice').value)||0),margin:Math.max(0,Number($('enMargin').value)||0)};save();});});
 ['simKm','simPrice'].forEach(function(id){var el=$(id);if(el)el.addEventListener('input',renderSim);});
 render();
 if('serviceWorker' in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-</script>
-<script>
-(function(){
-  var U="Timus";
-  var H="be9c54864699f8abaa4e60d1e262d154760b4ee22835293c26451e5735c4aeb6";
-  function reveal(){var g=document.getElementById('authgate');if(g)g.remove();}
-  try{ if(localStorage.getItem('fr_auth')===H){ reveal(); return; } }catch(e){}
-  async function sha(t){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0');}).join('');}
-  window.addEventListener('DOMContentLoaded',function(){
-    var f=document.getElementById('authform'); if(!f) return;
-    f.addEventListener('submit',async function(e){e.preventDefault();
-      var u=(document.getElementById('authuser').value||'').trim().toLowerCase();
-      var p=document.getElementById('authpass').value||'';
-      var hp=await sha(p);
-      if(u===U.toLowerCase() && hp===H){ try{localStorage.setItem('fr_auth',H);}catch(e){} reveal(); }
-      else { var er=document.getElementById('autherr'); if(er)er.style.display='block'; document.getElementById('authpass').value=''; }
-    });
-    document.getElementById('authuser').focus();
-  });
-})();
 </script>
 </body></html>
