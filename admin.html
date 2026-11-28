@@ -982,7 +982,7 @@ function renderDocs(){
     const archBtn=arch
       ?`<button class="btn-mini" onclick="unarchiveBooking('${b.id}')">Désarchiver</button>`
       :`<button class="btn-mini" onclick="archiveBooking('${b.id}')" title="Archiver (masqué des listes, points et compteur du client conservés)">Archiver</button>`;
-    let act=`${!b.user_id?`<button class="btn-mini" style="border-color:rgba(96,165,250,.45);color:#60a5fa" onclick="linkBookingToClient('${b.id}')" title="Associer cette demande au compte client (apparaîtra dans son espace)">🔗 Lier au compte</button> `:''}<button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> <button class="btn-mini" onclick="missionNote('${b.id}')" title="Télécharger la note de course">Note</button> ${archBtn} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer définitivement (réduit le compteur de courses)">✕</button>`;
+    let act=`${!b.user_id?`<button class="btn-mini" style="border-color:rgba(96,165,250,.45);color:#60a5fa" onclick="linkBookingToClient('${b.id}')" title="Associer cette demande au compte client (apparaîtra dans son espace)">🔗 Lier au compte</button> `:''}<button class="btn-mini" onclick="editClient('${b.id}')" title="Corriger le prénom, le nom et l'e-mail du client">👤 Client</button> <button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> <button class="btn-mini" onclick="missionNote('${b.id}')" title="Télécharger la note de course">Note</button> ${archBtn} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer définitivement (réduit le compteur de courses)">✕</button>`;
     if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini" onclick="editDevis('${b.id}')" title="Corriger les informations du devis (adresses, date, détails, notes) avant de le valider">Modifier</button> <button class="btn-mini" onclick="applyDiscount('${b.id}')" title="Appliquer une remise en % sur ce devis">Remise</button> <button class="btn-mini" onclick="setToll('${b.id}')" title="Ajuster le péage inclus de chaque service">Péage</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Définir un acompte à régler en ligne (le solde sera payé en espèces à bord)">Acompte</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
     else if(b.type==='facture'&&b.pay_status!=='paid'){
       const _dep=Number(b.details&&b.details.deposit)||0;
@@ -1478,6 +1478,41 @@ async function saveDevisEdit(id){
   var r=await sb.from('bookings').update(upd).eq('id',id);
   if(r.error){toast('Erreur : '+r.error.message);return;}
   closeEditModal(); toast('Devis modifié ✓'); refresh();
+}
+function editClient(id){
+  var b=BOOKINGS.find(function(x){return x.id===id;}); if(!b)return;
+  var d=b.details||{};
+  var prof=(b.user_id&&PROFILES[b.user_id])||null;
+  var full=(d.client_name!=null&&d.client_name!=='')?d.client_name:((prof&&prof.full_name)||'');
+  var email=(d.client_email!=null&&d.client_email!=='')?d.client_email:((prof&&prof.email)||'');
+  var parts=String(full).trim().split(/\s+/).filter(Boolean);
+  var prenom=parts.shift()||''; var nom=parts.join(' ');
+  var IN='width:100%;background:rgba(7,11,20,.7);border:1px solid var(--line-soft);border-radius:9px;color:var(--txt);padding:9px 10px;font-family:inherit;font-size:14px;margin-top:4px';
+  var LB='font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);display:block;margin-top:11px';
+  var note=prof?'<div class="sub2" style="margin-bottom:12px;color:var(--gold-2)">Ce client a un compte. La correction s\'applique aux documents de cette réservation (facture, e-mails) ; le compte client n\'est pas modifié.</div>':'<div class="sub2" style="margin-bottom:12px">Corrigez les informations du client pour cette réservation (facture et e-mails).</div>';
+  openEditModal('<h2 style="font-size:17px;margin-bottom:4px">Corriger le client</h2>'+note
+    +'<div style="border:1px solid var(--line-soft);border-radius:12px;padding:14px">'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +'<div><label style="'+LB+'">Prénom</label><input id="ec_pre" style="'+IN+'" value="'+_edEsc(prenom)+'"></div>'
+    +'<div><label style="'+LB+'">Nom</label><input id="ec_nom" style="'+IN+'" value="'+_edEsc(nom)+'"></div></div>'
+    +'<label style="'+LB+'">Adresse e-mail</label><input id="ec_mail" type="email" style="'+IN+'" value="'+_edEsc(email)+'"></div>'
+    +'<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">'
+    +'<button class="btn-mini" onclick="closeEditModal()">Annuler</button>'
+    +'<button class="btn-mini gold" onclick="saveClientEdit(\''+id+'\')">Enregistrer</button></div>');
+}
+async function saveClientEdit(id){
+  var b=BOOKINGS.find(function(x){return x.id===id;}); if(!b)return;
+  var pre=((document.getElementById('ec_pre')||{}).value||'').trim();
+  var nom=((document.getElementById('ec_nom')||{}).value||'').trim();
+  var mail=((document.getElementById('ec_mail')||{}).value||'').trim();
+  var full=(pre+' '+nom).trim();
+  if(mail && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)){ toast('Adresse e-mail invalide'); return; }
+  var d=Object.assign({},b.details||{});
+  if(full) d.client_name=full; else delete d.client_name;
+  if(mail) d.client_email=mail; else delete d.client_email;
+  var r=await sb.from('bookings').update({details:d}).eq('id',id);
+  if(r.error){toast('Erreur : '+r.error.message);return;}
+  closeEditModal(); toast('Informations client corrigées ✓'); refresh();
 }
 async function acceptDevis(id){
   const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
