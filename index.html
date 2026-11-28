@@ -1219,7 +1219,7 @@ function packDateSup(dateStr){ // per person surcharge on special dates
 }
 /* all-inclusive fixed fares (€) per vehicle id */
 const SERVICES=[
-  {id:"paris", r:{fr:"Paris ↔ Paris",en:"Within Paris"}, s:{fr:"intra-muros",en:"inner city"}, price:{eco:39,electrique:49,premium:59,van:65}},
+  {id:"paris", r:{fr:"Paris ↔ Paris",en:"Within Paris"}, s:{fr:"intra-muros",en:"inner city"}, price:{eco:39,electrique:45,premium:59,van:65}},
   {id:"cdg", r:{fr:"Paris ↔ Aéroport CDG",en:"Paris ↔ CDG Airport"}, s:{fr:"Roissy · ~45 min",en:"Roissy · ~45 min"}, price:{eco:80,electrique:90,premium:100,van:120}},
   {id:"orly", r:{fr:"Paris ↔ Aéroport Orly",en:"Paris ↔ Orly Airport"}, s:{fr:"~35 min",en:"~35 min"}, price:{eco:70,electrique:80,premium:90,van:100}},
   {id:"beauvais", r:{fr:"Paris ↔ Aéroport Beauvais",en:"Paris ↔ Beauvais Airport"}, s:{fr:"~1h15",en:"~1h15"}, price:{eco:150,electrique:170,premium:190,van:250}},
@@ -1229,7 +1229,7 @@ const SERVICES=[
   {id:"localcdg", r:{fr:"Trajet local → Aéroport CDG",en:"Local ride → CDG Airport"}, s:{fr:"depuis ≤ 5 km du siège · prix fixe",en:"from ≤ 5 km of base · fixed"}, price:{eco:35,electrique:45,premium:55,van:65}, local:true},
   {id:"local", r:{fr:"Trajet local · Villepinte & alentours",en:"Local ride · Villepinte area"}, s:{fr:"trajet ≤ 20 km · prix automatique",en:"trip ≤ 20 km · auto price"}, price:{eco:25,electrique:35,premium:55,van:60}, local:true},
   {id:"localparis", r:{fr:"Trajet local → Paris",en:"Local ride → Paris"}, s:{fr:"≤ 10 km du siège · prix fixe",en:"≤ 10 km from base · fixed"}, price:{eco:80,electrique:90,premium:100,van:120}},
-  {id:"hourly", r:{fr:"Mise à disposition",en:"Hourly chauffeur"}, s:{fr:"par heure · 2h min.",en:"per hour · 2h min."}, price:{eco:50,electrique:60,premium:60,van:75}, perH:true},
+  {id:"hourly", r:{fr:"Mise à disposition",en:"Hourly chauffeur"}, s:{fr:"par heure · 2h min.",en:"per hour · 2h min."}, price:{eco:50,electrique:55,premium:65,van:75}, perH:true},
   {id:"custom", r:{fr:"Transfert sur-mesure",en:"Custom transfer"}, s:{fr:"sur devis",en:"on quote"}, price:{eco:90,electrique:100,premium:120,van:160}, custom:true},
 ];
 /* Péages — montant fixe TTC par trajet type ; sur-mesure/hourly = estimation au km (ajustable dans l'admin) */
