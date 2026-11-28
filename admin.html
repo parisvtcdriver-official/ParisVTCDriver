@@ -982,7 +982,7 @@ function renderDocs(){
     const archBtn=arch
       ?`<button class="btn-mini" onclick="unarchiveBooking('${b.id}')">Désarchiver</button>`
       :`<button class="btn-mini" onclick="archiveBooking('${b.id}')" title="Archiver (masqué des listes, points et compteur du client conservés)">Archiver</button>`;
-    let act=`${!b.user_id?`<button class="btn-mini" style="border-color:rgba(96,165,250,.45);color:#60a5fa" onclick="linkBookingToClient('${b.id}')" title="Associer cette demande au compte client (apparaîtra dans son espace)">🔗 Lier au compte</button> `:''}<button class="btn-mini" onclick="editClient('${b.id}')" title="Corriger le prénom, le nom et l'e-mail du client">👤 Client</button> <button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> <button class="btn-mini" onclick="missionNote('${b.id}')" title="Télécharger la note de course">Note</button> ${archBtn} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer définitivement (réduit le compteur de courses)">✕</button>`;
+    let act=`${!b.user_id?`<button class="btn-mini" style="border-color:rgba(96,165,250,.45);color:#60a5fa" onclick="linkBookingToClient('${b.id}')" title="Associer cette demande au compte client (apparaîtra dans son espace)">🔗 Lier au compte</button> `:`<button class="btn-mini" style="border-color:rgba(96,165,250,.45);color:#60a5fa" onclick="unlinkBooking('${b.id}')" title="Détacher cette réservation du compte client (redeviendra « sans compte » avec le nom saisi)">🔗 Délier du compte</button> `}<button class="btn-mini" onclick="editClient('${b.id}')" title="Corriger le prénom, le nom et l'e-mail du client">👤 Client</button> <button class="btn-mini" onclick="docPDF('${b.id}')">PDF</button> <button class="btn-mini" onclick="missionNote('${b.id}')" title="Télécharger la note de course">Note</button> ${archBtn} <button class="btn-mini" style="border-color:rgba(248,113,113,.4);color:var(--red)" onclick="deleteBooking('${b.id}')" title="Supprimer définitivement (réduit le compteur de courses)">✕</button>`;
     if(b.type==='devis') act=`<button class="btn-mini" onclick="proposePrice('${b.id}')">Prix</button> <button class="btn-mini" onclick="editDevis('${b.id}')" title="Corriger les informations du devis (adresses, date, détails, notes) avant de le valider">Modifier</button> <button class="btn-mini" onclick="applyDiscount('${b.id}')" title="Appliquer une remise en % sur ce devis">Remise</button> <button class="btn-mini" onclick="setToll('${b.id}')" title="Ajuster le péage inclus de chaque service">Péage</button> <button class="btn-mini" onclick="setDeposit('${b.id}')" title="Définir un acompte à régler en ligne (le solde sera payé en espèces à bord)">Acompte</button> <button class="btn-mini gold" onclick="acceptDevis('${b.id}')">Accepter</button> `+act;
     else if(b.type==='facture'&&b.pay_status!=='paid'){
       const _dep=Number(b.details&&b.details.deposit)||0;
@@ -1997,6 +1997,20 @@ async function linkBookingToClient(id){
   const {error}=await sb.from('bookings').update({user_id:prof.id}).eq('id',id);
   if(error){toast('Erreur : '+error.message);return;}
   toast("Demande associée à "+(prof.full_name||prof.email)+" ✓"); refresh();
+}
+async function unlinkBooking(id){
+  const b=BOOKINGS.find(x=>x.id===id); if(!b)return;
+  if(!b.user_id){toast('Cette réservation n’est liée à aucun compte.');return;}
+  const prof=PROFILES[b.user_id];
+  const who=(prof&&(prof.full_name||prof.email))||'ce compte';
+  const d=b.details||{};
+  const realName=d.client_name||d.client_email||'';
+  if(!confirm('Détacher la réservation '+(b.reference||'')+' du compte « '+who+' » ?\n\n'
+    +(realName?('Elle redeviendra « sans compte » et s’affichera au nom saisi : '+realName+'.'):'Elle redeviendra « sans compte ».')
+    +'\nElle disparaîtra de l’espace client de ce compte. Réversible via « 🔗 Lier au compte ».'))return;
+  const {error}=await sb.from('bookings').update({user_id:null}).eq('id',id);
+  if(error){toast('Erreur : '+error.message);return;}
+  toast('Réservation déliée du compte ✓'); refresh();
 }
 /* ===================== ACCÈS APPLIS ===================== */
 const ACC_APPS={all:'Toutes les applis',kifkif:'KifKif','frais-reels':'PVTCD PILOT','pvtcd-fleet':'PVTCD FLEET','pvtcd-relais':'PVTCD RELAIS','pvtcd-sign':'PVTCD SIGN'};
